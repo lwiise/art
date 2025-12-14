@@ -20,84 +20,124 @@
     background:var(--bg);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     color:var(--text-main);
+    overflow:hidden; /* desktop */
+  }
+
+  /* ===== LAYOUT ===== */
+  .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
+
+  /* LEFT MAP: 31% */
+  #map{
+    flex:0 0 31vw;
+    height:100vh;
+    background:#000;
+    position:relative;
     overflow:hidden;
   }
 
-  .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
+  .mapboxgl-canvas{
+    outline:none;
+    filter:grayscale(100%) contrast(1.2) brightness(0.9);
+  }
 
-  /* ===== LEFT MAP ===== */
-  #map{ flex:0 0 31vw; height:100vh; background:#000; position:relative; }
-
-  .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
-
-  /* ===== SIDE NAV (DESKTOP) ===== */
+  /* ===== DESKTOP SIDE NAV ===== */
   .side-nav{
     position:absolute; top:50%; right:0; transform:translateY(-50%);
-    display:flex; flex-direction:column; z-index:50;
-
-    /* darker bg (as requested) */
-    background:rgba(0,0,0,0.55);
+    display:flex; flex-direction:column; z-index:20;
+    background:rgba(0,0,0,0.55); /* darker */
     backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
-
     border-radius:20px 0 0 20px;
-    border-left:1px solid rgba(255,255,255,0.10);
-    border-top:1px solid rgba(255,255,255,0.10);
-    border-bottom:1px solid rgba(255,255,255,0.10);
+    border-left:1px solid rgba(255,255,255,0.12);
+    border-top:1px solid rgba(255,255,255,0.12);
+    border-bottom:1px solid rgba(255,255,255,0.12);
     box-shadow:-10px 0 30px rgba(0,0,0,0.35);
-    transition:background .25s ease,border-color .25s ease;
   }
-  .side-nav.focused{
-    background:rgba(0,0,0,0.70);
-    border-color:rgba(255,255,255,0.10);
-  }
+  .side-nav.focused{ background:rgba(0,0,0,0.72); }
 
   .nav-item{
-    padding:30px 40px;
-    color:rgba(255,255,255,0.85);
+    padding:26px 34px;
+    color:rgba(255,255,255,0.86);
     font-weight:700;
     font-size:14px;
     text-transform:uppercase;
-    letter-spacing:.05em;
-    border-bottom:1px solid rgba(255,255,255,0.10);
+    letter-spacing:0.06em;
+    border-bottom:1px solid rgba(255,255,255,0.12);
     transition:all .25s ease;
     cursor:pointer;
     text-align:center;
-    text-shadow:0 2px 10px rgba(0,0,0,0.5);
+    text-shadow:0 2px 10px rgba(0,0,0,.55);
     user-select:none;
   }
   .nav-item:last-child{ border-bottom:none; }
   .nav-item:hover,
   .nav-item.active{
-    background:rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.14);
     color:#fff;
-    padding-right:50px;
+    padding-right:44px;
   }
 
-  /* ===== RIGHT SHOP ===== */
+  /* ===== MOBILE HORIZONTAL NAV (over map bottom) ===== */
+  .mobile-nav{
+    position:absolute;
+    left:12px; right:12px;
+    bottom:12px;
+    z-index:25;
+    display:none;
+    gap:10px;
+    padding:10px 10px;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .mobile-nav::-webkit-scrollbar{ display:none; }
+  .mnav-item{
+    flex:0 0 auto;
+    padding:12px 16px;
+    border-radius:14px;
+    color:rgba(255,255,255,0.86);
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+    border:1px solid rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.06);
+  }
+  .mnav-item.active{
+    background:rgba(255,255,255,0.16);
+    color:#fff;
+  }
+
+  /* ===== RIGHT SHOP: 69% ===== */
   .shop{
-    flex:1;
-    display:flex;
-    flex-direction:column;
+    flex:0 0 69vw;
+    display:flex; flex-direction:column;
     height:100vh;
     background:#fff;
     position:relative;
     z-index:2;
     box-shadow:-10px 0 40px rgba(0,0,0,0.05);
-    width:69vw; /* requested */
+    overflow:hidden;
   }
 
-  /* DESKTOP SECTIONS */
+  /* sections architecture (desktop: absolute) */
   .app-section{
     position:absolute; inset:0;
     display:flex; flex-direction:column;
     background:#fff;
     opacity:0; visibility:hidden; pointer-events:none;
-    transform:translateY(20px);
+    transform:translateY(18px);
     transition:opacity .35s ease, transform .35s ease;
     z-index:1;
     padding:40px;
-    overflow-y:auto;
-    height:100%;
+    overflow:hidden; /* IMPORTANT: avoid double-scroll bugs */
   }
   .app-section.active-section{
     opacity:1; visibility:visible; pointer-events:auto;
@@ -105,100 +145,29 @@
     z-index:10;
   }
 
-  #sect-gallery{ padding:0; }
-
-  .shop-head{
-    flex-shrink:0;
-    position:sticky; top:0;
-    background:rgba(255,255,255,0.95);
-    backdrop-filter:blur(10px);
-    z-index:10;
-    padding:24px 30px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border-bottom:1px solid #f0f0f0;
-  }
-
-  .nav-group{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
-  .chip{
-    border:none;
-    background:transparent;
-    font-size:14px;
-    color:#999;
-    cursor:pointer;
-    padding:8px 12px;
-    transition:all .2s;
-    font-weight:600;
-    white-space:nowrap;
-  }
-  .chip:hover{ color:#333; }
-  .chip.active{
-    background:var(--accent);
-    color:#fff;
-    padding:8px 24px;
-    border-radius:var(--btn-radius);
-  }
-
-  .shop-body{
-    padding:20px 30px 60px;
-    flex-grow:1;
-    overflow-y:auto;
-    min-height:0;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-    gap:40px 20px;
-    width:100%;
-  }
-
-  .card{
-    background:#fff;
-    border:1px solid #f4f4f4;
-    border-radius:var(--card-radius);
-    padding:30px 20px;
-    cursor:pointer;
-    transition:all .3s cubic-bezier(.25,.8,.25,1);
-    display:flex; flex-direction:column; align-items:center; text-align:center;
-  }
-  .card:hover{ transform:translateY(-6px); box-shadow:0 15px 40px rgba(0,0,0,0.06); }
-  .card-media{ width:100%; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; position:relative; }
-  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
-  .card-name{ font-size:13px; font-weight:900; letter-spacing:.08em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
-  .card-sub{ font-size:10px; color:#ccc; text-transform:uppercase; letter-spacing:.05em; }
-
   /* ===== HOME ===== */
   .home-hero{
     width:100%;
-    height:350px;
-    border-radius:24px;
-    margin-top:24px;
-    margin-bottom:30px;
+    height:420px;
+    border-radius:28px;
+    background:#f3f3f3;
     position:relative;
-
-    /* switched to logo hero (requested: keep only ONE image, big one) */
-    background:#f2f2f2;
+    overflow:hidden;
     display:flex;
     align-items:center;
     justify-content:center;
-    overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
   }
-  .home-hero-logo{
-    width:min(340px, 74%);
-    height:auto;
-    border-radius:18px;
-    box-shadow:0 10px 24px rgba(0,0,0,0.12);
+  .home-hero .home-logo{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:36px; /* gives that “big logo” feel without cropping */
+    filter:drop-shadow(0 12px 25px rgba(0,0,0,0.12));
   }
 
-  h1.sec-title{ font-size:32px; font-weight:900; margin-bottom:10px; letter-spacing:-0.02em; color:#111; }
-  p.sec-sub{ font-size:16px; color:#666; line-height:1.6; max-width:650px; margin-bottom:30px; }
+  h1.sec-title{ font-size:32px; font-weight:900; margin:26px 0 10px; letter-spacing:-0.02em; color:#111; }
+  p.sec-sub{ font-size:16px; color:#666; line-height:1.7; max-width:720px; margin:0 0 24px; }
 
   .btn-hero{
     display:inline-block;
@@ -211,228 +180,351 @@
     font-size:14px;
     font-weight:800;
     cursor:pointer;
-    margin-top:15px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    margin-top:10px;
+    box-shadow:0 10px 24px rgba(0,0,0,0.16);
     align-self:flex-start;
-    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .btn-hero:hover{ transform:translateY(-3px); box-shadow:0 12px 25px rgba(0,0,0,0.2); background:#000; }
+  .btn-hero:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,0.2); background:#000; }
 
   /* ===== ABOUT ===== */
-  .about-hero-img{
+  .about-media{
     width:100%;
-    border-radius:16px;
-    margin:18px 0 22px;
-    display:block;
-  }
-  .about-block{
-    background:#fafafa;
-    border:1px solid #eee;
     border-radius:18px;
-    padding:18px 18px;
-    margin:14px 0 0;
-  }
-  .about-block h3{
-    margin:0 0 8px;
-    font-size:14px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:#999;
-  }
-  .about-block p{ margin:0; color:#555; line-height:1.7; font-size:14px; }
-  .about-grid{
-    margin-top:14px;
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
-  }
-  .about-pill{
-    background:#fff;
-    border:1px solid #eee;
-    border-radius:16px;
-    padding:14px;
-  }
-  .about-pill b{ display:block; font-size:12px; color:#111; margin-bottom:6px; }
-  .about-pill span{ display:block; font-size:13px; color:#666; line-height:1.55; }
-
-  /* ===== SERVICES (like your screenshot) ===== */
-  .services-wrap{
-    border-radius:24px;
+    margin-top:18px;
     overflow:hidden;
     border:1px solid #eee;
+  }
+  .about-media img{ width:100%; display:block; height:auto; }
+  .about-split{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:24px;
+    margin-top:18px;
+    align-items:start;
+  }
+  .about-card{
+    border:1px solid #eee;
+    border-radius:20px;
+    padding:20px;
+    background:#fafafa;
+  }
+  .about-kicker{
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.12em;
+    color:#999;
+    text-transform:uppercase;
+    margin:0 0 10px;
+  }
+  .about-quote{
+    font-size:15px;
+    line-height:1.8;
+    color:#444;
+    margin:0;
+  }
+  .about-pill-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .about-pill{
+    font-size:12px;
+    font-weight:800;
+    padding:10px 12px;
+    border-radius:999px;
+    border:1px solid #eee;
+    background:#fff;
+    color:#444;
+    white-space:nowrap;
+  }
+
+  /* ===== SERVICES (match your screenshot layout) ===== */
+  .services-wrap{
+    width:100%;
+    border-radius:28px;
+    border:1px solid #efefef;
     background:
-      repeating-linear-gradient(135deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 2px, transparent 2px, transparent 10px),
-      #fff;
-    padding:28px 24px 30px;
+      repeating-linear-gradient(135deg, rgba(0,0,0,0.035) 0px, rgba(0,0,0,0.035) 2px, rgba(255,255,255,0) 2px, rgba(255,255,255,0) 10px),
+      #f6f6f6;
+    padding:34px 24px;
+    overflow:hidden;
   }
   .services-grid{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:26px 22px;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:22px 24px;
   }
-  .svc-item{
+  .svc{
     text-align:center;
-    padding:10px 10px 0;
+    padding:18px 14px;
   }
   .svc-ico{
-    width:54px; height:54px;
-    margin:0 auto 12px;
-    border-radius:999px;
+    width:58px; height:58px;
+    margin:0 auto 14px;
     display:grid; place-items:center;
-    color:#777;
+    color:#7c7c7c;
   }
-  .svc-ico svg{ width:34px; height:34px; opacity:.75; }
+  .svc-ico svg{ width:44px; height:44px; }
   .svc-title{
-    margin:0 0 10px;
     font-size:22px;
     font-weight:500;
     color:#222;
+    margin:0 0 10px;
   }
   .svc-desc{
-    margin:0;
-    font-size:13px;
-    line-height:1.7;
-    color:#777;
+    margin:0 auto;
     max-width:260px;
-    margin-inline:auto;
+    font-size:14px;
+    line-height:1.65;
+    color:#777;
   }
 
-  /* ===== SOLO PRODUCT ===== */
-  .solo-wrap{ display:none; animation:slideIn .5s cubic-bezier(.2,.8,.2,1); }
+  /* ===== GALLERY ===== */
+  #sect-gallery{ padding:0; }
+
+  .shop-head{
+    flex:0 0 auto;
+    position:sticky; top:0;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(10px);
+    z-index:10;
+    padding:22px 26px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid #f0f0f0;
+  }
+
+  .nav-group{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:nowrap;            /* one line */
+    overflow-x:auto;             /* allow scroll if needed */
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .nav-group::-webkit-scrollbar{ display:none; }
+
+  .chip{
+    border:none;
+    background:transparent;
+    font-size:14px;
+    color:#999;
+    cursor:pointer;
+    padding:8px 12px;
+    transition:all .2s;
+    font-weight:600;
+    white-space:nowrap;
+    border-radius:999px;
+  }
+  .chip:hover{ color:#333; }
+  .chip.active{
+    background:var(--accent);
+    color:#fff;
+    padding:8px 22px;
+    border-radius:var(--btn-radius);
+  }
+
+  .shop-body{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;             /* single scroll area */
+    padding:18px 26px 64px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    gap:26px;
+    width:100%;
+  }
+
+  .card{
+    background:#fff;
+    border:1px solid #f3f3f3;
+    border-radius:28px;
+    padding:22px 18px;
+    cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .card:hover{ transform:translateY(-5px); box-shadow:0 18px 45px rgba(0,0,0,0.06); }
+  .card-media{
+    width:100%;
+    height:170px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:16px;
+  }
+  .card-media img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  }
+  .card-name{ font-size:13px; font-weight:900; letter-spacing:0.10em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
+  .card-sub{ font-size:10px; color:#c9c9c9; text-transform:uppercase; letter-spacing:0.06em; }
+
+  /* ===== SOLO PRODUCT VIEW ===== */
+  .solo-wrap{ display:none; }
   #sect-gallery.solo .grid{ display:none; }
   #sect-gallery.solo .solo-wrap{ display:block; }
 
-  .back-nav{ margin-bottom:20px; }
-  .btn-back{ background:none; border:none; padding:0; color:#999; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  .back-nav{ margin-bottom:16px; }
+  .btn-back{
+    background:none; border:none; padding:0;
+    color:#999; font-size:13px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
 
   .solo-media-container{
     width:100%;
-    height:400px;
+    height:420px;
     background:#fff;
+    border-radius:28px;
+    border:1px solid #f2f2f2;
     display:flex;
     align-items:center;
     justify-content:center;
-    margin-bottom:20px;
+    margin-bottom:18px;
     position:relative;
-    border-radius:22px;
-    overflow:hidden;
-    border:1px solid #f0f0f0;
+    overflow:visible; /* so tabs can sit "out of frame" */
   }
 
-  /* product tabs (Images / 360 / Video / 3D) – top-right, “out of the frame” */
+  /* product media tabs (out of frame, top-right) */
   .media-tabs{
     position:absolute;
-    top:14px; right:14px;
+    top:-18px;
+    right:18px;
     display:flex;
-    gap:8px;
-    z-index:5;
+    gap:10px;
+    flex-wrap:nowrap;            /* one line */
+    z-index:30;
   }
-  .media-tab{
+  .mtab{
     border:none;
+    cursor:pointer;
     padding:8px 14px;
-    border-radius:999px;
-    background:rgba(0,0,0,0.55);
-    color:rgba(255,255,255,0.88);
     font-size:12px;
-    font-weight:800;
-    letter-spacing:.04em;
-    cursor:pointer;
-    transition:background .15s ease, transform .1s ease;
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-  }
-  .media-tab:hover{ background:rgba(0,0,0,0.68); transform:translateY(-1px); }
-  .media-tab.active{ background:#000; color:#fff; }
-
-  .stage{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
-  .stage img{ width:100%; height:100%; object-fit:cover; }
-
-  model-viewer{ width:100%; height:100%; }
-
-  /* simple arrows for Images */
-  .img-arrow{
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    width:42px; height:42px;
-    border-radius:999px;
-    border:0;
-    background:rgba(0,0,0,0.35);
-    color:#fff;
-    font-size:18px;
     font-weight:900;
-    cursor:pointer;
-    z-index:6;
-    display:grid; place-items:center;
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-  }
-  .img-arrow:hover{ background:rgba(0,0,0,0.5); }
-  .img-arrow.left{ left:14px; }
-  .img-arrow.right{ right:14px; }
-
-  /* custom 360 controls (like your screenshot) */
-  .ctrl-bar{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:18px;
-    width:min(740px, 88%);
-    height:44px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
     border-radius:999px;
-    background:rgba(0,0,0,0.42);
+    background:rgba(0,0,0,0.14);
+    color:#111;
+    backdrop-filter:blur(10px);
+    box-shadow:0 10px 22px rgba(0,0,0,0.08);
+    white-space:nowrap;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .mtab:hover{ transform:translateY(-1px); background:rgba(0,0,0,0.18); }
+  .mtab.active{ background:#111; color:#fff; }
+
+  .solo-media-inner{
+    width:100%;
+    height:100%;
+    border-radius:28px;
+    overflow:hidden;
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:0 14px;
-    z-index:7;
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    justify-content:center;
+    position:relative;
+    background:#fff;
   }
-  .ctrl-btn{
-    width:34px; height:34px;
-    border-radius:10px;
-    border:none;
-    background:rgba(255,255,255,0.12);
+  .solo-media-inner img{ max-width:100%; max-height:100%; object-fit:contain; }
+  model-viewer{ width:100%; height:100%; }
+
+  /* image carousel */
+  .img-stage{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; }
+  .img-stage img{ width:100%; height:100%; object-fit:contain; }
+  .img-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:40px; height:40px; border-radius:999px;
+    border:none; cursor:pointer;
+    background:rgba(0,0,0,0.35);
     color:#fff;
-    cursor:pointer;
+    display:grid; place-items:center;
+    backdrop-filter:blur(8px);
+  }
+  .img-arrow.left{ left:14px; }
+  .img-arrow.right{ right:14px; }
+  .img-dots{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    background:rgba(0,0,0,0.22);
+    backdrop-filter:blur(8px);
+  }
+  .dot{
+    width:8px; height:8px; border-radius:999px;
+    background:rgba(255,255,255,0.5);
+  }
+  .dot.active{ background:#fff; }
+
+  /* 360 custom controller (like your screenshot) */
+  .p360-wrap{ width:100%; height:100%; position:relative; background:#111; border-radius:28px; overflow:hidden; }
+  .p360-wrap video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .p360-controls{
+    position:absolute;
+    left:24px; right:24px;
+    bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:12px 14px;
+    border-radius:999px;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(10px);
+  }
+  .p360-btn{
+    width:42px; height:34px;
+    border:none; cursor:pointer;
+    border-radius:12px;
+    background:rgba(255,255,255,0.08);
+    color:#fff;
     display:grid; place-items:center;
   }
-  .ctrl-btn:hover{ background:rgba(255,255,255,0.18); }
-  .ctrl-range{
+  .p360-range{
     flex:1;
     -webkit-appearance:none;
     appearance:none;
-    height:6px;
+    height:10px;
     border-radius:999px;
     background:rgba(255,255,255,0.22);
     outline:none;
+    cursor:pointer;
   }
-  .ctrl-range::-webkit-slider-thumb{
+  .p360-range::-webkit-slider-thumb{
     -webkit-appearance:none;
     appearance:none;
-    width:40px;
-    height:18px;
+    width:56px; height:18px;
     border-radius:999px;
-    background:rgba(255,255,255,0.85);
-    cursor:pointer;
+    background:rgba(255,255,255,0.9);
+    box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  }
+  .p360-range::-moz-range-thumb{
+    width:56px; height:18px;
+    border-radius:999px;
     border:none;
+    background:rgba(255,255,255,0.9);
   }
 
-  .solo-info-block{ padding:0 10px; }
+  .solo-info-block{ padding:0 6px; }
   .solo-desc{
     text-align:left;
     color:#666;
     font-size:14px;
-    line-height:1.6;
+    line-height:1.7;
     border-top:1px solid #eee;
-    padding-top:24px;
-    margin-bottom:30px;
+    padding-top:22px;
+    margin-bottom:26px;
   }
-  .data-row{ display:flex; gap:30px; margin-top:16px; flex-wrap:wrap; }
-  .data-item span:first-child{ display:block; font-size:10px; color:#999; text-transform:uppercase; font-weight:800; margin-bottom:4px; }
+  .data-row{ display:flex; gap:30px; margin-top:14px; flex-wrap:wrap; }
+  .data-item span:first-child{
+    display:block; font-size:10px; color:#999;
+    text-transform:uppercase; font-weight:900; letter-spacing:0.08em; margin-bottom:4px;
+  }
   .data-item span:last-child{ font-size:15px; font-weight:800; color:#222; }
 
   .artist-profile{
     display:flex; align-items:center; gap:14px;
-    margin-top:30px;
+    margin-top:24px;
     padding:16px;
     background:#fafafa;
     border-radius:20px;
@@ -440,24 +532,60 @@
     transition:all .2s;
     border:1px solid transparent;
   }
-  .artist-profile:hover{ background:#fff; border-color:#eee; box-shadow:0 5px 15px rgba(0,0,0,0.05); transform:translateY(-2px); }
+  .artist-profile:hover{ background:#fff; border-color:#eee; box-shadow:0 6px 18px rgba(0,0,0,0.05); transform:translateY(-2px); }
   .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
   .avatar img{ width:100%; height:100%; object-fit:cover; }
   .artist-info{ flex:1; }
   .artist-info h4{ margin:0; font-size:13px; color:#222; }
   .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
-  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:.05em; }
+  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.06em; }
 
-  .actions{ display:flex; gap:12px; margin-top:30px; }
-  .btn{ padding:14px 20px; border-radius:14px; border:none; font-size:13px; font-weight:800; cursor:pointer; transition:transform .1s; }
-  .btn:active{ transform:scale(.96); }
+  .actions{ display:flex; gap:12px; margin-top:24px; }
+  .btn{ padding:14px 18px; border-radius:14px; border:none; font-size:13px; font-weight:800; cursor:pointer; }
+  .btn:active{ transform:scale(.98); }
   .btn-primary{ background:#111; color:#fff; flex:1; }
   .btn-ghost{ background:#f0f0f0; color:#666; }
 
-  /* MODALS */
+  /* ===== FORMS ===== */
+  .form-title{ font-size:18px; font-weight:900; margin:0 0 16px; text-align:center; }
+  .form-group{ margin-bottom:12px; }
+  .form-input{
+    display:block;
+    width:100%;
+    padding:14px;
+    border:1px solid #eee;
+    border-radius:12px;
+    background:#fafafa;
+    font-size:14px;
+    color:#111;
+    margin:0;
+  }
+  .form-input:focus{ outline:none; border-color:#111; background:#fff; }
+  .btn-submit{
+    width:100%;
+    background:#111;
+    color:#fff;
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    font-weight:900;
+    cursor:pointer;
+    text-align:center;
+  }
+  #formSuccess, #formSuccessModal{
+    display:none;
+    border-radius:12px;
+    margin-top:14px;
+    background-color:#f0f0f0;
+    color:#333;
+    padding:18px;
+    text-align:center;
+    font-size:14px;
+  }
+
+  /* ===== MODALS ===== */
   .modal-overlay{
-    position:fixed; top:0; left:0;
-    width:100%; height:100%;
+    position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,0.4);
     backdrop-filter:blur(4px);
     z-index:9999;
@@ -465,158 +593,116 @@
     align-items:center;
     justify-content:center;
     opacity:0;
-    transition:opacity .3s ease;
+    transition:opacity .25s ease;
   }
   .modal-overlay.open{ display:flex; opacity:1; }
   .modal-box{
     background:#fff;
     width:90%;
-    max-width:400px;
-    padding:30px;
+    max-width:420px;
+    padding:28px;
     border-radius:24px;
     box-shadow:0 20px 40px rgba(0,0,0,0.2);
-    transform:translateY(20px);
-    transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    transform:translateY(18px);
+    transition:transform .25s cubic-bezier(0.2,0.8,0.2,1);
     position:relative;
     max-height:90vh;
-    overflow-y:auto;
+    overflow:auto;
   }
   .modal-overlay.open .modal-box{ transform:translateY(0); }
-  .close-modal{ position:absolute; top:20px; right:20px; background:none; border:none; font-size:20px; color:#999; cursor:pointer; }
-  .artist-modal-header{ text-align:center; margin-bottom:20px; }
-  .artist-modal-avatar{ width:80px; height:80px; border-radius:50%; margin:0 auto 15px; overflow:hidden; }
-  .artist-modal-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .artist-modal-bio{ font-size:13px; line-height:1.6; color:#555; text-align:center; }
-
-  @keyframes slideIn{
-    from{ opacity:0; transform:translateX(20px); }
-    to{ opacity:1; transform:translateX(0); }
+  .close-modal{
+    position:absolute; top:16px; right:16px;
+    background:none; border:none;
+    font-size:22px; color:#999; cursor:pointer;
   }
+  .artist-modal-header{ text-align:center; margin-bottom:16px; }
+  .artist-modal-avatar{ width:80px; height:80px; border-radius:50%; margin:0 auto 12px; overflow:hidden; }
+  .artist-modal-avatar img{ width:100%; height:100%; object-fit:cover; }
+  .artist-modal-bio{ font-size:13px; line-height:1.7; color:#555; text-align:center; }
 
-  /* ===== MOBILE (scroll overlays map + nav over map + chips one line) ===== */
-  @media (max-width:900px){
-    body{ overflow:auto; height:auto; }
+  /* ===== MOBILE RESPONSIVENESS ===== */
+  @media (max-width: 900px){
+    body{ overflow-y:auto; }      /* allow page scroll on mobile */
 
-    .layout{ display:block; height:auto; }
+    .layout{ flex-direction:column; height:auto; min-height:100vh; }
 
-    /* map becomes background */
+    /* map fixed behind, smaller by ~10% */
     #map{
       position:fixed;
-      inset:0;
+      top:0; left:0;
       width:100%;
-      height:100vh;
+      height:45vh;               /* was 50vh, now less */
       flex:none;
       z-index:0;
     }
 
-    /* shop overlays the map and can scroll “over it” */
+    .side-nav{ display:none; }
+    .mobile-nav{ display:flex; }
+
+    /* shop overlays map and scrolls over it */
     .shop{
-      position:relative;
-      z-index:2;
       width:100%;
+      flex:none;
       height:auto;
       min-height:100vh;
-      background:transparent;
-      box-shadow:none;
+      margin-top:40vh;           /* content starts on map, then scrolls over it */
+      border-radius:24px 24px 0 0;
+      box-shadow:0 -10px 30px rgba(0,0,0,0.12);
+      position:relative;
+      z-index:5;
+      overflow:visible;
     }
 
-    /* sheet feel: starts lower so map shows 45vh (10% less than old 50vh) */
-    .shop::before{
-      content:"";
-      display:block;
-      height:45vh;
-    }
-
-    /* sections become normal flow on mobile (so scrolling works) */
+    /* mobile sections should be in flow */
     .app-section{
       position:relative;
       inset:auto;
-      transform:none;
-      transition:none;
-      padding:22px;
       height:auto;
-      overflow:visible;
-      display:none;
+      transform:none;
       opacity:1;
       visibility:visible;
       pointer-events:auto;
-      background:rgba(255,255,255,0.97);
-      backdrop-filter:blur(10px);
-      border-radius:24px 24px 0 0;
-      box-shadow:0 -10px 30px rgba(0,0,0,0.18);
-      border-top:1px solid rgba(255,255,255,0.6);
+      display:none;              /* only active shows */
+      padding:22px;
+      overflow:visible;
     }
-    .app-section.active-section{ display:block; }
+    .app-section.active-section{ display:flex; }
 
-    #sect-gallery{ padding:0; background:transparent; border-radius:0; box-shadow:none; }
-    #sect-gallery.active-section{
-      background:rgba(255,255,255,0.97);
-      border-radius:24px 24px 0 0;
-      box-shadow:0 -10px 30px rgba(0,0,0,0.18);
-    }
-
+    /* gallery */
     .shop-head{
-      padding:18px 16px;
-      overflow-x:auto;
-      scrollbar-width:none;
-      display:block;
-      border-bottom:1px solid rgba(0,0,0,0.06);
+      padding:18px 18px;
+      position:sticky;
+      top:0;
+      border-radius:24px 24px 0 0;
     }
-    .shop-head::-webkit-scrollbar{ display:none; }
-
-    /* product category nav in ONE LINE */
     .nav-group{
-      flex-wrap:nowrap;
-      overflow-x:auto;
       gap:10px;
-      white-space:nowrap;
-      padding-right:10px;
-      scrollbar-width:none;
+      flex-wrap:nowrap;          /* one line */
+      overflow-x:auto;
     }
-    .nav-group::-webkit-scrollbar{ display:none; }
     .chip{
       font-size:13px;
       padding:10px 16px;
       background:#f5f5f5;
       border-radius:999px;
       color:#666;
-      flex:0 0 auto;
     }
-    .chip.active{ background:#111; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.15); }
-
-    .shop-body{ padding:18px 16px 50px; overflow:visible; }
-
-    .grid{ grid-template-columns:repeat(2,1fr); gap:15px; }
-    .card{ padding:15px; border-radius:22px; }
-    .card-media{ height:120px; }
-
-    .solo-media-container{ height:280px; }
-
-    /* MOBILE SECTION NAV (over map, bottom, horizontal, same style) */
-    .side-nav{
-      display:flex;
-      flex-direction:row;
-      top:auto;
-      bottom:14px;
-      left:50%;
-      right:auto;
-      transform:translateX(-50%);
-      border-radius:999px;
-      overflow:hidden;
-      box-shadow:0 12px 30px rgba(0,0,0,0.35);
+    .chip.active{
+      background:#111;
+      color:#fff;
+      box-shadow:0 6px 14px rgba(0,0,0,0.14);
     }
-    .nav-item{
-      padding:14px 18px;
-      font-size:12px;
-      border-bottom:none;
-      border-right:1px solid rgba(255,255,255,0.10);
-    }
-    .nav-item:last-child{ border-right:none; }
-    .nav-item:hover,
-    .nav-item.active{ padding-right:18px; }
 
-    .services-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 14px; }
-    .svc-title{ font-size:18px; }
+    .shop-body{ padding:16px 18px 70px; overflow:visible; } /* let page scroll */
+    .grid{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; }
+    .card{ padding:14px; border-radius:22px; }
+    .card-media{ height:110px; }
+
+    .solo-media-container{ height:320px; }
+    .media-tabs{ top:-14px; right:12px; gap:8px; }
+    .mtab{ padding:8px 12px; font-size:11px; }
+    .services-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .about-split{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -624,6 +710,7 @@
 <body>
 <div class="layout">
   <div id="map">
+    <!-- Desktop Nav -->
     <nav class="side-nav" id="sideNav">
       <div class="nav-item" id="navHome">Home</div>
       <div class="nav-item" id="navAbout">About Us</div>
@@ -631,21 +718,26 @@
       <div class="nav-item active" id="navGallery">Gallery</div>
       <div class="nav-item" id="navContact">Contacts</div>
     </nav>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav" id="mobileNav">
+      <div class="mnav-item" data-target="sect-home" id="mnavHome">Home</div>
+      <div class="mnav-item" data-target="sect-about" id="mnavAbout">About</div>
+      <div class="mnav-item" data-target="sect-services" id="mnavServices">Services</div>
+      <div class="mnav-item active" data-target="sect-gallery" id="mnavGallery">Gallery</div>
+      <div class="mnav-item" data-target="sect-contact" id="mnavContact">Contacts</div>
+    </nav>
   </div>
 
   <aside class="shop" id="shop">
-
     <!-- HOME -->
     <section id="sect-home" class="app-section">
       <div class="home-hero">
-        <img
-          class="home-hero-logo"
-          src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-          alt="FNN Logo"
-        />
+        <img class="home-logo" alt="FNN ART"
+          src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg">
       </div>
       <h1 class="sec-title">Welcome to FNN</h1>
-      <p class="sec-sub">Discover a curated collection of original artworks, exhibitions, and contemporary art programs.</p>
+      <p class="sec-sub">A modern platform built to present original artworks and elevate art as a cultural value.</p>
       <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
     </section>
 
@@ -653,154 +745,135 @@
     <section id="sect-about" class="app-section">
       <h1 class="sec-title">About FNN</h1>
       <p class="sec-sub">
-        A modern art platform specializing in the presentation of original artworks by selected artists — built to honor both the artist and the artwork,
-        and to connect creative expression with audiences and institutions across the region.
+        FNN is a modern art platform specializing in the presentation of original artworks by selected artists.
+        Our mission is to elevate art as a cultural value and creative identity—honoring both the artist and the artwork—
+        while connecting creative expression with audiences and institutions, with the ambition to become the Art Content Center (NDCC)
+        for the art scene in the Kingdom of Saudi Arabia.
       </p>
 
-      <img
-        class="about-hero-img"
-        src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693d582b580fad0c77f39d0e_Gemini_Generated_Image_ir55ypir55ypir55%20(1).png"
-        alt="About"
-      >
+      <div class="about-split">
+        <div class="about-card">
+          <div class="about-kicker">What we do</div>
+          <p class="about-quote">
+            Curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital
+            and contemporary dialogue.
+          </p>
+          <div class="about-pill-row">
+            <div class="about-pill">Curated Art Platforms</div>
+            <div class="about-pill">Art Objects & Installations</div>
+            <div class="about-pill">Exhibitions & Programs</div>
+            <div class="about-pill">Publications & Art Content</div>
+          </div>
+        </div>
 
-      <div class="about-block">
-        <h3>Mission</h3>
-        <p>
-          FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Our mission is to elevate art as a cultural value
-          and creative identity by providing a professional environment that honors both the artist and the artwork, and connects creative expression with audiences
-          and art institutions — with the ambition to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
-        </p>
+        <div class="about-card">
+          <div class="about-kicker">NDCC vision</div>
+          <p class="about-quote">
+            A central node for art content creation, curation, archiving, and distribution—bridging artists, collectors, institutions, and the public.
+            Extending the physical art experience through digital presence and visual archives.
+          </p>
+          <div class="about-pill-row">
+            <div class="about-pill">Cultural Partnerships</div>
+            <div class="about-pill">Digital Presence</div>
+            <div class="about-pill">Audience Engagement</div>
+            <div class="about-pill">Narrative Building</div>
+          </div>
+        </div>
       </div>
 
-      <div class="about-grid">
-        <div class="about-pill">
-          <b>Curated Art Platforms</b>
-          <span>Original works by selected local & international artists, centered on contemporary practices and emerging voices.</span>
-        </div>
-        <div class="about-pill">
-          <b>Exhibitions & Programs</b>
-          <span>Gallery presentations, pop-ups, collaborations, and thematic programs exploring identity, place, and modern culture.</span>
-        </div>
-        <div class="about-pill">
-          <b>Art Content Center (NDCC)</b>
-          <span>A central node for creation, curation, archiving, and distribution — bridging artists, collectors, institutions, and the public.</span>
-        </div>
-        <div class="about-pill">
-          <b>Media & Cultural Impact</b>
-          <span>Narrative building and audience engagement — making elevated art experiences accessible and culturally relevant.</span>
-        </div>
+      <div class="about-media">
+        <img
+          src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693d582b580fad0c77f39d0e_Gemini_Generated_Image_ir55ypir55ypir55%20(1).png"
+          alt="About"
+        >
       </div>
     </section>
 
     <!-- SERVICES -->
     <section id="sect-services" class="app-section">
       <h1 class="sec-title">Services</h1>
-      <p class="sec-sub">A complete ecosystem for planning, producing, presenting, and supporting contemporary art experiences.</p>
+      <p class="sec-sub">A professional infrastructure for curated art experiences—planning, production, programs, and platform delivery.</p>
 
       <div class="services-wrap">
         <div class="services-grid">
-          <!-- 1 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 18h6" />
-                <path d="M10 22h4" />
-                <path d="M12 2a7 7 0 0 0-4 12c.6.5 1 1.3 1 2h6c0-.7.4-1.5 1-2a7 7 0 0 0-4-12Z"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12c.8.7 1 1.4 1 2h6c0-.6.2-1.3 1-2A7 7 0 0 0 12 2z"/>
               </svg>
             </div>
             <h3 class="svc-title">Creative Planning</h3>
-            <p class="svc-desc">Concept development, curatorial direction, and creative strategy for exhibitions and content.</p>
+            <p class="svc-desc">Sculptural and contemporary art planning from a professional perspective—translating culture into form.</p>
           </div>
 
-          <!-- 2 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4 20h16"/><path d="M6 16l12-12"/><path d="M15 4h3v3"/>
               </svg>
             </div>
-            <h3 class="svc-title">Original Design</h3>
-            <p class="svc-desc">Original design systems and presentation formats for artists, institutions, and partners.</p>
+            <h3 class="svc-title">Original design</h3>
+            <p class="svc-desc">Inspired by renowned artists—featuring original designs by a professional sculpture and art design team.</p>
           </div>
 
-          <!-- 3 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19V5" />
-                <path d="M20 19V5" />
-                <path d="M7 19V9" />
-                <path d="M17 19V9" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4 19V5"/><path d="M20 19V5"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h10"/>
               </svg>
             </div>
-            <h3 class="svc-title">Excellent Structure</h3>
-            <p class="svc-desc">Program planning and operational structure for scalable art initiatives and platforms.</p>
+            <h3 class="svc-title">Excellent structure</h3>
+            <p class="svc-desc">Qualification-led structural analysis for large-scale works—ensuring stability, safety, and longevity.</p>
           </div>
 
-          <!-- 4 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v20" />
-                <path d="M2 12h20" />
-                <path d="M7 7l10 10" />
-                <path d="M17 7 7 17" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M12 3v18"/><path d="M3 12h18"/><path d="M5 5l14 14"/><path d="M19 5L5 19"/>
               </svg>
             </div>
-            <h3 class="svc-title">Crafted with Ingenuity</h3>
-            <p class="svc-desc">Thoughtful execution across materials, production, and presentation — with high standards.</p>
+            <h3 class="svc-title">Crafted with ingenuity</h3>
+            <p class="svc-desc">Dedicated craftsmanship and refined execution—where detail, patience, and intent define the final work.</p>
           </div>
 
-          <!-- 5 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 7h16" />
-                <path d="M6 7v14h12V7" />
-                <path d="M9 7V4h6v3" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4 20h16"/><path d="M6 20V9l6-4 6 4v11"/>
               </svg>
             </div>
-            <h3 class="svc-title">Professional Installation</h3>
-            <p class="svc-desc">Coordination, logistics, and installation planning for exhibitions and spatial activations.</p>
+            <h3 class="svc-title">Professional installation</h3>
+            <p class="svc-desc">Integrated construction and installation workflows—safe completion with balanced production sequencing.</p>
           </div>
 
-          <!-- 6 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 21h18" />
-                <path d="M7 17l10-10" />
-                <path d="M14 7h3v3" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4 7h16"/><path d="M6 7l1 14h10l1-14"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/>
               </svg>
             </div>
-            <h3 class="svc-title">Refurbishment & Restoration</h3>
-            <p class="svc-desc">Support for maintenance, restoration pathways, and condition workflows for works and objects.</p>
+            <h3 class="svc-title">Refurbishment and Restoration</h3>
+            <p class="svc-desc">Renovation and restoration using professional teams and necessary equipment—bringing works back to life.</p>
           </div>
 
-          <!-- 7 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7h18" />
-                <path d="M6 7l2 14h8l2-14" />
-                <path d="M9 7V4h6v3" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M3 20h18"/><path d="M7 20V8h10v12"/><path d="M9 12h6"/>
               </svg>
             </div>
-            <h3 class="svc-title">Art Rental</h3>
-            <p class="svc-desc">Short-term and program-based rental of works for institutions, spaces, and events.</p>
+            <h3 class="svc-title">Art rental</h3>
+            <p class="svc-desc">Rental services for sculptures and works—supporting projects, institutions, and elevated temporary installations.</p>
           </div>
 
-          <!-- 8 -->
-          <div class="svc-item">
+          <div class="svc">
             <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11Z"/>
-                <path d="M12 10h.01" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11z"/><path d="M12 10.5a1.5 1.5 0 1 0 0 .01"/>
               </svg>
             </div>
-            <h3 class="svc-title">Site Survey</h3>
-            <p class="svc-desc">On-site inspection, reporting, and coordination to align the artwork with the space.</p>
+            <h3 class="svc-title">Site survey</h3>
+            <p class="svc-desc">On-site inspection, survey reporting, and coordination—aligning implementation with the artistic vision.</p>
           </div>
         </div>
       </div>
@@ -823,8 +896,9 @@
         <div class="solo-wrap" id="soloWrap">
           <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
 
-          <div class="solo-media-container" id="soloMedia">
-            <!-- injected -->
+          <div class="solo-media-container" id="soloMediaContainer">
+            <div class="media-tabs" id="mediaTabs"></div>
+            <div class="solo-media-inner" id="soloMedia"></div>
           </div>
 
           <div class="solo-info-block">
@@ -849,7 +923,6 @@
               <button class="btn btn-ghost" id="btnClose">Close</button>
             </div>
           </div>
-
         </div>
       </div>
     </section>
@@ -865,18 +938,15 @@
         <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
         <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
         <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
-        <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="3"></textarea></div>
+        <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
         <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
       </form>
-      <div id="formSuccess" style="display:none; border-radius:12px; margin-top:15px; background:#f0f0f0; color:#333; padding:20px; text-align:center; font-size:14px;">
-        Thank you! Your inquiry has been received.
-      </div>
+      <div id="formSuccess">Thank you! Your inquiry has been received.</div>
     </section>
-
   </aside>
 </div>
 
-<!-- ARTIST & CONTACT MODALS -->
+<!-- MODALS -->
 <div class="modal-overlay" id="modalArtistOverlay">
   <div class="modal-box">
     <button class="close-modal" id="closeArtistModal">×</button>
@@ -892,21 +962,17 @@
 <div class="modal-overlay" id="modalContactOverlay">
   <div class="modal-box">
     <button class="close-modal" id="closeContactModal">×</button>
-    <h3 class="form-title" style="font-size:18px; font-weight:900; margin:0 0 20px; text-align:center;">Inquire about this piece</h3>
+    <h3 class="form-title">Inquire about this piece</h3>
     <form id="ajaxFormModal" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
       <input type="hidden" name="_captcha" value="false">
       <input type="hidden" name="_template" value="table">
       <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
       <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
       <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubjectModal"></div>
-      <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="3"></textarea></div>
-      <button type="submit" class="btn-submit" id="formSubmitBtnModal" style="width:100%; background:#111; color:#fff; padding:14px; border-radius:12px; border:none; font-weight:800; cursor:pointer;">
-        Send Inquiry
-      </button>
+      <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
+      <button type="submit" class="btn-submit" id="formSubmitBtnModal">Send Inquiry</button>
     </form>
-    <div id="formSuccessModal" style="display:none; border-radius:12px; margin-top:15px; background:#f0f0f0; color:#333; padding:20px; text-align:center; font-size:14px;">
-      Thank you! Your inquiry has been received.
-    </div>
+    <div id="formSuccessModal">Thank you! Your inquiry has been received.</div>
   </div>
 </div>
 
@@ -923,84 +989,91 @@
   const startZoom = isMobile ? 0 : 0.8;
 
   const map = new mapboxgl.Map({
-    container:"map",
-    style:USER_STYLE,
-    center:[0,20],
-    zoom:startZoom,
-    pitch:0,
-    projection:"globe"
+    container: "map",
+    style: USER_STYLE,
+    center: [0, 20],
+    zoom: startZoom,
+    pitch: 0,
+    projection: "globe"
   });
 
   map.on("style.load", () => {
-    try{
+    try {
       map.setFog({
-        "color":"rgb(255,255,255)",
-        "high-color":"rgb(200,200,200)",
-        "space-color":"rgb(0,0,0)",
-        "star-intensity":0.6
+        "color": "rgb(255, 255, 255)",
+        "high-color": "rgb(200, 200, 200)",
+        "space-color": "rgb(0, 0, 0)",
+        "star-intensity": 0.6
       });
-    }catch(e){}
+    } catch(e){}
 
     const layers = map.getStyle().layers || [];
     let labelLayerId;
-    for(const layer of layers){
-      if(layer.type === "symbol" && layer.layout && layer.layout["text-field"]){
+    for (const layer of layers) {
+      if (layer.type === "symbol" && layer.layout && layer.layout["text-field"]) {
         labelLayerId = layer.id;
         break;
       }
     }
 
-    if(!map.getLayer("3d-buildings-custom")){
+    if (!map.getLayer("3d-buildings-custom")) {
       map.addLayer({
-        "id":"3d-buildings-custom",
-        "source":"composite",
-        "source-layer":"building",
-        "filter":["==","extrude","true"],
-        "type":"fill-extrusion",
-        "minzoom":15,
-        "paint":{
-          "fill-extrusion-color":"#aaa",
-          "fill-extrusion-height":["get","height"],
-          "fill-extrusion-base":["get","min_height"],
-          "fill-extrusion-opacity":0.6
+        "id": "3d-buildings-custom",
+        "source": "composite",
+        "source-layer": "building",
+        "filter": ["==", "extrude", "true"],
+        "type": "fill-extrusion",
+        "minzoom": 15,
+        "paint": {
+          "fill-extrusion-color": "#aaa",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.6
         }
       }, labelLayerId);
     }
-
-    for(const layer of layers){
-      if(layer.type === "symbol" && layer.layout && layer.layout["text-field"]){
-        map.setLayoutProperty(layer.id,"text-size",
-          ["interpolate",["linear"],["zoom"],0,6,10,8,22,10]
-        );
-      }
-    }
   });
 
-  /* ===== NAV LOGIC ===== */
+  /* ===== NAVIGATION LOGIC ===== */
   window.switchSection = function(id){
+    // sections
     document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active-section"));
     const target = document.getElementById(id);
-    if(target) target.classList.add("active-section");
+    if (target) target.classList.add("active-section");
 
+    // desktop nav
     document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
     const navIdMap = {
-      "sect-home":"navHome",
-      "sect-about":"navAbout",
-      "sect-services":"navServices",
-      "sect-gallery":"navGallery",
-      "sect-contact":"navContact"
+      "sect-home": "navHome",
+      "sect-about": "navAbout",
+      "sect-services": "navServices",
+      "sect-gallery": "navGallery",
+      "sect-contact": "navContact"
     };
     const navEl = document.getElementById(navIdMap[id]);
-    if(navEl) navEl.classList.add("active");
+    if (navEl) navEl.classList.add("active");
 
+    // mobile nav
+    document.querySelectorAll(".mnav-item").forEach(n => n.classList.remove("active"));
+    const mnavMap = {
+      "sect-home": "mnavHome",
+      "sect-about": "mnavAbout",
+      "sect-services": "mnavServices",
+      "sect-gallery": "mnavGallery",
+      "sect-contact": "mnavContact"
+    };
+    const mEl = document.getElementById(mnavMap[id]);
+    if (mEl) mEl.classList.add("active");
+
+    // map motion only for home
     if(id === "sect-home"){
-      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:2000 });
+      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1600 });
     }
   };
 
   const safeAdd = (id, ev, handler) => {
     const el = document.getElementById(id);
-    if(el) el.addEventListener(ev, handler);
+    if (el) el.addEventListener(ev, handler);
   };
 
   safeAdd("navHome","click",() => switchSection("sect-home"));
@@ -1009,39 +1082,66 @@
   safeAdd("navGallery","click",() => switchSection("sect-gallery"));
   safeAdd("navContact","click",() => switchSection("sect-contact"));
 
-  /* ===== FORMS ===== */
-  const wireAjaxForm = (formId, btnId, successId) => {
-    const form = document.getElementById(formId);
-    const btn = document.getElementById(btnId);
-    const success = document.getElementById(successId);
-    if(!form) return;
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if(btn){ btn.textContent = "Sending..."; btn.style.opacity = "0.7"; }
-      fetch(form.action, {
-        method:"POST",
-        body:new FormData(form),
-        headers:{ "Accept":"application/json" }
-      })
-      .then(r => {
-        if(r.ok){
-          form.style.display = "none";
-          if(success) success.style.display = "block";
-        }else{
-          alert("Oops! Problem submitting.");
-          if(btn){ btn.textContent = "Try Again"; btn.style.opacity = "1"; }
-        }
-      })
-      .catch(() => {
-        alert("Oops! Problem submitting.");
-        if(btn){ btn.textContent = "Try Again"; btn.style.opacity = "1"; }
-      });
+  const mobileNav = document.getElementById("mobileNav");
+  if (mobileNav){
+    mobileNav.addEventListener("click", (e) => {
+      const btn = e.target.closest(".mnav-item");
+      if(!btn) return;
+      const target = btn.getAttribute("data-target");
+      if(target) switchSection(target);
     });
-  };
+  }
 
-  wireAjaxForm("ajaxForm", "formSubmitBtn", "formSuccess");
-  wireAjaxForm("ajaxFormModal", "formSubmitBtnModal", "formSuccessModal");
+  /* ===== FORM LOGIC ===== */
+  const form = document.getElementById("ajaxForm");
+  const submitBtn = document.getElementById("formSubmitBtn");
+  const successMsg = document.getElementById("formSuccess");
+
+  if(form){
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      if(submitBtn){ submitBtn.textContent="Sending..."; submitBtn.style.opacity="0.7"; }
+      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ "Accept":"application/json" }})
+        .then(r => {
+          if(r.ok){
+            form.style.display="none";
+            if(successMsg) successMsg.style.display="block";
+          }else{
+            alert("Oops! Problem submitting.");
+            if(submitBtn) submitBtn.textContent="Try Again";
+          }
+        })
+        .catch(() => {
+          alert("Oops! Problem submitting.");
+          if(submitBtn) submitBtn.textContent="Try Again";
+        });
+    });
+  }
+
+  const formModal = document.getElementById("ajaxFormModal");
+  const submitBtnModal = document.getElementById("formSubmitBtnModal");
+  const successMsgModal = document.getElementById("formSuccessModal");
+
+  if(formModal){
+    formModal.addEventListener("submit", function(e){
+      e.preventDefault();
+      if(submitBtnModal){ submitBtnModal.textContent="Sending..."; submitBtnModal.style.opacity="0.7"; }
+      fetch(formModal.action, { method:"POST", body:new FormData(formModal), headers:{ "Accept":"application/json" }})
+        .then(r => {
+          if(r.ok){
+            formModal.style.display="none";
+            if(successMsgModal) successMsgModal.style.display="block";
+          }else{
+            alert("Oops! Problem submitting.");
+            if(submitBtnModal) submitBtnModal.textContent="Try Again";
+          }
+        })
+        .catch(() => {
+          alert("Oops! Problem submitting.");
+          if(submitBtnModal) submitBtnModal.textContent="Try Again";
+        });
+    });
+  }
 
   /* ===== MAP ANIMATION ===== */
   let currentMarker = null;
@@ -1049,7 +1149,7 @@
 
   function gotoStore(store){
     if(!store) return;
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame = null; }
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     if(currentMarker) currentMarker.remove();
 
     const el = document.createElement("div");
@@ -1058,30 +1158,31 @@
     el.style.height="20px";
     el.style.borderRadius="50%";
     el.style.border="2px solid white";
+
     currentMarker = new mapboxgl.Marker(el).setLngLat(store.coords).addTo(map);
 
     map.flyTo({
-      center:store.coords,
-      zoom:16.5,
-      pitch:65,
-      bearing:Math.random()*90,
-      speed:0.3,
-      curve:1.2,
-      essential:true,
-      duration:10000
+      center: store.coords,
+      zoom: 16.5,
+      pitch: 65,
+      bearing: Math.random()*90,
+      speed: 0.3,
+      curve: 1.2,
+      essential: true,
+      duration: 9000
     });
 
     map.once("moveend", () => {
       function rotate(){
-        map.rotateTo((map.getBearing()+0.05)%360,{ duration:0 });
+        map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
         rotationFrame = requestAnimationFrame(rotate);
       }
       rotate();
     });
   }
 
-  /* ===== PRODUCT MEDIA (Images / 360 / Video / 3D) ===== */
-  const PRODUCT_IMAGES = [
+  /* ===== PRODUCT MEDIA ASSETS ===== */
+  const SHARED_IMAGES = [
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
@@ -1090,170 +1191,68 @@
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c641d77b3de17010_Gemini_Generated_Image_mhci8mmhci8mmhci.png"
   ];
 
-  // 360 video UPDATED (requested)
-  const RAW_360_URL = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
-
-  // “Video” tab url (keep your earlier one)
-  const RAW_VIDEO_URL = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
-
-  function buildTabs(active){
-    return `
-      <div class="media-tabs" id="mediaTabs">
-        <button class="media-tab ${active==='images'?'active':''}" data-mode="images">IMAGES</button>
-        <button class="media-tab ${active==='360'?'active':''}" data-mode="360">360</button>
-        <button class="media-tab ${active==='video'?'active':''}" data-mode="video">VIDEO</button>
-        <button class="media-tab ${active==='3d'?'active':''}" data-mode="3d">3D</button>
-      </div>
-    `;
-  }
-
-  let currentProduct = null;
-  let imgIndex = 0;
-
-  function renderImagesStage(){
-    const url = PRODUCT_IMAGES[imgIndex] || PRODUCT_IMAGES[0];
-    return `
-      ${buildTabs('images')}
-      <div class="stage"><img src="${url}" alt="Product image"></div>
-      <button class="img-arrow left" id="imgPrev" aria-label="Previous">‹</button>
-      <button class="img-arrow right" id="imgNext" aria-label="Next">›</button>
-    `;
-  }
-
-  function render360Stage(){
-    return `
-      ${buildTabs('360')}
-      <div class="stage">
-        <video id="v360" playsinline muted loop preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>
-      </div>
-      <div class="ctrl-bar">
-        <button class="ctrl-btn" id="ctrlPlay" aria-label="Play/Pause">❚❚</button>
-        <input class="ctrl-range" id="ctrlSeek" type="range" min="0" max="1000" value="0" step="1" />
-      </div>
-    `;
-  }
-
-  function renderVideoStage(){
-    return `
-      ${buildTabs('video')}
-      <div class="stage">
-        <video src="${RAW_VIDEO_URL}" playsinline controls style="width:100%;height:100%;object-fit:cover;"></video>
-      </div>
-    `;
-  }
-
-  function render3dStage(){
-    const p = currentProduct || {};
-    const safeUrl = (p.model || "")
-      .replace(/\(/g, "%28")
-      .replace(/\)/g, "%29")
-      .replace(/ /g, "%20");
-
-    return `
-      ${buildTabs('3d')}
-      <div class="stage">
-        <model-viewer
-          id="viewer3d"
-          src="${safeUrl}"
-          camera-controls
-          auto-rotate
-          shadow-intensity="1"
-          style="background:transparent;width:100%;height:100%;"
-          camera-orbit="45deg 75deg 3m"
-          environment-image="neutral"
-          alt="3D">
-        </model-viewer>
-      </div>
-    `;
-  }
-
-  function setMediaMode(mode){
-    const soloMedia = document.getElementById("soloMedia");
-    if(!soloMedia) return;
-
-    if(mode === "images") soloMedia.innerHTML = renderImagesStage();
-    if(mode === "360") soloMedia.innerHTML = render360Stage();
-    if(mode === "video") soloMedia.innerHTML = renderVideoStage();
-    if(mode === "3d") soloMedia.innerHTML = render3dStage();
-
-    const tabs = soloMedia.querySelector("#mediaTabs");
-    if(tabs){
-      tabs.addEventListener("click", (e) => {
-        const btn = e.target.closest(".media-tab");
-        if(!btn) return;
-        setMediaMode(btn.dataset.mode);
-      });
-    }
-
-    if(mode === "images"){
-      const prev = document.getElementById("imgPrev");
-      const next = document.getElementById("imgNext");
-      if(prev) prev.onclick = () => { imgIndex = (imgIndex - 1 + PRODUCT_IMAGES.length) % PRODUCT_IMAGES.length; setMediaMode("images"); };
-      if(next) next.onclick = () => { imgIndex = (imgIndex + 1) % PRODUCT_IMAGES.length; setMediaMode("images"); };
-    }
-
-    if(mode === "360"){
-      const v = document.getElementById("v360");
-      const playBtn = document.getElementById("ctrlPlay");
-      const seek = document.getElementById("ctrlSeek");
-
-      if(v){
-        v.src = RAW_360_URL;
-        v.addEventListener("loadedmetadata", () => {
-          v.currentTime = 0;
-          v.play().catch(()=>{});
-        });
-
-        const syncSeek = () => {
-          if(!v.duration || !seek) return;
-          const val = Math.round((v.currentTime / v.duration) * 1000);
-          seek.value = String(isFinite(val) ? val : 0);
-        };
-
-        v.addEventListener("timeupdate", syncSeek);
-
-        if(playBtn){
-          const updateIcon = () => { playBtn.textContent = v.paused ? "▶" : "❚❚"; };
-          updateIcon();
-          playBtn.onclick = () => {
-            if(v.paused) v.play().catch(()=>{});
-            else v.pause();
-            updateIcon();
-          };
-          v.addEventListener("play", updateIcon);
-          v.addEventListener("pause", updateIcon);
-        }
-
-        if(seek){
-          seek.oninput = () => {
-            if(!v.duration) return;
-            const t = (Number(seek.value) / 1000) * v.duration;
-            v.currentTime = t;
-          };
-        }
-      }
-    }
-
-    if(mode === "3d"){
-      const viewer = document.getElementById("viewer3d");
-      if(viewer){
-        viewer.addEventListener("error", () => {
-          // fallback: show first image
-          setMediaMode("images");
-        });
-      }
-    }
-  }
+  const VIDEO_360 = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
+  const VIDEO_MAIN = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
 
   /* ===== DATA ===== */
   const PRODUCTS = [
-    { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
-    { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
-    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
-    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } }
-  ];
+    { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb",
+      specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] },
+      artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
+
+    { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb",
+      specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] },
+      artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
+
+    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb",
+      specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] },
+      artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
+
+    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb",
+      specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] },
+      artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } },
+
+    { id:"item-5", name:"Radiance Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb",
+      specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] },
+      artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." } },
+
+    { id:"item-6", name:"Modular Unit", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb",
+      specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] },
+      artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." } },
+
+    { id:"item-7", name:"Lunar Chest", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb",
+      specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] },
+      artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." } },
+
+    { id:"item-8", name:"Obsidian Block", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb",
+      specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.520] },
+      artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." } },
+
+    { id:"item-9", name:"Azure Tower", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb",
+      specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] },
+      artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." } },
+
+    { id:"item-10", name:"Solar Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb",
+      specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] },
+      artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." } },
+
+    { id:"item-11", name:"Nordic Wave", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb",
+      specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] },
+      artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." } },
+
+    { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb",
+      specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] },
+      artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
+  ].map(p => ({
+    ...p,
+    images: SHARED_IMAGES.slice(),
+    video360: VIDEO_360,
+    video: VIDEO_MAIN
+  }));
 
   const grid = document.getElementById("grid");
+  const soloMedia = document.getElementById("soloMedia");
+  const mediaTabs = document.getElementById("mediaTabs");
 
   function render(list){
     if(!grid) return;
@@ -1264,8 +1263,7 @@
       el.innerHTML = `
         <div class="card-media"><img src="${p.img}" alt="${p.name}"/></div>
         <div class="card-name">${p.name}</div>
-        <div class="card-sub">Edition 2024</div>
-      `;
+        <div class="card-sub">Edition 2024</div>`;
       el.addEventListener("click", () => openSolo(p));
       grid.appendChild(el);
     });
@@ -1283,9 +1281,136 @@
     });
   }
 
+  /* ===== SOLO MEDIA (Images / 360 / Video / 3D) ===== */
+  let currentProduct = null;
+  let imgIndex = 0;
+
+  function buildTabs(active){
+    const tabs = [
+      { key:"images", label:"Images" },
+      { key:"360", label:"360" },
+      { key:"video", label:"Video" },
+      { key:"3d", label:"3D" }
+    ];
+    mediaTabs.innerHTML = tabs.map(t =>
+      `<button class="mtab ${t.key===active ? "active":""}" data-k="${t.key}">${t.label}</button>`
+    ).join("");
+
+    mediaTabs.onclick = (e) => {
+      const b = e.target.closest(".mtab");
+      if(!b) return;
+      renderMedia(b.getAttribute("data-k"));
+    };
+  }
+
+  function renderMedia(mode){
+    if(!currentProduct) return;
+    buildTabs(mode);
+
+    if(mode === "images"){
+      imgIndex = 0;
+      drawCarousel();
+      return;
+    }
+
+    if(mode === "360"){
+      soloMedia.innerHTML = `
+        <div class="p360-wrap">
+          <video id="v360" src="${currentProduct.video360}" playsinline preload="metadata"></video>
+          <div class="p360-controls">
+            <button class="p360-btn" id="v360Btn" aria-label="play/pause">⏵</button>
+            <input class="p360-range" id="v360Range" type="range" min="0" max="1000" value="0">
+          </div>
+        </div>
+      `;
+
+      const v = document.getElementById("v360");
+      const btn = document.getElementById("v360Btn");
+      const rng = document.getElementById("v360Range");
+
+      const setBtn = () => { btn.textContent = v.paused ? "⏵" : "⏸"; };
+
+      v.addEventListener("loadedmetadata", () => {
+        rng.value = 0;
+        setBtn();
+      });
+
+      btn.addEventListener("click", () => {
+        if(v.paused) v.play(); else v.pause();
+        setBtn();
+      });
+
+      v.addEventListener("timeupdate", () => {
+        if(!v.duration) return;
+        rng.value = Math.round((v.currentTime / v.duration) * 1000);
+      });
+
+      rng.addEventListener("input", () => {
+        if(!v.duration) return;
+        v.currentTime = (rng.value / 1000) * v.duration;
+      });
+
+      return;
+    }
+
+    if(mode === "video"){
+      soloMedia.innerHTML = `
+        <video src="${currentProduct.video}" controls playsinline style="width:100%;height:100%;object-fit:cover;border-radius:28px;"></video>
+      `;
+      return;
+    }
+
+    if(mode === "3d"){
+      const safeUrl = (currentProduct.model || "")
+        .replace(/\(/g, "%28").replace(/\)/g, "%29").replace(/ /g, "%20");
+
+      soloMedia.innerHTML = `
+        <model-viewer
+          id="viewer3d"
+          src="${safeUrl}"
+          camera-controls
+          auto-rotate
+          shadow-intensity="1"
+          style="background:transparent; width:100%; height:100%;"
+          camera-orbit="45deg 75deg 3m"
+          environment-image="neutral"
+          alt="3D">
+        </model-viewer>
+      `;
+      const viewer = document.getElementById("viewer3d");
+      if(viewer){
+        viewer.addEventListener("error", () => {
+          soloMedia.innerHTML = `<img src="${currentProduct.img}" alt="${currentProduct.name}" />`;
+        });
+      }
+      return;
+    }
+  }
+
+  function drawCarousel(){
+    const imgs = currentProduct.images || [];
+    const current = imgs[imgIndex] || currentProduct.img;
+
+    soloMedia.innerHTML = `
+      <div class="img-stage">
+        <img src="${current}" alt="Image ${imgIndex+1}">
+        <button class="img-arrow left" id="imgPrev" aria-label="previous">‹</button>
+        <button class="img-arrow right" id="imgNext" aria-label="next">›</button>
+        <div class="img-dots" id="imgDots">
+          ${imgs.map((_,i)=>`<div class="dot ${i===imgIndex?"active":""}"></div>`).join("")}
+        </div>
+      </div>
+    `;
+
+    const prev = document.getElementById("imgPrev");
+    const next = document.getElementById("imgNext");
+
+    if(prev) prev.onclick = () => { imgIndex = (imgIndex - 1 + imgs.length) % imgs.length; drawCarousel(); };
+    if(next) next.onclick = () => { imgIndex = (imgIndex + 1) % imgs.length; drawCarousel(); };
+  }
+
   function openSolo(p){
     currentProduct = p;
-    imgIndex = 0;
 
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
@@ -1305,76 +1430,84 @@
     document.getElementById("modalArtistBio").textContent = p.artist.bio;
 
     const fs = document.getElementById("formSubject");
-    if(fs) fs.value = "Inquiry: " + p.name;
+    if (fs) fs.value = "Inquiry: " + p.name;
     const fsM = document.getElementById("formSubjectModal");
-    if(fsM) fsM.value = "Inquiry: " + p.name;
+    if (fsM) fsM.value = "Inquiry: " + p.name;
 
     const sideNav = document.querySelector(".side-nav");
-    if(sideNav) sideNav.classList.add("focused");
+    if (sideNav) sideNav.classList.add("focused");
 
-    setMediaMode("images");   // default
+    renderMedia("images");
     gotoStore(p.store);
   }
 
   function closeSolo(){
     const shopEl = document.getElementById("shop");
     const galleryEl = document.getElementById("sect-gallery");
-    if(shopEl) shopEl.classList.remove("solo");
-    if(galleryEl) galleryEl.classList.remove("solo");
+    if (shopEl) shopEl.classList.remove("solo");
+    if (galleryEl) galleryEl.classList.remove("solo");
 
     const sideNav = document.querySelector(".side-nav");
-    if(sideNav) sideNav.classList.remove("focused");
+    if (sideNav) sideNav.classList.remove("focused");
 
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame = null; }
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
 
     const isMobileReset = window.innerWidth < 900;
-    map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2500 });
+    map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
   }
 
   safeAdd("btnBack","click",closeSolo);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection("sect-contact"));
 
+  /* Modals */
   const modalArtist = document.getElementById("modalArtistOverlay");
   const modalContact = document.getElementById("modalContactOverlay");
 
   const artistBtnEl = document.getElementById("artistBtn");
-  if(artistBtnEl) artistBtnEl.addEventListener("click", () => {
-    if(modalArtist) modalArtist.classList.add("open");
-  });
+  if(artistBtnEl) artistBtnEl.addEventListener("click", () => { if(modalArtist) modalArtist.classList.add("open"); });
 
-  safeAdd("closeArtistModal","click",() => { if(modalArtist) modalArtist.classList.remove("open"); });
-  safeAdd("closeContactModal","click",() => { if(modalContact) modalContact.classList.remove("open"); });
+  const closeArtistModalBtn = document.getElementById("closeArtistModal");
+  if(closeArtistModalBtn) closeArtistModalBtn.addEventListener("click", () => { if(modalArtist) modalArtist.classList.remove("open"); });
 
-  window.addEventListener("click", (e) => {
+  const closeContactModalBtn = document.getElementById("closeContactModal");
+  if(closeContactModalBtn) closeContactModalBtn.addEventListener("click", () => { if(modalContact) modalContact.classList.remove("open"); });
+
+  window.addEventListener("click", e => {
     if(e.target === modalArtist && modalArtist) modalArtist.classList.remove("open");
     if(e.target === modalContact && modalContact) modalContact.classList.remove("open");
   });
 
-  /* init gallery */
+  /* ===== INITIAL RENDER (fix: ensure 12 show + scroll works) ===== */
   (function initGalleryOnLoad(){
     function initGallery(){
       try{
-        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-        const navGallery = document.getElementById("navGallery");
-        if(navGallery) navGallery.classList.add("active");
+        const gridNode = document.getElementById("grid");
+        if(!gridNode) return;
+
+        let btnAll = document.getElementById("btnAll");
+        if (!btnAll) btnAll = document.querySelector('.chip[data-filter="all"]');
 
         document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-        const btnAll = document.getElementById("btnAll") || document.querySelector('.chip[data-filter="all"]');
-        if(btnAll) btnAll.classList.add("active");
+        if (btnAll) btnAll.classList.add("active");
+
+        // ensure gallery section active
+        switchSection("sect-gallery");
 
         render(PRODUCTS);
       }catch(err){
-        console.error(err);
+        console.error("[initGallery] error", err);
       }
     }
 
-    if(document.readyState === "complete" || document.readyState === "interactive"){
-      setTimeout(initGallery, 20);
-    }else{
-      document.addEventListener("DOMContentLoaded", () => setTimeout(initGallery, 20));
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(initGallery, 30);
+    } else {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(initGallery, 30));
     }
   })();
+
+  window._finna_render = () => render(PRODUCTS);
 </script>
 </body>
 </html>
