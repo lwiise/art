@@ -3,27 +3,22 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>FNN Art — Gallery</title>
+<title>Finna Art — Gallery</title>
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
 <style>
   :root{
     --bg:#fff;
-    --text-main:#111;
-    --muted:#666;
+    --text-main:#222;
     --accent:#111;
+    --muted:#666;
     --card-radius:32px;
     --btn-radius:30px;
-    --shadow: 0 18px 45px rgba(0,0,0,.06);
-    --soft: 0 12px 28px rgba(0,0,0,.10);
-    --hair:#ececec;
   }
 
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
-  html,body{ height:100%; }
   body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text-main);
+    margin:0; height:100vh; width:100vw;
+    background:var(--bg); color:var(--text-main);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     overflow:hidden;
   }
@@ -31,863 +26,601 @@
   /* ===== LAYOUT ===== */
   .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
 
-  /* Left Map */
+  /* Map */
   #map{
-    flex: 0 0 31vw; /* right side 69% */
+    flex:0 0 31vw;            /* ✅ right side (shop) takes 69% */
     height:100vh;
     background:#000;
     position:relative;
-  }
-
-  /* Map Style: B&W */
-  .mapboxgl-canvas{
-    outline:none;
-    filter: grayscale(100%) contrast(1.2) brightness(0.9);
-  }
-
-  /* ===== SIDE NAV (desktop) ===== */
-  .side-nav{
-    position:absolute;
-    top:50%;
-    right:0;
-    transform:translateY(-50%);
-    display:flex;
-    flex-direction:column;
-    z-index:10;
-    background: rgba(0,0,0,.55); /* darker */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 22px 0 0 22px;
-    border-left: 1px solid rgba(255,255,255,.12);
-    border-top: 1px solid rgba(255,255,255,.10);
-    border-bottom: 1px solid rgba(255,255,255,.10);
-    box-shadow: -16px 0 40px rgba(0,0,0,.35);
     overflow:hidden;
   }
+
+  /* Map B&W */
+  .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
+
+  /* ===== SIDE NAV (DESKTOP) ===== */
+  .side-nav{
+    position:absolute; top:50%; right:0; transform:translateY(-50%);
+    display:flex; flex-direction:column; z-index:20;
+    background:rgba(0,0,0,0.45);             /* ✅ darker bg */
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border-radius:22px 0 0 22px;
+    border-left:1px solid rgba(255,255,255,0.12);
+    border-top:1px solid rgba(255,255,255,0.08);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    box-shadow:-10px 0 30px rgba(0,0,0,0.35);
+  }
+  .side-nav.focused{
+    background:rgba(0,0,0,0.70);
+    border-color:rgba(255,255,255,0.10);
+  }
   .nav-item{
-    padding: 30px 42px;
-    color: rgba(255,255,255,.86);
-    font-weight: 700;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    border-bottom: 1px solid rgba(255,255,255,.10);
-    transition: all .25s ease;
-    cursor:pointer;
-    text-align:center;
-    text-shadow: 0 2px 10px rgba(0,0,0,.55);
+    padding:28px 36px;
+    color:rgba(255,255,255,0.85);
+    font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:0.08em;
+    border-bottom:1px solid rgba(255,255,255,0.10);
+    cursor:pointer; text-align:center;
+    text-shadow:0 2px 10px rgba(0,0,0,0.55);
+    transition:all .25s ease;
     user-select:none;
   }
   .nav-item:last-child{ border-bottom:none; }
-  .nav-item:hover, .nav-item.active{
-    background: rgba(255,255,255,.12);
+  .nav-item:hover,
+  .nav-item.active{
+    background:rgba(255,255,255,0.12);
     color:#fff;
+    padding-right:46px;
   }
 
-  /* ===== MOBILE NAV (over map, horizontal) ===== */
+  /* ===== MOBILE NAV (OVER MAP) ===== */
   .mobile-nav{
     display:none;
     position:absolute;
-    left:50%;
+    left:50%; transform:translateX(-50%);
     bottom:14px;
-    transform: translateX(-50%);
-    z-index:12;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 22px;
-    overflow:hidden;
-    box-shadow: 0 16px 40px rgba(0,0,0,.35);
-  }
-  .mobile-nav .nav-row{
-    display:flex;
-    gap:0;
+    z-index:30;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.10);
+    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+    border-radius:18px;
+    padding:8px;
+    gap:8px;
   }
   .mobile-nav .nav-item{
-    padding: 14px 16px;
-    border-bottom:none;
-    border-right: 1px solid rgba(255,255,255,.10);
-    font-size:12px;
-    min-width: 92px;
+    border:none;
+    padding:12px 14px;
+    border-radius:14px;
+    font-size:11px;
+    letter-spacing:0.07em;
+    white-space:nowrap;
+    background:transparent;
   }
-  .mobile-nav .nav-item:last-child{ border-right:none; }
+  .mobile-nav .nav-item:hover,
+  .mobile-nav .nav-item.active{
+    padding:12px 14px;
+    background:rgba(255,255,255,0.14);
+  }
 
-  /* ===== RIGHT APP ===== */
+  /* ===== SHOP (RIGHT) ===== */
   .shop{
-    flex: 1;
+    flex:1;
     display:flex;
     flex-direction:column;
     height:100vh;
     background:#fff;
     position:relative;
-    z-index:2;
-    box-shadow: -10px 0 40px rgba(0,0,0,0.05);
+    z-index:5;
+    box-shadow:-10px 0 40px rgba(0,0,0,0.05);
     overflow:hidden;
   }
 
-  /* Each section takes the full app area */
+  /* Sections layer system */
   .app-section{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
     background:#fff;
-    opacity:0;
-    visibility:hidden;
-    pointer-events:none;
-    transform: translateY(18px);
-    transition: opacity .35s ease, transform .35s ease;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transform:translateY(18px);
+    transition:opacity .35s ease, transform .35s ease;
     z-index:1;
-    padding: 40px;
-    height:100%;
   }
   .app-section.active-section{
-    opacity:1;
-    visibility:visible;
-    pointer-events:auto;
-    transform: translateY(0);
-    z-index:10;
+    opacity:1; visibility:visible; pointer-events:auto;
+    transform:translateY(0); z-index:10;
   }
 
-  /* Make internal scrolling (hide scrollbar later) */
+  /* scroll container inside each section */
   .section-scroll{
-    flex:1;
-    min-height:0;
-    overflow:auto;
-    padding-right: 6px; /* keep content away from hidden scrollbars */
+    height:100%;
+    overflow-y:auto;
+    padding:40px;
   }
 
-  /* Hide scrollbars but keep scrolling */
-  .section-scroll,
-  .shop-body{
-    -ms-overflow-style:none;
-    scrollbar-width:none;
+  /* ✅ Scrollbars visible again (all sections) */
+  .section-scroll, .shop-body{
+    -ms-overflow-style:auto;
+    scrollbar-width:auto;
   }
-  .section-scroll::-webkit-scrollbar,
-  .shop-body::-webkit-scrollbar{
-    width:0; height:0;
+  .section-scroll::-webkit-scrollbar, .shop-body::-webkit-scrollbar{ width:10px; height:10px; }
+  .section-scroll::-webkit-scrollbar-thumb, .shop-body::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.22);
+    border-radius:999px;
   }
+  .section-scroll::-webkit-scrollbar-track, .shop-body::-webkit-scrollbar-track{ background:transparent; }
 
-  /* ===== HEADERS ===== */
-  h1.sec-title{ font-size:32px; font-weight:900; margin: 0 0 10px; letter-spacing:-.02em; color:#111; }
-  p.sec-sub{ font-size:16px; color:#666; line-height:1.7; max-width: 100%; margin: 0 0 22px; } /* full width */
+  /* ===== TITLES ===== */
+  h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 12px; letter-spacing:-0.02em; color:#111; }
+  p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
   /* ===== HOME ===== */
-  #sect-home{ padding: 40px; }
   .home-hero{
     width:100%;
-    border-radius: 34px;
-    background: #f2f2f2;
-    box-shadow: var(--shadow);
-    position:relative;
-    overflow:hidden;
-    min-height: 520px;
+    height:420px;
+    border-radius:28px;
+    background:#f2f2f2;
     display:flex;
     align-items:center;
     justify-content:center;
+    overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    margin-bottom:26px;
   }
   .home-hero img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* fills the whole hero */
-    display:block;
+    width:100%;
+    height:100%;
+    object-fit:contain;     /* ✅ logo fills the whole hero space (no extra empty block) */
   }
   .btn-hero{
     display:inline-block;
-    padding: 14px 36px;
+    width:auto !important;
+    padding:14px 36px;
     background:#111;
     color:#fff;
     border:none;
-    border-radius: 999px;
+    border-radius:999px;
     font-size:14px;
     font-weight:800;
     cursor:pointer;
-    margin-top: 16px;
-    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    box-shadow:0 10px 24px rgba(0,0,0,0.15);
   }
-  .btn-hero:hover{ transform: translateY(-2px); }
-
-  /* ===== ABOUT ===== */
-  .about-wrap{
-    display:flex;
-    flex-direction:column;
-    gap: 18px;
-  }
-  .about-card{
-    border: 1px solid var(--hair);
-    border-radius: 26px;
-    padding: 22px 22px;
-    background:#fff;
-    box-shadow: 0 10px 22px rgba(0,0,0,.05);
-  }
-  .about-card h3{
-    margin:0 0 10px;
-    font-size: 14px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:#9a9a9a;
-  }
-  .about-text{
-    font-size:15px;
-    line-height:1.85;
-    color:#444;
-    white-space: pre-wrap;
-  }
-
-  /* ===== SERVICES ===== */
-  #sect-services{ padding: 34px 40px; }
-  .services-grid{
-    display:grid;
-    grid-template-columns: repeat(4, minmax(0,1fr));
-    gap: 18px;
-    margin-top: 10px;
-  }
-  .svc-card{
-    border: 1px solid var(--hair);
-    border-radius: 22px;
-    padding: 18px 18px;
-    background:#fff; /* no striped bg */
-    box-shadow: 0 14px 28px rgba(0,0,0,.07); /* clearer */
-    transition: transform .25s ease, box-shadow .25s ease;
-    min-height: 160px;
-    display:flex;
-    flex-direction:column;
-    gap: 10px;
-  }
-  .svc-card:hover{
-    transform: translateY(-4px);
-    box-shadow: 0 18px 38px rgba(0,0,0,.10);
-  }
-  .svc-ico{
-    width: 44px; height:44px;
-    border-radius: 14px;
-    border: 1px solid var(--hair);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:900;
-    color:#111;
-    background:#fff;
-  }
-  .svc-card h4{
-    margin:0;
-    font-size: 16px;
-    font-weight: 900;
-  }
-  .svc-card p{
-    margin:0;
-    color:#666;
-    font-size:13px;
-    line-height:1.7;
-  }
-
-  /* ===== OUR PROCESS (white theme) ===== */
-  .process-wrap{
-    margin-top: 22px;
-    border-radius: 30px;
-    border: 1px solid var(--hair);
-    background:#fff;
-    box-shadow: 0 18px 45px rgba(0,0,0,.07);
-    padding: 22px;
-  }
-  .process-head{
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
-    gap: 16px;
-    margin-bottom: 14px;
-  }
-  .process-head h2{
-    margin:0;
-    font-size: 28px;
-    font-weight: 1000;
-    letter-spacing:-.02em;
-  }
-  .process-head p{
-    margin:0;
-    color:#666;
-    font-size: 14px;
-    line-height:1.6;
-    max-width: 520px;
-  }
-
-  .process-grid{
-    position:relative;
-    display:grid;
-    grid-template-columns: 40px 1fr;
-    gap: 18px;
-    align-items:start;
-  }
-
-  /* left rail */
-  .proc-rail{
-    position:relative;
-    width: 40px;
-    min-height: 100%;
-  }
-  .proc-line{
-    position:absolute;
-    top:0; bottom:0;
-    left:50%;
-    width:2px;
-    transform: translateX(-50%);
-    background:#e3e3e3;
-    border-radius:999px;
-  }
-  .proc-dot{
-    position:absolute;
-    left:50%;
-    width:16px;
-    height:16px;
-    border-radius:999px;
-    background:#111;
-    transform: translate(-50%, 0);
-    box-shadow: 0 10px 18px rgba(0,0,0,.18);
-    transition: transform .55s cubic-bezier(.2,.8,.2,1);
-    will-change: transform;
-  }
-  .proc-dot::after{
-    content:"";
-    position:absolute;
-    inset:-7px;
-    border-radius:999px;
-    border:1px solid rgba(17,17,17,.10);
-  }
-
-  .proc-items{
-    display:flex;
-    flex-direction:column;
-    gap: 18px;
-  }
-
-  .proc-step{
-    border: 1px solid var(--hair);
-    border-radius: 22px;
-    background:#fff;
-    box-shadow: 0 14px 30px rgba(0,0,0,.06);
-    padding: 26px 22px;
-    min-height: 140px; /* more height */
-    display:grid;
-    grid-template-columns: 1fr 220px; /* image on the right */
-    gap: 18px;
-    align-items:center;
-    transition: transform .25s ease, box-shadow .25s ease;
-  }
-  .proc-step:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 18px 40px rgba(0,0,0,.09);
-  }
-  .proc-kicker{
-    font-size: 12px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    color:#9a9a9a;
-    font-weight:900;
-    margin-bottom: 6px;
-  }
-  .proc-title{
-    font-size: 20px;
-    font-weight: 1000;
-    margin: 0 0 6px;
-    letter-spacing:-.01em;
-  }
-  .proc-desc{
-    margin:0;
-    color:#666;
-    font-size: 14px;
-    line-height:1.75;
-  }
-  .proc-illu{
-    height: 110px;
-    border-radius: 18px;
-    border: 1px solid var(--hair);
-    background: linear-gradient(180deg, #fff, #f6f6f6);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#bbb;
-    font-weight:900;
-    letter-spacing:.08em;
-    text-transform: uppercase;
-    font-size: 12px;
-  }
+  .btn-hero:hover{ transform:translateY(-2px); background:#000; }
 
   /* ===== GALLERY ===== */
   #sect-gallery{ padding:0; }
   .shop-head{
     flex-shrink:0;
-    position: sticky;
-    top:0;
-    background: rgba(255,255,255,.96);
-    backdrop-filter: blur(10px);
-    z-index:10;
-    padding: 18px 22px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border-bottom: 1px solid #f0f0f0;
+    position:sticky; top:0;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(10px);
+    z-index:12;
+    padding:22px 30px;
+    border-bottom:1px solid #f0f0f0;
   }
 
-  /* Filters forced to one line */
   .nav-group{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: nowrap;
-    white-space: nowrap;
+    display:flex; gap:10px; align-items:center;
+    flex-wrap:nowrap;              /* ✅ one line */
     overflow-x:auto;
-    -ms-overflow-style:none;
     scrollbar-width:none;
   }
-  .nav-group::-webkit-scrollbar{ width:0; height:0; }
-
+  .nav-group::-webkit-scrollbar{ display:none; }
   .chip{
     border:none;
-    background: transparent;
+    background:transparent;
     font-size:14px;
     color:#999;
     cursor:pointer;
-    padding: 8px 12px;
-    transition: all .2s;
+    padding:8px 12px;
+    transition:all .2s;
     font-weight:600;
-    white-space: nowrap;
+    white-space:nowrap;
+    border-radius:999px;
   }
-  .chip:hover{ color:#111; }
+  .chip:hover{ color:#333; }
   .chip.active{
-    background: var(--accent);
+    background:var(--accent);
     color:#fff;
-    padding: 9px 20px;
-    border-radius: 999px;
+    padding:8px 22px;
   }
 
   .shop-body{
-    padding: 20px 22px 70px;
-    flex:1;
+    padding:22px 30px 70px;
+    flex-grow:1;
+    overflow-y:auto;
     min-height:0;
-    overflow:auto;
   }
 
   .grid{
     display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 22px;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    gap:26px;
     width:100%;
   }
   .card{
     background:#fff;
-    border: 1px solid #f2f2f2;
-    border-radius: 30px;
-    padding: 22px 18px;
+    border:1px solid #f3f3f3;
+    border-radius:28px;
+    padding:26px 18px;
     cursor:pointer;
-    transition: transform .25s ease, box-shadow .25s ease;
+    transition:transform .25s ease, box-shadow .25s ease;
     display:flex;
     flex-direction:column;
     align-items:center;
     text-align:center;
-    box-shadow: 0 10px 22px rgba(0,0,0,.04);
   }
-  .card:hover{
-    transform: translateY(-5px);
-    box-shadow: 0 18px 45px rgba(0,0,0,.08);
-  }
-  .card-media{
-    width:100%;
-    height: 180px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom: 16px;
-    position:relative;
-  }
-  .card-media img{
-    max-width:100%;
-    max-height:100%;
-    object-fit: contain;
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,.10));
-  }
-  .card-name{
-    font-size: 13px;
-    font-weight: 1000;
-    letter-spacing:.08em;
-    color:#b0b0b0;
-    text-transform:uppercase;
-    margin-bottom: 6px;
-  }
-  .card-sub{
-    font-size: 10px;
-    color:#cfcfcf;
-    text-transform: uppercase;
-    letter-spacing:.06em;
-  }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 18px 42px rgba(0,0,0,0.07); }
+  .card-media{ width:100%; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
+  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 12px 18px rgba(0,0,0,0.10)); }
+  .card-name{ font-size:12px; font-weight:900; letter-spacing:0.10em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
+  .card-sub{ font-size:10px; color:#d0d0d0; text-transform:uppercase; letter-spacing:0.06em; }
 
-  /* ===== PRODUCT SOLO VIEW ===== */
+  /* SOLO */
   .solo-wrap{ display:none; }
   #sect-gallery.solo .grid{ display:none; }
   #sect-gallery.solo .solo-wrap{ display:block; }
 
-  .back-nav{ margin-bottom: 14px; }
+  .back-nav{ margin:10px 0 16px; }
   .btn-back{
-    background:none;
-    border:none;
-    padding:0;
-    color:#999;
-    font-size: 13px;
-    font-weight:700;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap: 8px;
+    background:none; border:none; padding:0;
+    color:#999; font-size:13px; font-weight:700;
+    cursor:pointer; display:inline-flex; align-items:center; gap:8px;
   }
 
-  .solo-title{
-    font-size: 22px;
-    font-weight: 1000;
-    letter-spacing: -.02em;
-    margin: 8px 0 14px;
+  .solo-name{
+    margin:10px 0 12px;
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:-0.02em;
+    color:#111;
   }
 
-  /* 16:9 frame */
-  .solo-media-frame{
+  /* ✅ product frame 16:9 */
+  .solo-media-container{
     width:100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 26px;
-    background:#fff;
-    box-shadow: var(--shadow);
+    aspect-ratio:16 / 9;
+    background:#f3f3f3;
+    border-radius:28px;
     overflow:hidden;
     position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
   }
+  .solo-media-container img,
+  .solo-media-container video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  model-viewer{ width:100%; height:100%; }
 
+  /* Media tabs */
   .media-tabs{
     position:absolute;
-    top: 14px;
-    right: 14px;
-    display:flex;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 999px;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 18px 40px rgba(0,0,0,.25);
+    top:14px; right:14px;
+    display:flex; gap:8px;
+    padding:10px;
+    border-radius:999px;
+    background:rgba(0,0,0,0.30);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   }
   .media-tab{
     border:none;
     cursor:pointer;
-    font-weight: 900;
-    letter-spacing:.06em;
-    text-transform: uppercase;
-    font-size: 12px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.16);
-    color:#fff;
-    transition: all .2s ease;
-    user-select:none;
+    padding:10px 16px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:rgba(255,255,255,0.85);
+    background:rgba(255,255,255,0.16);
+    transition:all .2s ease;
+    white-space:nowrap;
   }
   .media-tab.active{
     background:#fff;
     color:#111;
   }
 
-  .solo-media-inner{
-    width:100%;
-    height:100%;
-    position:relative;
-  }
-  .solo-media-inner img{
-    width:100%;
-    height:100%;
-    object-fit: cover;
-    display:block;
-  }
-
-  /* image arrows */
+  /* Image slider arrows */
   .img-arrow{
     position:absolute;
-    top:50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    border:none;
-    cursor:pointer;
-    background: rgba(0,0,0,.45);
+    top:50%; transform:translateY(-50%);
+    width:44px; height:44px;
+    border:none; border-radius:999px;
+    background:rgba(0,0,0,0.35);
     color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size: 18px;
-    backdrop-filter: blur(12px);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+    backdrop-filter:blur(10px);
   }
-  .img-arrow.left{ left: 14px; }
-  .img-arrow.right{ right: 14px; }
+  .img-arrow.left{ left:14px; }
+  .img-arrow.right{ right:14px; }
 
-  /* 360 custom scrub controls */
-  .scrub-ui{
+  /* Custom 360 controls (no native player UI) */
+  .v360-ui{
     position:absolute;
-    left:50%;
-    bottom: 18px;
-    transform: translateX(-50%);
-    width: min(820px, calc(100% - 40px));
-    display:flex;
-    align-items:center;
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: 999px;
-    background: rgba(0,0,0,.50);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 40px rgba(0,0,0,.25);
+    left:50%; transform:translateX(-50%);
+    bottom:16px;
+    width:min(740px, 86%);
+    background:rgba(0,0,0,0.35);
+    backdrop-filter:blur(12px);
+    border-radius:999px;
+    padding:10px 14px;
+    display:flex; gap:12px; align-items:center;
   }
-  .scrub-btn{
-    width: 42px; height: 34px;
-    border:none;
-    border-radius: 999px;
-    background: rgba(255,255,255,.18);
+  .v360-btn{
+    width:44px; height:36px;
+    border:none; border-radius:12px;
+    background:rgba(255,255,255,0.18);
     color:#fff;
-    font-weight: 900;
     cursor:pointer;
+    font-weight:900;
   }
-  .scrub-range{
+  .v360-range{
     flex:1;
-    height: 6px;
+    -webkit-appearance:none;
     appearance:none;
-    background: rgba(255,255,255,.25);
-    border-radius: 999px;
+    height:10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.22);
     outline:none;
   }
-  .scrub-range::-webkit-slider-thumb{
+  .v360-range::-webkit-slider-thumb{
+    -webkit-appearance:none;
     appearance:none;
-    width: 44px;
-    height: 22px;
-    border-radius: 999px;
+    width:54px; height:22px;
+    border-radius:999px;
     background:#fff;
     cursor:pointer;
-    box-shadow: 0 10px 18px rgba(0,0,0,.22);
+    box-shadow:0 10px 18px rgba(0,0,0,0.18);
   }
 
-  /* Product info */
-  .solo-info-block{ margin-top: 16px; padding: 0 6px; }
+  /* Info */
+  .solo-info-block{ padding:18px 4px 0; }
   .solo-desc{
     text-align:left;
     color:#666;
-    font-size: 14px;
+    font-size:14px;
     line-height:1.7;
-    border-top: 1px solid #eee;
-    padding-top: 18px;
-    margin-bottom: 18px;
+    border-top:1px solid #eee;
+    padding-top:20px;
+    margin-bottom:22px;
   }
-  .data-row{ display:flex; gap: 26px; margin-top: 14px; flex-wrap: wrap; }
+  .data-row{ display:flex; flex-wrap:wrap; gap:26px; margin-top:14px; }
   .data-item span:first-child{
-    display:block;
-    font-size: 10px;
-    color:#999;
-    text-transform: uppercase;
-    font-weight: 900;
-    margin-bottom: 4px;
-    letter-spacing:.08em;
+    display:block; font-size:10px; color:#999; text-transform:uppercase;
+    font-weight:900; margin-bottom:4px; letter-spacing:0.08em;
   }
-  .data-item span:last-child{
-    font-size: 14px;
-    font-weight: 900;
-    color:#222;
-  }
+  .data-item span:last-child{ font-size:15px; font-weight:900; color:#222; }
 
   .artist-profile{
-    display:flex;
-    align-items:center;
-    gap: 14px;
-    margin-top: 16px;
-    padding: 14px;
+    display:flex; align-items:center; gap:14px;
+    margin-top:18px;
+    padding:16px;
     background:#fafafa;
-    border-radius: 20px;
+    border-radius:20px;
     cursor:pointer;
-    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
-    border: 1px solid transparent;
+    transition:all .2s ease;
+    border:1px solid transparent;
   }
   .artist-profile:hover{
     background:#fff;
     border-color:#eee;
-    box-shadow: 0 10px 22px rgba(0,0,0,.06);
-    transform: translateY(-2px);
+    box-shadow:0 10px 24px rgba(0,0,0,0.06);
+    transform:translateY(-2px);
   }
-  .avatar{ width: 44px; height:44px; border-radius: 50%; background:#eee; overflow:hidden; }
-  .avatar img{ width:100%; height:100%; object-fit: cover; }
+  .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
   .artist-info{ flex:1; }
-  .artist-info h4{ margin:0; font-size: 13px; color:#222; }
-  .artist-info p{ margin: 2px 0 0; font-size: 11px; color:#888; }
-  .artist-cta{ font-size: 11px; font-weight: 1000; color:#333; text-transform: uppercase; letter-spacing:.06em; }
+  .artist-info h4{ margin:0; font-size:13px; color:#222; font-weight:900; }
+  .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
+  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.06em; }
 
-  .actions{ display:flex; gap: 12px; margin-top: 16px; }
+  .actions{ display:flex; gap:12px; margin-top:18px; }
   .btn{
-    padding: 14px 20px;
-    border-radius: 16px;
-    border:none;
-    font-size: 13px;
-    font-weight: 800;
+    padding:14px 20px; border-radius:16px;
+    border:none; font-size:13px; font-weight:800;
     cursor:pointer;
-    transition: transform .08s ease;
   }
-  .btn:active{ transform: scale(.98); }
   .btn-primary{ background:#111; color:#fff; flex:1; }
   .btn-ghost{ background:#f0f0f0; color:#666; }
 
+  /* ===== SERVICES ===== */
+  .services-wrap{ margin-top:10px; }
+  .services-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:16px;
+    margin-top:18px;
+  }
+  .svc-card{
+    background:#fff;                 /* ✅ no lines bg */
+    border:1px solid #f0f0f0;
+    border-radius:22px;
+    padding:18px 18px 16px;
+    box-shadow:0 10px 24px rgba(0,0,0,0.06); /* ✅ shadow */
+    transition:transform .22s ease, box-shadow .22s ease;
+    min-height:160px;
+  }
+  .svc-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 18px 44px rgba(0,0,0,0.10);
+  }
+  .svc-ico{
+    width:36px; height:36px; border-radius:14px;
+    background:#f4f4f4;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900;
+    margin-bottom:12px;
+  }
+  .svc-title{ font-size:18px; font-weight:950; margin:0 0 8px; color:#111; }
+  .svc-desc{ margin:0; color:#666; line-height:1.6; font-size:13px; }
+
+  /* ===== OUR PROCESS (WHITE THEME) ===== */
+  .process{
+    margin-top:26px;
+    border-radius:28px;
+    border:1px solid #efefef;
+    background:#fff;
+    padding:26px 22px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  }
+  .process-head h2{
+    margin:0 0 6px;
+    font-size:28px;
+    font-weight:950;
+    color:#111;
+    letter-spacing:-0.02em;
+  }
+  .process-head p{ margin:0 0 18px; color:#666; line-height:1.6; }
+
+  .process-grid{
+    position:relative;
+    display:grid;
+    grid-template-columns:70px 1fr;
+    gap:16px;
+    padding:6px 0 2px;
+  }
+  .proc-rail{
+    position:relative;
+  }
+  .proc-line{
+    position:absolute;
+    left:34px;
+    width:2px;
+    background:#ddd;
+    border-radius:999px;
+  }
+  .proc-dot{
+    position:absolute;
+    left:34px;
+    width:18px; height:18px;
+    border-radius:50%;
+    background:#111;
+    transform:translate(-50%, 0);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1); /* ✅ smooth move */
+    box-shadow:0 10px 18px rgba(0,0,0,0.12);
+  }
+
+  .proc-items{ display:flex; flex-direction:column; gap:18px; }
+  .proc-step{
+    border-radius:26px;
+    border:1px solid #efefef;
+    background:#fff;
+    padding:22px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.06);
+    display:grid;
+    grid-template-columns:1fr 220px;
+    gap:18px;
+    min-height:160px; /* ✅ more height */
+    align-items:center;
+  }
+  .proc-kicker{
+    font-size:12px;
+    font-weight:950;
+    letter-spacing:0.10em;
+    text-transform:uppercase;
+    color:#999;
+    margin:0 0 8px;
+  }
+  .proc-title{ margin:0 0 8px; font-size:20px; font-weight:950; color:#111; }
+  .proc-desc{ margin:0; color:#666; line-height:1.65; }
+  .proc-illus{
+    height:120px;
+    border-radius:20px;
+    border:1px solid #f0f0f0;
+    background:linear-gradient(180deg,#f8f8f8,#f2f2f2);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; color:#bbb; letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-size:12px;
+  }
+
   /* ===== CONTACT ===== */
-  .form-title{ font-size: 18px; font-weight: 1000; margin: 0 0 18px; }
-  .form-group{ margin-bottom: 12px; }
+  .form-title{ font-size:18px; font-weight:950; margin:0 0 18px; text-align:left; }
+  .form-group{ margin-bottom:12px; }
   .form-input{
-    display:block;
-    width:100%;
-    padding: 14px;
-    border: 1px solid #eee;
-    border-radius: 14px;
+    display:block; width:100%;
+    padding:14px;
+    border:1px solid #eee;
+    border-radius:14px;
     background:#fafafa;
-    font-size: 14px;
+    font-size:14px;
     color:#111;
   }
   .form-input:focus{ outline:none; border-color:#111; background:#fff; }
   .btn-submit{
     width:100%;
-    background:#111;
-    color:#fff;
-    padding: 14px;
-    border-radius: 14px;
+    background:#111; color:#fff;
+    padding:14px;
+    border-radius:14px;
     border:none;
-    font-weight: 1000;
+    font-weight:950;
     cursor:pointer;
   }
-  #formSuccess, #formSuccessModal{
-    display:none;
-    border-radius: 14px;
-    margin-top: 12px;
-    background:#f0f0f0;
-    color:#333;
-    padding: 16px;
-    text-align:center;
-    font-size: 14px;
-  }
+  #formSuccess{ display:none; border-radius:14px; margin-top:14px; background:#f0f0f0; color:#333; padding:18px; }
 
   /* ===== MODALS ===== */
   .modal-overlay{
-    position:fixed;
-    inset:0;
-    background: rgba(0,0,0,.4);
-    backdrop-filter: blur(4px);
-    z-index: 9999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    transition: opacity .25s ease;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(5px);
+    z-index:9999;
+    display:none; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .25s ease;
   }
   .modal-overlay.open{ display:flex; opacity:1; }
   .modal-box{
     background:#fff;
-    width: 92%;
-    max-width: 420px;
-    padding: 28px;
-    border-radius: 26px;
-    box-shadow: 0 24px 50px rgba(0,0,0,.22);
-    transform: translateY(16px);
-    transition: transform .25s cubic-bezier(.2,.8,.2,1);
-    position:relative;
-    max-height: 90vh;
-    overflow:auto;
-    -ms-overflow-style:none;
-    scrollbar-width:none;
+    width:90%;
+    max-width:420px;
+    padding:28px;
+    border-radius:26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.22);
+    transform:translateY(18px);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    max-height:90vh;
+    overflow-y:auto;
   }
-  .modal-box::-webkit-scrollbar{ width:0; height:0; }
-  .modal-overlay.open .modal-box{ transform: translateY(0); }
-  .close-modal{
-    position:absolute;
-    top: 16px;
-    right: 16px;
-    background:none;
-    border:none;
-    font-size: 22px;
-    color:#999;
-    cursor:pointer;
-  }
-  .artist-modal-header{ text-align:center; margin-bottom: 16px; }
-  .artist-modal-avatar{ width:80px; height:80px; border-radius: 50%; margin: 0 auto 12px; overflow:hidden; background:#eee; }
-  .artist-modal-avatar img{ width:100%; height:100%; object-fit: cover; }
-  .artist-modal-bio{ font-size: 13px; line-height: 1.75; color:#555; text-align:center; margin:0; }
+  .modal-overlay.open .modal-box{ transform:translateY(0); }
+  .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
 
   /* ===== MOBILE ===== */
-  @media (max-width: 900px){
-    body{ overflow:hidden; }
+  @media (max-width:900px){
     .layout{ flex-direction:column; }
-
-    /* map fixed, shop scrolls over it */
     #map{
       width:100%;
-      height:45vh; /* 10% less than 50vh */
+      height:45vh;           /* ✅ map takes less space */
       flex:none;
-      position:fixed;
-      top:0; left:0; right:0;
-      z-index:0;
     }
-
-    .side-nav{ display:none; }
-    .mobile-nav{ display:block; }
-
-    /* shop becomes a fixed scroll layer over the map */
     .shop{
-      position:fixed;
-      inset:0;
-      background: transparent;
-      z-index:2;
-      box-shadow:none;
-      overflow:hidden;
+      width:100%;
+      height:60vh;
+      flex:none;
+      border-radius:26px 26px 0 0;
+      margin-top:-30px;      /* ✅ content goes over map */
+      z-index:40;
     }
+    .side-nav{ display:none; }
+    .mobile-nav{ display:flex; }
 
-    /* sections scroll inside the overlay */
-    .app-section{
-      padding: 18px 18px 28px;
-      background: transparent;
-    }
-    .app-section > .section-scroll{
-      background:#fff;
-      border-radius: 28px;
-      box-shadow: 0 18px 45px rgba(0,0,0,.12);
-      border: 1px solid rgba(0,0,0,.06);
-      padding: 18px;
-      padding-top: calc(45vh + 18px); /* content starts under map, but scrolls over it */
-      overflow:auto;
-    }
+    .section-scroll{ padding:22px; }
+    .shop-head{ padding:18px 18px; }
+    .shop-body{ padding:18px 18px 70px; }
 
-    /* gallery header stays at top of the scroll card */
-    .shop-head{
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      border-radius: 22px;
-      margin: 0 0 10px;
-      padding: 14px 14px;
-    }
-    .shop-body{
-      padding: 0 0 18px;
-      overflow: visible; /* inside section-scroll */
-    }
+    .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
+    .card{ padding:16px 12px; border-radius:24px; }
+    .card-media{ height:118px; }
 
-    .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
-    .card{ padding: 14px; border-radius: 24px; }
-    .card-media{ height: 120px; }
-
-    .services-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .proc-step{ grid-template-columns: 1fr; }
-    .proc-illu{ height: 90px; }
-
-    .solo-media-frame{ border-radius: 22px; }
-    .media-tabs{ top: 10px; right: 10px; padding: 8px 10px; gap: 8px; }
-    .media-tab{ padding: 9px 10px; font-size: 11px; }
-
-    .scrub-ui{ bottom: 12px; }
+    .services-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .proc-step{ grid-template-columns:1fr; }
+    .proc-illus{ height:100px; }
+    .process-grid{ grid-template-columns:54px 1fr; }
+    .proc-line, .proc-dot{ left:26px; }
   }
 </style>
 </head>
@@ -895,7 +628,6 @@
 <body>
 <div class="layout">
   <div id="map">
-    <!-- Desktop nav -->
     <nav class="side-nav" id="sideNav">
       <div class="nav-item" id="navHome">Home</div>
       <div class="nav-item" id="navAbout">About Us</div>
@@ -906,13 +638,11 @@
 
     <!-- Mobile nav -->
     <nav class="mobile-nav" id="mobileNav">
-      <div class="nav-row">
-        <div class="nav-item" id="mNavHome">Home</div>
-        <div class="nav-item" id="mNavAbout">About</div>
-        <div class="nav-item" id="mNavServices">Services</div>
-        <div class="nav-item active" id="mNavGallery">Gallery</div>
-        <div class="nav-item" id="mNavContact">Contact</div>
-      </div>
+      <div class="nav-item" id="mNavHome">Home</div>
+      <div class="nav-item" id="mNavAbout">About</div>
+      <div class="nav-item" id="mNavServices">Services</div>
+      <div class="nav-item active" id="mNavGallery">Gallery</div>
+      <div class="nav-item" id="mNavContact">Contacts</div>
     </nav>
   </div>
 
@@ -924,14 +654,15 @@
         <div class="home-hero">
           <img
             src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-            alt="FNN Art Logo"
+            alt="FNN ART Logo"
           />
         </div>
 
-        <h1 class="sec-title" style="margin-top:22px;">Welcome to FNN</h1>
+        <h1 class="sec-title">Welcome to FNN</h1>
         <p class="sec-sub">
-          A modern art platform specializing in the presentation of original artworks by selected artists — connecting creative expression with audiences and art institutions.
+          A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
         </p>
+
         <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
       </div>
     </section>
@@ -941,12 +672,28 @@
       <div class="section-scroll">
         <h1 class="sec-title">About FNN</h1>
 
-        <div class="about-wrap">
-          <div class="about-card">
-            <h3>Mission & Scope</h3>
-            <div class="about-text" id="aboutText"></div>
-          </div>
-        </div>
+        <p class="sec-sub" style="white-space:pre-line">
+FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
+
+On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+
+In Arts & Culture:
+• Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.
+• Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.
+• Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.
+• Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.
+
+In Creative Infrastructure:
+• Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.
+• Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.
+• Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.
+
+In Media & Cultural Impact:
+• Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.
+• Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.
+        </p>
+
+        <!-- ✅ image deleted as requested -->
       </div>
     </section>
 
@@ -954,25 +701,114 @@
     <section id="sect-services" class="app-section">
       <div class="section-scroll">
         <h1 class="sec-title">Services</h1>
-        <p class="sec-sub">Creative infrastructure for artists, institutions, and cultural partners.</p>
+        <p class="sec-sub">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
 
-        <div class="services-grid" id="servicesGrid"></div>
+        <div class="services-wrap">
+          <div class="services-grid" id="servicesGrid">
+            <!-- 12 service cards -->
+            <div class="svc-card"><div class="svc-ico">◎</div><h3 class="svc-title">Creative Planning</h3><p class="svc-desc">Sculptural and contemporary art planning—translating culture into form.</p></div>
+            <div class="svc-card"><div class="svc-ico">✎</div><h3 class="svc-title">Original design</h3><p class="svc-desc">Original concepts inspired by renowned artists and professional teams.</p></div>
+            <div class="svc-card"><div class="svc-ico">▤</div><h3 class="svc-title">Excellent structure</h3><p class="svc-desc">Qualification-led analysis—ensuring stability, safety, and longevity.</p></div>
+            <div class="svc-card"><div class="svc-ico">✶</div><h3 class="svc-title">Crafted with ingenuity</h3><p class="svc-desc">Refined execution where detail, patience, and intent define the final work.</p></div>
 
-        <div class="process-wrap" id="processWrap">
-          <div class="process-head">
-            <div>
-              <h2>Our process</h2>
-              <p>8 clear steps — from discovery to delivery — designed to keep quality high and execution smooth.</p>
-            </div>
+            <div class="svc-card"><div class="svc-ico">⌂</div><h3 class="svc-title">Professional installation</h3><p class="svc-desc">Integrated workflows for safe, precise, and reliable delivery on site.</p></div>
+            <div class="svc-card"><div class="svc-ico">⌁</div><h3 class="svc-title">Refurbishment & Restoration</h3><p class="svc-desc">Renovation and care—bringing works back to life with expert teams.</p></div>
+            <div class="svc-card"><div class="svc-ico">▢</div><h3 class="svc-title">Art rental</h3><p class="svc-desc">Rental services for sculptures and artworks—supporting programs & projects.</p></div>
+            <div class="svc-card"><div class="svc-ico">⌖</div><h3 class="svc-title">Site survey</h3><p class="svc-desc">On-site inspection and coordination—aligning implementation to vision.</p></div>
+
+            <div class="svc-card"><div class="svc-ico">◇</div><h3 class="svc-title">Curatorial services</h3><p class="svc-desc">Research, selection, and presentation strategy for exhibitions and collections.</p></div>
+            <div class="svc-card"><div class="svc-ico">🎧</div><h3 class="svc-title">Art Consultant</h3><p class="svc-desc">Concept proposals, guidance, and recommendations tailored to your space.</p></div>
+            <div class="svc-card"><div class="svc-ico">◔</div><h3 class="svc-title">Art broker</h3><p class="svc-desc">Market services connecting institutions, collectors, and artists—locally and globally.</p></div>
+            <div class="svc-card"><div class="svc-ico">⧉</div><h3 class="svc-title">Artistic Supervisor</h3><p class="svc-desc">Quality monitoring, materials review, and execution supervision end-to-end.</p></div>
           </div>
 
-          <div class="process-grid" id="processGrid">
-            <div class="proc-rail">
-              <div class="proc-line"></div>
-              <div class="proc-dot" id="procDot"></div>
+          <!-- OUR PROCESS (white theme + single moving dot + full 1->8 line) -->
+          <div class="process" id="processBlock">
+            <div class="process-head">
+              <h2>Our process</h2>
+              <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
             </div>
 
-            <div class="proc-items" id="procItems"></div>
+            <div class="process-grid" id="processGrid">
+              <div class="proc-rail">
+                <div class="proc-line"></div>
+                <div class="proc-dot" id="procDot"></div>
+              </div>
+
+              <div class="proc-items" id="procItems">
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 1</div>
+                    <h3 class="proc-title">Discovery & Direction</h3>
+                    <p class="proc-desc">Define goals, context, constraints, and the cultural story you want the work to carry.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 2</div>
+                    <h3 class="proc-title">Concept & References</h3>
+                    <p class="proc-desc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 3</div>
+                    <h3 class="proc-title">Design Development</h3>
+                    <p class="proc-desc">Refine form, materials, scale, and presentation details with clear approvals.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 4</div>
+                    <h3 class="proc-title">Engineering Review</h3>
+                    <p class="proc-desc">Structural checks, safety planning, and feasibility for production & installation.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 5</div>
+                    <h3 class="proc-title">Production Planning</h3>
+                    <p class="proc-desc">Scheduling, sourcing, and documentation to keep quality consistent.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 6</div>
+                    <h3 class="proc-title">Fabrication & Build</h3>
+                    <p class="proc-desc">Craft, finishing, and quality checks—executed with high attention to detail.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 7</div>
+                    <h3 class="proc-title">Installation & On-site</h3>
+                    <p class="proc-desc">Professional installation, safety protocol, and site coordination.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+
+                <div class="proc-step">
+                  <div>
+                    <div class="proc-kicker">Step 8</div>
+                    <h3 class="proc-title">Handover & Care</h3>
+                    <p class="proc-desc">Final delivery, documentation, and care recommendations for longevity.</p>
+                  </div>
+                  <div class="proc-illus">Illustration</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -980,55 +816,47 @@
 
     <!-- GALLERY -->
     <section id="sect-gallery" class="app-section active-section">
-      <div class="section-scroll" style="padding:0;">
-        <header class="shop-head">
-          <nav class="nav-group" id="filters">
-            <button class="chip active" data-filter="all" id="btnAll">ALL</button>
-            <button class="chip" data-filter="cabinet">Cabinets</button>
-            <button class="chip" data-filter="sideboard">Sideboards</button>
-            <button class="chip" data-filter="decor">Decor</button>
-          </nav>
-        </header>
+      <header class="shop-head">
+        <nav class="nav-group" id="filters">
+          <button class="chip active" data-filter="all" id="btnAll">ALL</button>
+          <button class="chip" data-filter="cabinet">Cabinets</button>
+          <button class="chip" data-filter="sideboard">Sideboards</button>
+          <button class="chip" data-filter="decor">Decor</button>
+        </nav>
+      </header>
 
-        <div class="shop-body">
-          <div class="grid" id="grid"></div>
+      <div class="shop-body">
+        <div class="grid" id="grid"></div>
 
-          <div class="solo-wrap" id="soloWrap">
-            <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
+        <div class="solo-wrap" id="soloWrap">
+          <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
 
-            <div class="solo-title" id="soloTitleTop">PRODUCT</div>
+          <!-- ✅ Product name above frame -->
+          <div class="solo-name" id="soloName">PRODUCT</div>
 
-            <div class="solo-media-frame" id="soloMediaFrame">
-              <div class="media-tabs" id="mediaTabs">
-                <button class="media-tab active" data-tab="images">Images</button>
-                <button class="media-tab" data-tab="spin">360</button>
-                <button class="media-tab" data-tab="video">Video</button>
-                <button class="media-tab" data-tab="model">3D</button>
+          <!-- ✅ 16:9 frame -->
+          <div class="solo-media-container" id="soloMedia"></div>
+
+          <div class="solo-info-block">
+            <div class="solo-desc">
+              <strong id="soloTitle">PRODUCT</strong><br>
+              Contemporary design meeting functionality.
+              <div class="data-row">
+                <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
+                <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
+                <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
               </div>
-              <div class="solo-media-inner" id="soloMedia"></div>
             </div>
 
-            <div class="solo-info-block">
-              <div class="solo-desc">
-                <strong id="soloTitle">PRODUCT</strong><br>
-                Contemporary design meeting functionality.
-                <div class="data-row">
-                  <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
-                  <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
-                  <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
-                </div>
-              </div>
+            <div class="artist-profile" id="artistBtn">
+              <div class="avatar"><img id="artistImg" src="" alt="Designer"></div>
+              <div class="artist-info"><h4 id="artistName">--</h4><p id="artistRole">--</p></div>
+              <div class="artist-cta">View Bio →</div>
+            </div>
 
-              <div class="artist-profile" id="artistBtn">
-                <div class="avatar"><img id="artistImg" src="" alt="Designer"></div>
-                <div class="artist-info"><h4 id="artistName">--</h4><p id="artistRole">--</p></div>
-                <div class="artist-cta">View Bio →</div>
-              </div>
-
-              <div class="actions">
-                <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
-                <button class="btn btn-ghost" id="btnClose">Close</button>
-              </div>
+            <div class="actions">
+              <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
+              <button class="btn btn-ghost" id="btnClose">Close</button>
             </div>
           </div>
         </div>
@@ -1060,37 +888,18 @@
   </aside>
 </div>
 
-<!-- MODALS -->
+<!-- ARTIST MODAL -->
 <div class="modal-overlay" id="modalArtistOverlay">
-  <div class="modal-box">
+  <div class="modal-box" style="position:relative">
     <button class="close-modal" id="closeArtistModal">×</button>
-    <div class="artist-modal-header">
-      <div class="artist-modal-avatar"><img id="modalArtistImg" src="" alt=""></div>
-      <h3 id="modalArtistName" style="margin:0 0 4px;"></h3>
-      <span style="font-size:12px; color:#999; text-transform:uppercase;" id="modalArtistRole"></span>
+    <div style="text-align:center; margin-bottom:18px;">
+      <div style="width:82px;height:82px;border-radius:50%;overflow:hidden;margin:0 auto 14px;">
+        <img id="modalArtistImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <h3 id="modalArtistName" style="margin:0 0 6px; font-weight:950;"></h3>
+      <span id="modalArtistRole" style="font-size:12px; color:#999; text-transform:uppercase; letter-spacing:0.08em;"></span>
     </div>
-    <p class="artist-modal-bio" id="modalArtistBio"></p>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modalContactOverlay">
-  <div class="modal-box">
-    <button class="close-modal" id="closeContactModal">×</button>
-    <h3 class="form-title">Inquire about this piece</h3>
-
-    <form id="ajaxFormModal" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-
-      <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
-      <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-      <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubjectModal"></div>
-      <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-
-      <button type="submit" class="btn-submit" id="formSubmitBtnModal">Send Inquiry</button>
-    </form>
-
-    <div id="formSuccessModal">Thank you! Your inquiry has been received.</div>
+    <p id="modalArtistBio" style="font-size:13px; line-height:1.7; color:#555; text-align:center; margin:0;"></p>
   </div>
 </div>
 
@@ -1103,8 +912,8 @@
   const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
 
   mapboxgl.accessToken = MAPBOX_TOKEN;
-  const isMobile = () => window.innerWidth < 900;
-  const startZoom = isMobile() ? 0 : 0.8;
+  const isMobile = window.innerWidth < 900;
+  const startZoom = isMobile ? 0 : 0.8;
 
   const map = new mapboxgl.Map({
     container: "map",
@@ -1133,6 +942,7 @@
         break;
       }
     }
+
     if (!map.getLayer('3d-buildings-custom')) {
       try{
         map.addLayer({
@@ -1149,7 +959,7 @@
             'fill-extrusion-opacity': 0.6
           }
         }, labelLayerId);
-      }catch(e){}
+      } catch(e){}
     }
   });
 
@@ -1159,22 +969,36 @@
     const target = document.getElementById(id);
     if(target) target.classList.add('active-section');
 
-    const navMap = {
-      'sect-home': ['navHome','mNavHome'],
-      'sect-about': ['navAbout','mNavAbout'],
-      'sect-services': ['navServices','mNavServices'],
-      'sect-gallery': ['navGallery','mNavGallery'],
-      'sect-contact': ['navContact','mNavContact'],
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navIdMap = {
+      'sect-home':'navHome',
+      'sect-about':'navAbout',
+      'sect-services':'navServices',
+      'sect-gallery':'navGallery',
+      'sect-contact':'navContact'
+    };
+    const mNavIdMap = {
+      'sect-home':'mNavHome',
+      'sect-about':'mNavAbout',
+      'sect-services':'mNavServices',
+      'sect-gallery':'mNavGallery',
+      'sect-contact':'mNavContact'
     };
 
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    (navMap[id] || []).forEach(nid => {
-      const el = document.getElementById(nid);
-      if(el) el.classList.add('active');
-    });
+    const navEl = document.getElementById(navIdMap[id]);
+    if(navEl) navEl.classList.add('active');
+    const mNavEl = document.getElementById(mNavIdMap[id]);
+    if(mNavEl) mNavEl.classList.add('active');
 
     if(id === 'sect-home'){
       map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
+    }
+
+    // recompute process geometry whenever we open services
+    if(id === 'sect-services'){
+      requestAnimationFrame(() => {
+        setupProcessAnimation();
+      });
     }
   };
 
@@ -1183,176 +1007,47 @@
     if(el) el.addEventListener(ev, handler);
   };
 
-  safeAdd('navHome','click',()=>switchSection('sect-home'));
-  safeAdd('navAbout','click',()=>switchSection('sect-about'));
-  safeAdd('navServices','click',()=>switchSection('sect-services'));
-  safeAdd('navGallery','click',()=>switchSection('sect-gallery'));
-  safeAdd('navContact','click',()=>switchSection('sect-contact'));
+  // desktop nav
+  safeAdd('navHome','click',() => switchSection('sect-home'));
+  safeAdd('navAbout','click',() => switchSection('sect-about'));
+  safeAdd('navServices','click',() => switchSection('sect-services'));
+  safeAdd('navGallery','click',() => switchSection('sect-gallery'));
+  safeAdd('navContact','click',() => switchSection('sect-contact'));
 
-  safeAdd('mNavHome','click',()=>switchSection('sect-home'));
-  safeAdd('mNavAbout','click',()=>switchSection('sect-about'));
-  safeAdd('mNavServices','click',()=>switchSection('sect-services'));
-  safeAdd('mNavGallery','click',()=>switchSection('sect-gallery'));
-  safeAdd('mNavContact','click',()=>switchSection('sect-contact'));
+  // mobile nav
+  safeAdd('mNavHome','click',() => switchSection('sect-home'));
+  safeAdd('mNavAbout','click',() => switchSection('sect-about'));
+  safeAdd('mNavServices','click',() => switchSection('sect-services'));
+  safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
+  safeAdd('mNavContact','click',() => switchSection('sect-contact'));
 
-  /* ===== ABOUT CONTENT ===== */
-  const ABOUT_TEXT = `FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
+  /* ===== FORM ===== */
+  const form = document.getElementById('ajaxForm');
+  const submitBtn = document.getElementById('formSubmitBtn');
+  const successMsg = document.getElementById('formSuccess');
 
-On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
-
-In Arts & Culture:
-• Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.
-• Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.
-• Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.
-• Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.
-
-In Creative Infrastructure:
-• Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.
-• Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.
-• Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.
-
-In Media & Cultural Impact:
-• Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.
-• Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.`;
-
-  const aboutTextEl = document.getElementById('aboutText');
-  if(aboutTextEl) aboutTextEl.textContent = ABOUT_TEXT;
-
-  /* ===== SERVICES DATA ===== */
-  const SERVICES = [
-    { title:"Creative Planning", desc:"Sculptural and contemporary art planning from a professional perspective — translating culture into form." },
-    { title:"Original design", desc:"Inspired by renowned artists — featuring original designs by a professional sculpture and art design team." },
-    { title:"Excellent structure", desc:"Qualification-led structural analysis for large-scale works — ensuring stability, safety, and longevity." },
-    { title:"Crafted with ingenuity", desc:"Dedicated craftsmanship and refined execution — where detail, patience, and intent define the final work." },
-    { title:"Professional installation", desc:"Integrated construction and installation workflows — safe, precise, and reliable delivery on site." },
-    { title:"Refurbishment and Restoration", desc:"Renovation and restoration using professional teams and equipment — bringing works back to life." },
-    { title:"Art rental", desc:"Rental services for sculptures and works — supporting projects, institutions, and elevated temporary programs." },
-    { title:"Site survey", desc:"On-site inspection, survey reporting, and coordination — aligning implementation with the artistic vision." }
-  ];
-  const servicesGrid = document.getElementById('servicesGrid');
-  if(servicesGrid){
-    servicesGrid.innerHTML = SERVICES.map((s,i)=>`
-      <article class="svc-card">
-        <div class="svc-ico">✦</div>
-        <h4>${s.title}</h4>
-        <p>${s.desc}</p>
-      </article>
-    `).join('');
-  }
-
-  /* ===== PROCESS DATA ===== */
-  const PROCESS = [
-    { t:"Discovery & Direction", d:"Define goals, context, constraints, and the cultural story you want the work to carry." },
-    { t:"Concept & References", d:"Moodboards, precedents, and initial concepts aligned with the site and audience." },
-    { t:"Design Development", d:"Refine form, materials, scale, and presentation details with clear approvals." },
-    { t:"Engineering Review", d:"Structural checks, safety planning, and feasibility for production & installation." },
-    { t:"Production Planning", d:"Scheduling, sourcing, and documentation to keep quality consistent." },
-    { t:"Fabrication & Build", d:"Craft, finishing, and quality checks — executed with high attention to detail." },
-    { t:"Installation & On-site", d:"Professional installation, safety protocol, and site coordination." },
-    { t:"Handover & Care", d:"Final delivery, documentation, and care recommendations for longevity." },
-  ];
-  const procItems = document.getElementById('procItems');
-  if(procItems){
-    procItems.innerHTML = PROCESS.map((p,idx)=>`
-      <div class="proc-step">
-        <div>
-          <div class="proc-kicker">STEP ${idx+1}</div>
-          <div class="proc-title">${p.t}</div>
-          <p class="proc-desc">${p.d}</p>
-        </div>
-        <div class="proc-illu">ILLUSTRATION</div>
-      </div>
-    `).join('');
-  }
-
-  /* ===== Our process: smooth moving dot along one line ===== */
-  function setupProcessAnimation(){
-    const dot = document.getElementById("procDot");
-    const itemsWrap = document.getElementById("procItems");
-    const grid = document.getElementById("processGrid");
-    if(!dot || !itemsWrap || !grid) return;
-
-    const steps = Array.from(itemsWrap.querySelectorAll(".proc-step"));
-    const rail = grid.querySelector(".proc-rail");
-    if(!steps.length || !rail) return;
-
-    // scroller is the SERVICES section scroll container
-    const scroller = document.querySelector("#sect-services .section-scroll");
-    if(!scroller) return;
-
-    const moveDotToEl = (el) => {
-      const railRect = rail.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const centerY = (elRect.top + elRect.bottom) / 2;
-      const y = centerY - railRect.top - 8; // minus radius
-      dot.style.transform = `translate(-50%, ${Math.max(0, y)}px)`;
-    };
-
-    let raf = null;
-    const tick = () => {
-      raf = null;
-      const scRect = scroller.getBoundingClientRect();
-      const targetY = scRect.top + scRect.height * 0.45;
-
-      let best = steps[0];
-      let bestDist = Infinity;
-
-      for(const s of steps){
-        const r = s.getBoundingClientRect();
-        const c = (r.top + r.bottom) / 2;
-        const d = Math.abs(c - targetY);
-        if(d < bestDist){
-          bestDist = d;
-          best = s;
-        }
-      }
-      moveDotToEl(best);
-    };
-
-    const onScroll = () => {
-      if(raf) return;
-      raf = requestAnimationFrame(tick);
-    };
-
-    tick();
-    scroller.addEventListener("scroll", onScroll, { passive:true });
-    window.addEventListener("resize", tick);
-  }
-
-  /* ===== FORMS ===== */
-  function wireForm(formId, btnId, successId){
-    const form = document.getElementById(formId);
-    const submitBtn = document.getElementById(btnId);
-    const successMsg = document.getElementById(successId);
-    if(!form) return;
-
+  if(form){
     form.addEventListener('submit', function(e){
       e.preventDefault();
       if(submitBtn){ submitBtn.textContent="Sending..."; submitBtn.style.opacity="0.7"; }
-      fetch(form.action, {
-        method:"POST",
-        body: new FormData(form),
-        headers: { 'Accept':'application/json' }
-      })
-      .then(res=>{
+      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ 'Accept':'application/json' } })
+      .then(res => {
         if(res.ok){
           form.style.display="none";
           if(successMsg) successMsg.style.display="block";
-        }else{
+        } else {
           alert("Oops! Problem submitting.");
-          if(submitBtn){ submitBtn.textContent="Try Again"; submitBtn.style.opacity="1"; }
+          if(submitBtn) submitBtn.textContent="Try Again";
         }
       })
-      .catch(()=>{
+      .catch(() => {
         alert("Oops! Problem submitting.");
-        if(submitBtn){ submitBtn.textContent="Try Again"; submitBtn.style.opacity="1"; }
+        if(submitBtn) submitBtn.textContent="Try Again";
       });
     });
   }
-  wireForm('ajaxForm','formSubmitBtn','formSuccess');
-  wireForm('ajaxFormModal','formSubmitBtnModal','formSuccessModal');
 
-  /* ===== MAP ANIMATION ===== */
+  /* ===== MAP ANIMATION (product goto) ===== */
   let currentMarker = null;
   let rotationFrame = null;
 
@@ -1378,20 +1073,20 @@ In Media & Cultural Impact:
       speed: 0.3,
       curve: 1.2,
       essential: true,
-      duration: 8000
+      duration: 9000
     });
 
     map.once('moveend', () => {
       function rotate(){
-        map.rotateTo((map.getBearing()+0.05)%360, {duration:0});
+        map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
         rotationFrame = requestAnimationFrame(rotate);
       }
       rotate();
     });
   }
 
-  /* ===== PRODUCT DATA ===== */
-  const IMG_SET = [
+  /* ===== PRODUCT MEDIA (Images / 360 / Video / 3D) ===== */
+  const DEFAULT_IMAGES = [
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
@@ -1401,154 +1096,163 @@ In Media & Cultural Impact:
   ];
 
   const VIDEO_360 = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
-  const VIDEO_MAIN = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
+  const VIDEO_NORMAL = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
 
+  function buildMediaTabs(active){
+    const tabs = [
+      { key:'images', label:'Images' },
+      { key:'v360', label:'360' },
+      { key:'video', label:'Video' },
+      { key:'d3', label:'3D' }
+    ];
+    return `
+      <div class="media-tabs" id="mediaTabs">
+        ${tabs.map(t => `
+          <button class="media-tab ${t.key===active?'active':''}" data-tab="${t.key}">${t.label}</button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderImages(images){
+    let idx = 0;
+    const html = `
+      ${buildMediaTabs('images')}
+      <img id="imgSlide" src="${images[0]}" alt="Image" />
+      <button class="img-arrow left" id="imgPrev">‹</button>
+      <button class="img-arrow right" id="imgNext">›</button>
+    `;
+    return { html, mount: (container) => {
+      const img = container.querySelector('#imgSlide');
+      const prev = container.querySelector('#imgPrev');
+      const next = container.querySelector('#imgNext');
+
+      const show = () => { if(img) img.src = images[idx]; };
+      if(prev) prev.onclick = () => { idx = (idx - 1 + images.length) % images.length; show(); };
+      if(next) next.onclick = () => { idx = (idx + 1) % images.length; show(); };
+    }};
+  }
+
+  function render360(){
+    const html = `
+      ${buildMediaTabs('v360')}
+      <video id="v360" src="${VIDEO_360}" playsinline preload="metadata"></video>
+      <div class="v360-ui">
+        <button class="v360-btn" id="v360Toggle">II</button>
+        <input class="v360-range" id="v360Range" type="range" min="0" max="1000" value="0" />
+      </div>
+    `;
+    return { html, mount: (container) => {
+      const v = container.querySelector('#v360');
+      const btn = container.querySelector('#v360Toggle');
+      const range = container.querySelector('#v360Range');
+
+      if(!v || !btn || !range) return;
+
+      v.controls = false;          // ✅ no native player UI
+      v.loop = true;
+      v.muted = true;
+      v.play().catch(()=>{});
+
+      const syncRange = () => {
+        if(!v.duration || !isFinite(v.duration)) return;
+        range.value = Math.floor((v.currentTime / v.duration) * 1000);
+      };
+
+      v.addEventListener('timeupdate', syncRange);
+
+      range.addEventListener('input', () => {
+        if(!v.duration || !isFinite(v.duration)) return;
+        const t = (parseInt(range.value,10)/1000) * v.duration;
+        v.currentTime = t;
+      });
+
+      btn.addEventListener('click', () => {
+        if(v.paused){
+          v.play().catch(()=>{});
+          btn.textContent = "II";
+        }else{
+          v.pause();
+          btn.textContent = "▶";
+        }
+      });
+    }};
+  }
+
+  function renderVideo(){
+    const html = `
+      ${buildMediaTabs('video')}
+      <video src="${VIDEO_NORMAL}" controls playsinline preload="metadata"></video>
+    `;
+    return { html, mount: ()=>{} };
+  }
+
+  function render3D(modelUrl, fallbackImg, productName){
+    const safeUrl = (modelUrl || "").replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
+    const html = `
+      ${buildMediaTabs('d3')}
+      <model-viewer
+        id="viewer3d"
+        src="${safeUrl}"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        style="background:transparent; width:100%; height:100%;"
+        camera-orbit="45deg 75deg 3m"
+        environment-image="neutral"
+        alt="${productName || '3D'}">
+      </model-viewer>
+    `;
+    return { html, mount: (container) => {
+      const viewer = container.querySelector('#viewer3d');
+      if(viewer){
+        viewer.addEventListener('error', () => {
+          container.innerHTML = buildMediaTabs('images') + `<img src="${fallbackImg}" alt="Fallback" />`;
+        });
+      }
+    }};
+  }
+
+  function attachTabHandlers(p){
+    const soloMedia = document.getElementById("soloMedia");
+    if(!soloMedia) return;
+
+    const tabs = soloMedia.querySelector('#mediaTabs');
+    if(!tabs) return;
+
+    tabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.media-tab');
+      if(!btn) return;
+      const tab = btn.dataset.tab;
+      let pack;
+
+      if(tab === 'images') pack = renderImages(p.images || DEFAULT_IMAGES);
+      if(tab === 'v360') pack = render360();
+      if(tab === 'video') pack = renderVideo();
+      if(tab === 'd3') pack = render3D(p.model, (p.images && p.images[0]) ? p.images[0] : p.img, p.name);
+
+      if(!pack) return;
+
+      soloMedia.innerHTML = pack.html;
+      pack.mount(soloMedia);
+      attachTabHandlers(p);
+    });
+  }
+
+  /* ===== DATA ===== */
   const PRODUCTS = [
-    { id:"item-1", name:"Arch Cabinet", category:"cabinet",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png",
-      images: IMG_SET,
-      video360: VIDEO_360,
-      video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb",
-      specs:{ mat:"Velvet & Wood", dim:"120x60x90" },
-      store:{ name:"Milan Design District", coords:[9.1900, 45.4642] },
-      artist:{ name:"Alessandro Rossi", role:"Art Director, Milano",
-        img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80",
-        bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms."
-      }
-    },
-    { id:"item-2", name:"Geometric Side", category:"sideboard",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb",
-      specs:{ mat:"Lacquered Wood", dim:"180x50x200" },
-      store:{ name:"Paris Le Marais", coords:[2.3522, 48.8566] },
-      artist:{ name:"Claire Dubois", role:"Sculptor, Paris",
-        img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-        bio:"Claire challenges the perception of stability with her organic, tree-like structures."
-      }
-    },
-    { id:"item-3", name:"Art Deco Tall", category:"cabinet",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb",
-      specs:{ mat:"Marble & Brass", dim:"220x80x95" },
-      store:{ name:"New York SoHo", coords:[-74.006, 40.7128] },
-      artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY",
-        img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
-        bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft."
-      }
-    },
-    { id:"item-4", name:"Striped Console", category:"decor",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb",
-      specs:{ mat:"Resin & Paint", dim:"100x60x140" },
-      store:{ name:"Tokyo Harajuku", coords:[139.7034, 35.6719] },
-      artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo",
-        img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-        bio:"Kenji blurs the lines between collectible toys and functional high-end furniture."
-      }
-    },
-    { id:"item-5", name:"Radiance Credenza", category:"sideboard",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb",
-      specs:{ mat:"Ebony & Gold", dim:"200x55x85" },
-      store:{ name:"Dubai Design Dist", coords:[55.2962, 25.2769] },
-      artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai",
-        img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-        bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury."
-      }
-    },
-    { id:"item-6", name:"Modular Unit", category:"decor",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb",
-      specs:{ mat:"Ceramic Composite", dim:"120x120x120" },
-      store:{ name:"Copenhagen", coords:[12.5683, 55.6761] },
-      artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen",
-        img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
-        bio:"Erik believes in infinite adaptability. His modular systems grow with the user."
-      }
-    },
-    { id:"item-7", name:"Lunar Chest", category:"cabinet",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb",
-      specs:{ mat:"Oak & Silver", dim:"110x55x130" },
-      store:{ name:"London Tate Modern", coords:[-0.099, 51.507] },
-      artist:{ name:"Oliver Sterling", role:"Modernist, London",
-        img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80",
-        bio:"Oliver explores celestial themes using industrial materials."
-      }
-    },
-    { id:"item-8", name:"Obsidian Block", category:"sideboard",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb",
-      specs:{ mat:"Blackened Steel", dim:"200x60x80" },
-      store:{ name:"Berlin Mitte", coords:[13.405, 52.520] },
-      artist:{ name:"Klaus Weber", role:"Architect, Berlin",
-        img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80",
-        bio:"Klaus brings brutalist architecture principles into interior design."
-      }
-    },
-    { id:"item-9", name:"Azure Tower", category:"cabinet",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb",
-      specs:{ mat:"Blue Lacquer", dim:"80x80x180" },
-      store:{ name:"Barcelona Eixample", coords:[2.168, 41.387] },
-      artist:{ name:"Sofia Miró", role:"Colorist, Barcelona",
-        img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80",
-        bio:"Sofia's work is a vibrant homage to the Mediterranean spirit."
-      }
-    },
-    { id:"item-10", name:"Solar Credenza", category:"sideboard",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb",
-      specs:{ mat:"Teak & Brass", dim:"220x50x75" },
-      store:{ name:"Mexico City Polanco", coords:[-99.19, 19.43] },
-      artist:{ name:"Diego Rivera", role:"Carpenter, CDMX",
-        img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-        bio:"Diego fuses Aztec geometry with mid-century modern lines."
-      }
-    },
-    { id:"item-11", name:"Nordic Wave", category:"decor",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb",
-      specs:{ mat:"Ash Wood", dim:"140x40x90" },
-      store:{ name:"Stockholm Södermalm", coords:[18.068, 59.329] },
-      artist:{ name:"Elina Vinter", role:"Designer, Stockholm",
-        img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
-        bio:"Elina captures the fluidity of water in solid wood forms."
-      }
-    },
-    { id:"item-12", name:"Crimson Vanity", category:"cabinet",
-      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png",
-      images: [ "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png" ],
-      video360: VIDEO_360, video: VIDEO_MAIN,
-      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb",
-      specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" },
-      store:{ name:"Seoul Gangnam", coords:[127.027, 37.497] },
-      artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul",
-        img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
-        bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama."
-      }
-    },
+    { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
+    { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
+    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
+    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } },
+    { id:"item-5", name:"Radiance Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb", specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] }, artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." } },
+    { id:"item-6", name:"Modular Unit", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb", specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] }, artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." } },
+    { id:"item-7", name:"Lunar Chest", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb", specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] }, artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." } },
+    { id:"item-8", name:"Obsidian Block", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb", specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.520] }, artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." } },
+    { id:"item-9", name:"Azure Tower", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb", specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] }, artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." } },
+    { id:"item-10", name:"Solar Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb", specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] }, artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." } },
+    { id:"item-11", name:"Nordic Wave", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb", specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] }, artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." } },
+    { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
   ];
 
   const grid = document.getElementById("grid");
@@ -1557,163 +1261,40 @@ In Media & Cultural Impact:
   function render(list){
     if(!grid) return;
     grid.innerHTML = "";
-    list.forEach(p=>{
+    list.forEach(p => {
       const el = document.createElement("article");
       el.className = "card";
       el.innerHTML = `
-        <div class="card-media"><img src="${p.img}" alt="${p.name}"></div>
+        <div class="card-media"><img src="${p.img}" alt="${p.name}"/></div>
         <div class="card-name">${p.name}</div>
         <div class="card-sub">Edition 2024</div>
       `;
-      el.addEventListener("click", ()=>openSolo(p));
+      el.addEventListener("click", () => openSolo(p));
       grid.appendChild(el);
     });
   }
 
   const filtersEl = document.getElementById("filters");
   if(filtersEl){
-    filtersEl.addEventListener("click", e=>{
+    filtersEl.addEventListener("click", e => {
       const btn = e.target.closest(".chip");
       if(!btn) return;
-      document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
       btn.classList.add("active");
       const f = btn.dataset.filter;
-      render(f==="all" ? PRODUCTS : PRODUCTS.filter(p=>p.category===f));
-    });
-  }
-
-  /* ===== SOLO MEDIA (tabs) ===== */
-  let activeProduct = null;
-  let imgIndex = 0;
-
-  function renderImages(p){
-    const imgs = (p.images && p.images.length) ? p.images : [p.img];
-    imgIndex = Math.max(0, Math.min(imgIndex, imgs.length-1));
-
-    soloMedia.innerHTML = `
-      <img src="${imgs[imgIndex]}" alt="Image ${imgIndex+1}">
-      ${imgs.length>1 ? `<button class="img-arrow left" id="imgPrev">‹</button>
-      <button class="img-arrow right" id="imgNext">›</button>` : ``}
-    `;
-
-    const prev = document.getElementById('imgPrev');
-    const next = document.getElementById('imgNext');
-    if(prev) prev.onclick = () => { imgIndex = (imgIndex-1+imgs.length)%imgs.length; renderImages(p); };
-    if(next) next.onclick = () => { imgIndex = (imgIndex+1)%imgs.length; renderImages(p); };
-  }
-
-  function render360(p){
-    const src = p.video360 || VIDEO_360;
-    soloMedia.innerHTML = `
-      <video id="spinVid" preload="auto" playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
-
-      <div class="scrub-ui">
-        <button class="scrub-btn" id="scrubPlay">⏸</button>
-        <input class="scrub-range" id="scrubRange" type="range" min="0" max="1000" value="0" step="1">
-      </div>
-    `;
-
-    const vid = document.getElementById('spinVid');
-    const rng = document.getElementById('scrubRange');
-    const btn = document.getElementById('scrubPlay');
-
-    // set source safely (avoid blob)
-    vid.src = src;
-    vid.loop = true;
-    vid.muted = true;
-
-    let playing = true;
-    vid.addEventListener('loadedmetadata', ()=>{
-      // start paused on first frame for control accuracy, then play smoothly
-      vid.currentTime = 0;
-      vid.play().catch(()=>{});
-    });
-
-    const syncRange = ()=>{
-      if(!vid.duration || isNaN(vid.duration)) return;
-      rng.value = Math.round((vid.currentTime / vid.duration) * 1000);
-      requestAnimationFrame(syncRange);
-    };
-    requestAnimationFrame(syncRange);
-
-    rng.addEventListener('input', ()=>{
-      if(!vid.duration || isNaN(vid.duration)) return;
-      const t = (rng.value/1000) * vid.duration;
-      vid.currentTime = t;
-    });
-
-    btn.addEventListener('click', ()=>{
-      playing = !playing;
-      btn.textContent = playing ? "⏸" : "▶";
-      if(playing) vid.play().catch(()=>{});
-      else vid.pause();
-    });
-  }
-
-  function renderVideo(p){
-    const src = p.video || VIDEO_MAIN;
-    soloMedia.innerHTML = `
-      <video src="${src}" controls playsinline style="width:100%;height:100%;object-fit:cover;"></video>
-    `;
-  }
-
-  function renderModel(p){
-    if(!p.model){
-      soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
-      return;
-    }
-    const safeUrl = p.model.replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
-    soloMedia.innerHTML = `
-      <model-viewer
-        id="viewer3d"
-        src="${safeUrl}"
-        camera-controls
-        auto-rotate
-        shadow-intensity="1"
-        style="background:transparent;width:100%;height:100%;"
-        camera-orbit="45deg 75deg 3m"
-        environment-image="neutral"
-        alt="3D">
-      </model-viewer>
-    `;
-    const viewer = document.getElementById('viewer3d');
-    if(viewer){
-      viewer.addEventListener('error', ()=> {
-        soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
-      });
-    }
-  }
-
-  function setActiveTab(name){
-    document.querySelectorAll('.media-tab').forEach(b=>{
-      b.classList.toggle('active', b.dataset.tab === name);
-    });
-    if(!activeProduct) return;
-
-    if(name === 'images') renderImages(activeProduct);
-    if(name === 'spin') render360(activeProduct);
-    if(name === 'video') renderVideo(activeProduct);
-    if(name === 'model') renderModel(activeProduct);
-  }
-
-  const mediaTabs = document.getElementById('mediaTabs');
-  if(mediaTabs){
-    mediaTabs.addEventListener('click', (e)=>{
-      const btn = e.target.closest('.media-tab');
-      if(!btn) return;
-      setActiveTab(btn.dataset.tab);
+      render(f === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === f));
     });
   }
 
   function openSolo(p){
-    activeProduct = p;
-    imgIndex = 0;
-
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
 
+    // product name above frame
+    const soloName = document.getElementById("soloName");
+    if(soloName) soloName.textContent = p.name;
+
     document.getElementById("soloTitle").textContent = p.name.toUpperCase();
-    document.getElementById("soloTitleTop").textContent = p.name;
     document.getElementById("soloStore").textContent = p.store.name;
     document.getElementById("spMat").textContent = p.specs.mat;
     document.getElementById("spDim").textContent = p.specs.dim;
@@ -1729,11 +1310,16 @@ In Media & Cultural Impact:
 
     const fs = document.getElementById("formSubject");
     if(fs) fs.value = "Inquiry: " + p.name;
-    const fsM = document.getElementById("formSubjectModal");
-    if(fsM) fsM.value = "Inquiry: " + p.name;
 
-    // default tab
-    setActiveTab('images');
+    // focus nav bg
+    const sideNav = document.querySelector('.side-nav');
+    if(sideNav) sideNav.classList.add('focused');
+
+    // default: images
+    const pack = renderImages(p.images || DEFAULT_IMAGES);
+    soloMedia.innerHTML = pack.html;
+    pack.mount(soloMedia);
+    attachTabHandlers(p);
 
     gotoStore(p.store);
   }
@@ -1744,52 +1330,125 @@ In Media & Cultural Impact:
     if(shopEl) shopEl.classList.remove("solo");
     if(galleryEl) galleryEl.classList.remove("solo");
 
-    activeProduct = null;
+    const sideNav = document.querySelector('.side-nav');
+    if(sideNav) sideNav.classList.remove('focused');
 
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
-    map.flyTo({ center:[0,20], zoom: isMobile() ? 0 : 0.8, pitch:0, bearing:0, duration:1800 });
+    const isMobileReset = window.innerWidth < 900;
+    map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
   }
 
   safeAdd("btnBack","click",closeSolo);
   safeAdd("btnClose","click",closeSolo);
-  safeAdd("btnContactProduct","click",()=>switchSection('sect-contact'));
+  safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
 
+  /* ===== ARTIST MODAL ===== */
   const modalArtist = document.getElementById("modalArtistOverlay");
-  const modalContact = document.getElementById("modalContactOverlay");
-
   const artistBtnEl = document.getElementById("artistBtn");
-  if(artistBtnEl) artistBtnEl.addEventListener("click", ()=> modalArtist && modalArtist.classList.add("open"));
-  safeAdd("closeArtistModal","click",()=> modalArtist && modalArtist.classList.remove("open"));
+  if(artistBtnEl) artistBtnEl.addEventListener("click", () => modalArtist && modalArtist.classList.add("open"));
+  safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
+  window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
 
-  safeAdd("closeContactModal","click",()=> modalContact && modalContact.classList.remove("open"));
+  /* ===== OUR PROCESS ANIMATION (FIXED TO STEP 8) ===== */
+  function setupProcessAnimation(){
+    const dot = document.getElementById("procDot");
+    const itemsWrap = document.getElementById("procItems");
+    const grid = document.getElementById("processGrid");
+    if(!dot || !itemsWrap || !grid) return;
 
-  window.addEventListener("click", e=>{
-    if(e.target === modalArtist && modalArtist) modalArtist.classList.remove("open");
-    if(e.target === modalContact && modalContact) modalContact.classList.remove("open");
-  });
+    const steps = Array.from(itemsWrap.querySelectorAll(".proc-step"));
+    const rail = grid.querySelector(".proc-rail");
+    const line = rail ? rail.querySelector(".proc-line") : null;
+    if(!steps.length || !rail || !line) return;
+
+    // scroller is the SERVICES scroll container
+    const scroller = document.querySelector("#sect-services .section-scroll");
+    if(!scroller) return;
+
+    let centers = [];
+
+    const computeGeometry = () => {
+      rail.style.height = itemsWrap.offsetHeight + "px";
+
+      const railRect = rail.getBoundingClientRect();
+      centers = steps.map(step => {
+        const r = step.getBoundingClientRect();
+        const c = (r.top + r.bottom) / 2;
+        return c - railRect.top;
+      });
+
+      if(centers.length < 2) return;
+
+      // line from step 1 to step 8
+      const top = centers[0];
+      const height = centers[centers.length - 1] - centers[0];
+      line.style.top = `${top}px`;
+      line.style.height = `${Math.max(0, height)}px`;
+      line.style.bottom = "auto";
+
+      // dot initial
+      dot.style.transform = `translate(-50%, ${top - 9}px)`;
+    };
+
+    const moveDotToClosestStep = () => {
+      if(!centers.length) return;
+
+      const scRect = scroller.getBoundingClientRect();
+      const targetY = scRect.top + scRect.height * 0.45;
+
+      let bestIndex = 0;
+      let bestDist = Infinity;
+
+      for(let i=0;i<steps.length;i++){
+        const r = steps[i].getBoundingClientRect();
+        const c = (r.top + r.bottom) / 2;
+        const d = Math.abs(c - targetY);
+        if(d < bestDist){
+          bestDist = d;
+          bestIndex = i;
+        }
+      }
+
+      const y = centers[bestIndex];
+      dot.style.transform = `translate(-50%, ${y - 9}px)`;
+    };
+
+    let raf = null;
+    const onScroll = () => {
+      if(raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        computeGeometry();
+        moveDotToClosestStep();
+      });
+    };
+
+    requestAnimationFrame(() => {
+      computeGeometry();
+      moveDotToClosestStep();
+    });
+
+    scroller.addEventListener("scroll", onScroll, { passive:true });
+    window.addEventListener("resize", () => {
+      computeGeometry();
+      moveDotToClosestStep();
+    });
+  }
 
   /* ===== INIT ===== */
   (function init(){
-    function run(){
-      // default active nav is Gallery
-      render(PRODUCTS);
+    // default section: gallery
+    render(PRODUCTS);
 
-      // set correct active nav highlights
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const navG = document.getElementById('navGallery');
-      const mNavG = document.getElementById('mNavGallery');
-      if(navG) navG.classList.add('active');
-      if(mNavG) mNavG.classList.add('active');
+    // ensure nav active
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navGallery = document.getElementById('navGallery');
+    if(navGallery) navGallery.classList.add('active');
+    const mNavGallery = document.getElementById('mNavGallery');
+    if(mNavGallery) mNavGallery.classList.add('active');
 
-      // process animation
-      setupProcessAnimation();
-    }
-
-    if(document.readyState === 'complete' || document.readyState === 'interactive'){
-      setTimeout(run, 30);
-    }else{
-      document.addEventListener('DOMContentLoaded', ()=> setTimeout(run, 30));
-    }
+    // init process animation
+    setupProcessAnimation();
   })();
 </script>
 </body>
