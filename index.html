@@ -162,10 +162,15 @@
     display:block;
   }
   .home-hero--full{
-    height:100vh;
-    border-radius:0;
-    box-shadow:none;
+    height:100vh;              /* ✅ full screen */
+    border-radius:0;           /* ✅ true full-bleed */
+    box-shadow:none;           /* ✅ clean, no "frame" feeling */
   }
+  /* ✅ make the TOP home image cover with focus to the right + bottom */
+  .home-hero--full img{
+    object-position:right bottom;
+  }
+
   .home-content{
     padding:40px;
   }
@@ -194,36 +199,102 @@
   .btn-hero:hover{ transform:translateY(-2px); background:#000; }
 
   /* ===== ABOUT VISUAL (same content, better layout) ===== */
-  .about-wrap{ max-width:1000px; }
+  #sect-about .section-scroll{
+    background:linear-gradient(180deg,#fff 0%, #fafafa 100%);
+  }
+  .about-wrap{
+    max-width:1080px;
+    margin:0 auto;
+    position:relative;
+  }
+  #sect-about .sec-title{
+    display:inline-block;
+    position:relative;
+    padding-bottom:10px;
+  }
+  #sect-about .sec-title::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:88px;
+    height:3px;
+    border-radius:999px;
+    background:#111;
+    opacity:0.9;
+  }
   .about-lead{
-    font-size:16px;
-    line-height:1.85;
-    color:#444;
-    margin:0 0 18px;
+    font-size:17px;
+    line-height:1.9;
+    color:#3f3f3f;
+    margin:10px 0 16px;
+    max-width:980px;
   }
   .about-sublead{
     font-size:15px;
-    line-height:1.85;
-    color:#555;
+    line-height:1.9;
+    color:#595959;
     margin:0 0 26px;
+    max-width:980px;
   }
   .about-grid{
     display:grid;
     grid-template-columns:repeat(3, minmax(0, 1fr));
     gap:16px;
+    align-items:stretch;
   }
   .about-card{
     background:#fff;
     border:1px solid #efefef;
     border-radius:22px;
-    padding:18px 18px 16px;
+    padding:20px 18px 16px;
     box-shadow:0 12px 28px rgba(0,0,0,0.06);
+    position:relative;
+    overflow:hidden;
+    transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
   }
+  .about-card::after{
+    content:"";
+    position:absolute;
+    inset:-40px -40px auto auto;
+    width:160px;
+    height:160px;
+    border-radius:999px;
+    background:radial-gradient(circle at center, rgba(17,17,17,0.08), rgba(17,17,17,0));
+    pointer-events:none;
+  }
+  .about-card:hover{
+    transform:translateY(-4px);
+    border-color:#e6e6e6;
+    box-shadow:0 18px 44px rgba(0,0,0,0.09);
+  }
+  .about-card::before{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:950;
+    font-size:12px;
+    letter-spacing:0.10em;
+    color:#111;
+    background:rgba(17,17,17,0.06);
+    border:1px solid rgba(17,17,17,0.08);
+    content:"";
+  }
+  .about-card:nth-child(1)::before{ content:"01"; }
+  .about-card:nth-child(2)::before{ content:"02"; }
+  .about-card:nth-child(3)::before{ content:"03"; }
+
   .about-card h3{
     margin:0 0 10px;
-    font-size:14px;
+    font-size:13px;
     font-weight:950;
-    letter-spacing:0.08em;
+    letter-spacing:0.10em;
     text-transform:uppercase;
     color:#111;
   }
@@ -236,6 +307,9 @@
     margin:0 0 10px;
     line-height:1.75;
     font-size:13px;
+  }
+  .about-card li::marker{
+    color:rgba(17,17,17,0.45);
   }
   .about-card li:last-child{ margin-bottom:0; }
 
@@ -507,8 +581,7 @@
     font-weight:900;
     margin-bottom:12px;
   }
-  /* ✅ EDIT: services card title dark grey */
-  .svc-title{ font-size:18px; font-weight:950; margin:0 0 8px; color:#3f3f3f; }
+  .svc-title{ font-size:18px; font-weight:950; margin:0 0 8px; color:#111; }
   .svc-desc{ margin:0; color:#666; line-height:1.6; font-size:13px; }
 
   .process{
@@ -543,16 +616,14 @@
     background:#ddd;
     border-radius:999px;
   }
-  /* ✅ EDIT: dot positioning corrected (top-based, smooth, visible) */
   .proc-dot{
     position:absolute;
     left:34px;
-    top:0;
     width:18px; height:18px;
     border-radius:50%;
     background:#111;
-    transform:translate(-50%, -50%);
-    transition:top .14s linear;
+    transform:translate(-50%, 0);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
     box-shadow:0 10px 18px rgba(0,0,0,0.12);
   }
 
@@ -637,87 +708,6 @@
   .modal-overlay.open .modal-box{ transform:translateY(0); }
   .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
 
-  /* ✅ EDIT: Footer (black, matches brand, no extra name/email fields) */
-  .site-footer{
-    margin-top:28px;
-    background:#0b0b0b;
-    color:#fff;
-    border-radius:22px;
-    overflow:hidden;
-    box-shadow:0 18px 44px rgba(0,0,0,0.18);
-  }
-  .site-footer .ft-top{
-    padding:26px 24px 16px;
-  }
-  .site-footer .ft-brand{
-    font-weight:950;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    font-size:13px;
-    opacity:.92;
-  }
-  .site-footer .ft-note{
-    margin-top:10px;
-    color:rgba(255,255,255,0.80);
-    line-height:1.7;
-    font-size:13px;
-    max-width:780px;
-  }
-  .site-footer .ft-grid{
-    display:grid;
-    grid-template-columns:1.2fr 1fr 1fr;
-    gap:18px;
-    padding:18px 24px 22px;
-    border-top:1px solid rgba(255,255,255,0.10);
-  }
-  .ft-title{
-    font-weight:950;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    font-size:12px;
-    opacity:.85;
-    margin-bottom:12px;
-  }
-  .ft-text{
-    color:rgba(255,255,255,0.82);
-    font-size:13px;
-    line-height:1.7;
-  }
-  .ft-links a{
-    display:block;
-    padding:10px 0;
-    color:rgba(255,255,255,0.85);
-    text-decoration:none;
-    border-bottom:1px solid rgba(255,255,255,0.10);
-    font-weight:750;
-  }
-  .ft-links a:last-child{ border-bottom:none; }
-  .ft-links a:hover{ color:#fff; }
-
-  .ft-social a{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:10px 0;
-    color:rgba(255,255,255,0.88);
-    text-decoration:none;
-    border-bottom:1px solid rgba(255,255,255,0.10);
-    font-weight:800;
-  }
-  .ft-social a:last-child{ border-bottom:none; }
-  .ft-ic{
-    width:34px;height:34px;border-radius:999px;
-    background:rgba(255,255,255,0.12);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:950;
-  }
-  .ft-copy{
-    padding:0 24px 22px;
-    color:rgba(255,255,255,0.70);
-    font-size:12px;
-    font-weight:800;
-  }
-
   @media (max-width:900px){
     .layout{ flex-direction:column; }
     #map{ width:100%; height:45vh; flex:none; }
@@ -747,8 +737,6 @@
     .proc-line, .proc-dot{ left:26px; }
     .solo-tabs-bar{ margin:6px 0 10px; }
     .about-grid{ grid-template-columns:1fr; }
-
-    .site-footer .ft-grid{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -779,6 +767,7 @@
     <section id="sect-home" class="app-section">
       <div class="section-scroll home-scroll">
 
+        <!-- ✅ TOP IMAGE (FULL SCREEN) -->
         <div class="home-hero home-hero--full">
           <img
             src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
@@ -794,6 +783,7 @@
           <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
         </div>
 
+        <!-- ✅ END IMAGE (your previous home image) -->
         <div class="home-end">
           <div class="home-hero home-hero--end">
             <img
@@ -812,6 +802,7 @@
         <div class="about-wrap">
           <h1 class="sec-title">About FNN</h1>
 
+          <!-- ✅ EXACT SAME CONTENT — just presented visually -->
           <p class="about-lead">
             FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
           </p>
@@ -971,45 +962,6 @@
         </form>
 
         <div id="formSuccess">Thank you! Your inquiry has been received.</div>
-
-        <!-- ✅ EDIT: Footer (black background) -->
-        <footer class="site-footer">
-          <div class="ft-top">
-            <div class="ft-brand">FNN ART</div>
-            <div class="ft-note">
-              A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
-            </div>
-          </div>
-
-          <div class="ft-grid">
-            <div>
-              <div class="ft-title">Contact us</div>
-              <div class="ft-text">
-                anaskaroti@gmail.com<br>
-                <!-- Optional: add phone/address here -->
-              </div>
-            </div>
-
-            <div class="ft-links">
-              <div class="ft-title">Navigation</div>
-              <a href="#" onclick="switchSection('sect-home'); return false;">Home</a>
-              <a href="#" onclick="switchSection('sect-about'); return false;">About</a>
-              <a href="#" onclick="switchSection('sect-services'); return false;">Services</a>
-              <a href="#" onclick="switchSection('sect-gallery'); return false;">Gallery</a>
-              <a href="#" onclick="switchSection('sect-contact'); return false;">Contact</a>
-            </div>
-
-            <div class="ft-social">
-              <div class="ft-title">Follow us</div>
-              <a href="#" onclick="return false;"><span class="ft-ic">◎</span>@fnn</a>
-              <a href="#" onclick="return false;"><span class="ft-ic">f</span>@fnn</a>
-              <a href="#" onclick="return false;"><span class="ft-ic">in</span>@fnn</a>
-              <a href="#" onclick="return false;"><span class="ft-ic">▶</span>@fnn</a>
-            </div>
-          </div>
-
-          <div class="ft-copy">© 2025 FNN ART. All rights reserved.</div>
-        </footer>
       </div>
     </section>
 
@@ -1034,7 +986,7 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
 
 <script>
-  const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbWM0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
+  const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbMC0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
   const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
 
   mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -1454,7 +1406,6 @@
   safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
   window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
 
-  /* ✅ EDIT: process dot now clamps to step8 reliably and stays centered smoothly */
   function setupProcessAnimation(){
     const dot = document.getElementById("procDot");
     const itemsWrap = document.getElementById("procItems");
@@ -1469,32 +1420,42 @@
     const scroller = document.querySelector("#sect-services .section-scroll");
     if(!scroller) return;
 
-    let minY = 0;
-    let maxY = 0;
+    let topY = 0;
+    let totalH = 0;
 
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
 
-      const centers = steps.map(step => step.offsetTop + (step.offsetHeight / 2));
+      const railRect = rail.getBoundingClientRect();
+      const centers = steps.map(step => {
+        const r = step.getBoundingClientRect();
+        return ((r.top + r.bottom) / 2) - railRect.top;
+      });
+
       if(centers.length < 2) return;
 
-      minY = centers[0];
-      maxY = centers[centers.length - 1];
+      topY = centers[0];
+      totalH = centers[centers.length - 1] - centers[0];
 
-      line.style.top = `${minY}px`;
-      line.style.height = `${Math.max(0, (maxY - minY))}px`;
+      line.style.top = `${topY}px`;
+      line.style.height = `${Math.max(0, totalH)}px`;
       line.style.bottom = "auto";
     };
 
-    const moveDot = () => {
+    const moveDotLockedToViewportCenter = () => {
       const railRect = rail.getBoundingClientRect();
       const scrollerRect = scroller.getBoundingClientRect();
 
-      const viewportCenter = scrollerRect.top + (scroller.clientHeight / 2);
-      const relY = viewportCenter - railRect.top;
+      const centerY = scrollerRect.top + (scroller.clientHeight / 2);
+      const relY = centerY - railRect.top;
 
-      const y = Math.min(maxY, Math.max(minY, relY));
-      dot.style.top = `${y}px`;
+      const minY = topY;
+      const maxY = topY + totalH;
+
+      const atBottom = (scroller.scrollTop + scroller.clientHeight) >= (scroller.scrollHeight - 2);
+      const y = atBottom ? maxY : Math.min(maxY, Math.max(minY, relY));
+
+      dot.style.transform = `translate(-50%, ${y - 9}px)`;
     };
 
     let raf = null;
@@ -1503,19 +1464,19 @@
       raf = requestAnimationFrame(() => {
         raf = null;
         computeGeometry();
-        moveDot();
+        moveDotLockedToViewportCenter();
       });
     };
 
     requestAnimationFrame(() => {
       computeGeometry();
-      moveDot();
+      moveDotLockedToViewportCenter();
     });
 
     scroller.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("resize", () => {
       computeGeometry();
-      moveDot();
+      moveDotLockedToViewportCenter();
     });
   }
 
