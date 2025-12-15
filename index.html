@@ -10,7 +10,7 @@
   :root{
     --bg:#fff;
     --text-main:#222;
-    --accent:#333;
+    --accent:#111;
     --card-radius:32px;
     --btn-radius:30px;
   }
@@ -18,7 +18,8 @@
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
   body{
     margin:0;
-    height:100vh; width:100vw;
+    height:100vh;
+    width:100vw;
     background:var(--bg);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     color:var(--text-main);
@@ -28,26 +29,52 @@
   /* ===== LAYOUT ===== */
   .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
 
-  /* 31% / 69% split */
-  #map{ flex:0 0 31vw; height:100vh; background:#000; position:relative; z-index:1; }
+  /* LEFT MAP (31%) / RIGHT SHOP (69%) */
+  #map{
+    flex:0 0 31vw;
+    height:100vh;
+    background:#000;
+    position:relative;
+    z-index:0;
+  }
+  .shop{
+    flex:0 0 69vw;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    background:#fff;
+    position:relative;
+    z-index:2;
+    box-shadow:-10px 0 40px rgba(0,0,0,0.05);
+    overflow:hidden;
+  }
 
+  /* Map B&W */
   .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
 
-  /* ===== SIDE NAV (DESKTOP) ===== */
+  /* ===== SIDE NAV ===== */
   .side-nav{
-    position:absolute; top:50%; right:0; transform:translateY(-50%);
-    display:flex; flex-direction:column; z-index:10;
-    background:rgba(0,0,0,0.55); /* darker */
-    backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
+    position:absolute;
+    top:50%;
+    right:0;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    z-index:10;
+    background:rgba(0,0,0,0.45); /* darker */
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
     border-radius:20px 0 0 20px;
     border-left:1px solid rgba(255,255,255,0.12);
-    border-top:1px solid rgba(255,255,255,0.12);
-    border-bottom:1px solid rgba(255,255,255,0.12);
-    box-shadow:-10px 0 30px rgba(0,0,0,0.35);
+    border-top:1px solid rgba(255,255,255,0.10);
+    border-bottom:1px solid rgba(255,255,255,0.10);
+    box-shadow:-10px 0 30px rgba(0,0,0,0.30);
   }
+  .side-nav.focused{ background:rgba(0,0,0,0.65); border-color:rgba(255,255,255,0.10); }
+
   .nav-item{
     padding:28px 38px;
-    color:rgba(255,255,255,0.85);
+    color:rgba(255,255,255,0.92);
     font-weight:700;
     font-size:14px;
     text-transform:uppercase;
@@ -56,233 +83,158 @@
     transition:all .25s ease;
     cursor:pointer;
     text-align:center;
-    text-shadow:0 2px 10px rgba(0,0,0,0.5);
+    text-shadow:0 2px 10px rgba(0,0,0,0.55);
     user-select:none;
   }
   .nav-item:last-child{ border-bottom:none; }
-  .nav-item:hover,.nav-item.active{
+  .nav-item:hover,
+  .nav-item.active{
     background:rgba(255,255,255,0.14);
     color:#fff;
-    padding-right:46px;
+    padding-right:48px;
   }
 
-  /* ===== MOBILE NAV (HORIZONTAL, OVER MAP) ===== */
-  .side-nav-mobile{
-    display:none;
-    position:fixed;
-    left:50%;
-    bottom:16px;
-    transform:translateX(-50%);
-    z-index:50;
-    flex-direction:row;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,0.12);
-    box-shadow:0 18px 40px rgba(0,0,0,0.35);
-    overflow:hidden;
-  }
-  .side-nav-mobile .nav-item{
-    padding:14px 16px;
-    border-bottom:none;
-    border-right:1px solid rgba(255,255,255,0.10);
-    font-size:12px;
-    letter-spacing:0.05em;
-    white-space:nowrap;
-  }
-  .side-nav-mobile .nav-item:last-child{ border-right:none; }
-  .side-nav-mobile .nav-item:hover,.side-nav-mobile .nav-item.active{ padding-right:16px; }
-
-  /* ===== SHOP ===== */
-  .shop{
-    flex:1;
+  /* ===== SECTIONS ARCH ===== */
+  .app-section{
+    position:absolute;
+    inset:0;
     display:flex;
     flex-direction:column;
-    height:100vh;
     background:#fff;
-    position:relative;
-    z-index:2;
-    box-shadow:-10px 0 40px rgba(0,0,0,0.05);
-    min-height:0;
-  }
-
-  /* Sections (desktop: absolute + internal scroll) */
-  .app-section{
-    position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    background:#fff;
-    opacity:0; visibility:hidden; pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
     transform:translateY(20px);
     transition:opacity .35s ease, transform .35s ease;
     z-index:1;
     padding:40px;
-    overflow-y:auto;
+    overflow-y:auto; /* scroll per section */
     height:100%;
-    min-height:0;
   }
   .app-section.active-section{
-    opacity:1; visibility:visible; pointer-events:auto;
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
     transform:translateY(0);
     z-index:10;
   }
 
+  /* ===== COMMON TYPO ===== */
+  h1.sec-title{ font-size:32px; font-weight:850; margin:0 0 10px; letter-spacing:-0.02em; color:#111; }
+  p.sec-sub{ font-size:16px; color:#666; line-height:1.65; max-width:720px; margin:0 0 24px; }
+
   /* ===== HOME ===== */
-  #sect-home{ gap:22px; }
+  #sect-home{ gap:20px; }
+  #sect-home .sec-sub{ max-width:none; } /* full width paragraph */
   .home-logo-hero{
     width:100%;
     height:420px;
     border-radius:28px;
-    background:#f3f3f3;
-    box-shadow:0 18px 45px rgba(0,0,0,0.06);
+    background:#f1f1f1;
+    box-shadow:0 14px 40px rgba(0,0,0,0.06) inset;
     display:flex;
     align-items:center;
     justify-content:center;
     overflow:hidden;
+    position:relative;
   }
   .home-logo-hero img{
     width:100%;
     height:100%;
-    object-fit:cover; /* fill the whole hero */
+    object-fit:contain;
     display:block;
   }
-
-  h1.sec-title{ font-size:32px; font-weight:900; margin:0 0 10px; letter-spacing:-0.02em; color:#111; }
-  p.sec-sub{ font-size:16px; color:#666; line-height:1.65; max-width:780px; margin:0 0 18px; }
-
   .btn-hero{
     display:inline-block;
-    width:auto!important;
+    width:auto;
     padding:14px 36px;
     background:#111;
     color:#fff;
     border:none;
-    border-radius:999px;
+    border-radius:50px;
     font-size:14px;
     font-weight:800;
     cursor:pointer;
-    box-shadow:0 10px 25px rgba(0,0,0,0.18);
+    margin-top:2px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
     align-self:flex-start;
     transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
   }
-  .btn-hero:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,0.22); background:#000; }
+  .btn-hero:hover{ transform:translateY(-3px); box-shadow:0 12px 25px rgba(0,0,0,0.20); background:#000; }
 
   /* ===== ABOUT ===== */
-  .about-grid{
-    display:grid;
-    grid-template-columns:1.2fr 1fr;
-    gap:22px;
-    margin-top:22px;
-  }
-  .about-card{
-    border:1px solid #eee;
-    border-radius:22px;
-    padding:22px;
-    background:#fff;
-    box-shadow:0 12px 30px rgba(0,0,0,0.04);
-  }
-  .about-kicker{
-    font-size:12px;
-    letter-spacing:0.14em;
+  .about-rich{ max-width:1000px; }
+  .about-rich p{ margin:0 0 14px; }
+  .about-rich h3{
+    margin:18px 0 10px;
+    font-size:14px;
+    letter-spacing:.12em;
     text-transform:uppercase;
-    color:#b1b1b1;
-    font-weight:900;
-    margin:0 0 10px;
+    color:#111;
   }
-  .about-card p{ margin:0; color:#555; line-height:1.7; font-size:14px; }
-  .pill-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:16px;
-  }
-  .pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 14px;
-    border-radius:999px;
-    border:1px solid #eee;
-    background:#fafafa;
-    font-weight:700;
-    color:#333;
-    font-size:13px;
-    white-space:nowrap;
-  }
-  .about-img{
-    width:100%;
-    border-radius:26px;
-    overflow:hidden;
-    margin-top:22px;
-    border:1px solid #efefef;
-  }
-  .about-img img{ width:100%; height:auto; display:block; } /* real size (no crop) */
+  .about-rich ul{ margin:8px 0 14px 18px; color:#555; line-height:1.65; }
+  .about-rich li{ margin:6px 0; }
 
   /* ===== SERVICES ===== */
   .services-wrap{
-    border-radius:28px;
-    border:1px solid #efefef;
     background:
-      repeating-linear-gradient(135deg, rgba(0,0,0,0.03) 0 2px, rgba(0,0,0,0) 2px 10px),
+      repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.00) 2px, rgba(0,0,0,0.00) 10px),
       #f6f6f6;
-    padding:26px;
+    border-radius:28px;
+    padding:34px;
+    border:1px solid rgba(0,0,0,0.06);
   }
   .services-grid{
     display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:26px 20px;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:20px;
   }
-  .svc{
+  .svc-card{
+    background:rgba(255,255,255,0.86);
+    border:1px solid rgba(0,0,0,0.07);
+    border-radius:20px;
+    padding:22px 20px;
     text-align:center;
-    padding:14px 10px;
+    box-shadow:0 10px 24px rgba(0,0,0,0.04);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
   }
-  .svc .ico{
-    width:56px; height:56px;
-    margin:0 auto 12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#777;
+  .svc-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 18px 36px rgba(0,0,0,0.08);
+    border-color:rgba(0,0,0,0.12);
+    background:#fff;
   }
-  .svc .ico svg{ width:44px; height:44px; opacity:0.85; }
-  .svc h3{
-    margin:0 0 8px;
-    font-size:22px;
-    line-height:1.15;
-    font-weight:900;
-    color:#111;
+  .svc-ico{
+    width:42px;
+    height:42px;
+    margin:0 auto 10px;
+    opacity:.7;
   }
-  .svc p{
-    margin:0;
-    color:#666;
-    font-size:14px;
-    line-height:1.6;
-    max-width:320px;
-    margin-inline:auto;
-  }
+  .svc-title{ font-size:22px; font-weight:850; margin:4px 0 8px; color:#111; }
+  .svc-desc{ font-size:14px; color:#666; line-height:1.55; margin:0; }
 
   /* ===== GALLERY ===== */
-  #sect-gallery{ padding:0; }
+  #sect-gallery{ padding:0; overflow:hidden; } /* keep header sticky; body scroll in this section via inner scroll */
   .shop-head{
-    flex-shrink:0;
-    position:sticky; top:0;
+    position:sticky;
+    top:0;
     background:rgba(255,255,255,0.96);
     backdrop-filter:blur(10px);
     z-index:10;
-    padding:18px 26px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
+    padding:22px 26px;
     border-bottom:1px solid #f0f0f0;
   }
   .nav-group{
     display:flex;
-    gap:12px;
+    gap:10px;
     align-items:center;
-    flex-wrap:nowrap;      /* one line */
-    overflow-x:auto;       /* if needed */
+    flex-wrap:nowrap;     /* one line */
+    overflow-x:auto;      /* scroll if needed */
+    white-space:nowrap;
     scrollbar-width:none;
   }
   .nav-group::-webkit-scrollbar{ display:none; }
+
   .chip{
     border:none;
     background:transparent;
@@ -291,231 +243,239 @@
     cursor:pointer;
     padding:8px 12px;
     transition:all .2s;
-    font-weight:700;
+    font-weight:600;
     white-space:nowrap;
-    border-radius:999px;
+    flex:0 0 auto;
   }
   .chip:hover{ color:#333; }
   .chip.active{
-    background:#111;
+    background:var(--accent);
     color:#fff;
     padding:8px 22px;
+    border-radius:var(--btn-radius);
   }
 
-  .shop-body{ padding:22px 26px 70px; }
+  .shop-body{ padding:18px 26px 70px; }
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
-    gap:34px 18px;
+    gap:40px 20px;
     width:100%;
   }
   .card{
     background:#fff;
-    border:1px solid #f1f1f1;
+    border:1px solid #f4f4f4;
     border-radius:var(--card-radius);
-    padding:26px 18px;
+    padding:30px 20px;
     cursor:pointer;
     transition:transform .25s ease, box-shadow .25s ease;
     display:flex;
     flex-direction:column;
     align-items:center;
     text-align:center;
+    min-height:320px;
   }
-  .card:hover{ transform:translateY(-6px); box-shadow:0 18px 45px rgba(0,0,0,0.06); }
-  .card-media{ width:100%; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:18px; position:relative; }
-  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 10px 15px rgba(0,0,0,0.08)); }
+  .card:hover{ transform:translateY(-6px); box-shadow:0 15px 40px rgba(0,0,0,0.06); }
+  .card-media{
+    width:100%;
+    height:180px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:20px;
+    position:relative;
+  }
+  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 10px 15px rgba(0,0,0,0.10)); }
   .card-name{ font-size:13px; font-weight:900; letter-spacing:0.08em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
-  .card-sub{ font-size:10px; color:#d0d0d0; text-transform:uppercase; letter-spacing:0.05em; }
+  .card-sub{ font-size:10px; color:#ccc; text-transform:uppercase; letter-spacing:0.05em; }
 
   /* SOLO VIEW */
-  .solo-wrap{ display:none; }
+  .solo-wrap{ display:none; animation: slideIn .45s cubic-bezier(.2,.8,.2,1); }
   #sect-gallery.solo .grid{ display:none; }
   #sect-gallery.solo .solo-wrap{ display:block; }
+  .back-nav{ margin-bottom:18px; }
+  .btn-back{ background:none; border:none; padding:0; color:#999; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; }
 
-  .back-nav{ margin-bottom:16px; }
-  .btn-back{
-    background:none; border:none; padding:0;
-    color:#999; font-size:13px; font-weight:800;
-    cursor:pointer; display:flex; align-items:center; gap:6px;
-  }
-
+  /* 16:9 FRAME */
   .solo-media-container{
     width:100%;
-    height:420px;
+    aspect-ratio:16 / 9;
     background:#fff;
+    border-radius:28px;
+    overflow:hidden;
     display:flex;
     align-items:center;
     justify-content:center;
     margin-bottom:18px;
     position:relative;
-    border-radius:22px;
-    border:1px solid #f0f0f0;
-    overflow:visible; /* allow tabs to sit “out of frame” */
+    border:1px solid rgba(0,0,0,0.06);
   }
-  .solo-media-stage{
-    width:100%; height:100%;
-    border-radius:22px;
-    overflow:hidden;
+  .solo-media-container .pm-stage{
+    position:absolute;
+    inset:0;
     display:flex;
     align-items:center;
     justify-content:center;
-    background:#fff;
   }
-  model-viewer{ width:100%; height:100%; }
-  .solo-media-stage img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .solo-media-container img,
+  .solo-media-container video,
+  .solo-media-container model-viewer{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+    background:transparent;
+  }
 
-  /* Media tabs (Images / 360 / Video / 3D) */
-  .media-tabs{
+  /* Media Nav (Images / 360 / Video / 3D) */
+  .pm-nav{
     position:absolute;
-    top:-16px; right:14px; /* out of frame */
+    top:14px;
+    right:14px;
+    z-index:5;
     display:flex;
     gap:8px;
-    padding:8px;
+    padding:10px;
     border-radius:999px;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-    border:1px solid rgba(255,255,255,0.14);
-    box-shadow:0 16px 35px rgba(0,0,0,0.25);
-    z-index:5;
-    max-width:calc(100% - 28px);
-    overflow:hidden;
+    background:rgba(60,60,60,0.45);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 14px 40px rgba(0,0,0,0.18);
   }
-  .tab-btn{
+  .pm-tab{
     border:none;
-    background:rgba(255,255,255,0.12);
-    color:#fff;
-    font-weight:900;
-    font-size:12px;
-    letter-spacing:0.04em;
-    text-transform:uppercase;
-    padding:8px 12px;
-    border-radius:999px;
     cursor:pointer;
-    white-space:nowrap;
-    transition:background .15s ease, transform .1s ease;
-    user-select:none;
+    font-weight:900;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    font-size:13px;
+    padding:10px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.12);
+    color:rgba(255,255,255,0.92);
+    transition:all .18s ease;
   }
-  .tab-btn:hover{ background:rgba(255,255,255,0.18); }
-  .tab-btn.active{ background:#fff; color:#111; }
-  .tab-btn:active{ transform:scale(0.98); }
+  .pm-tab:hover{ background:rgba(255,255,255,0.18); }
+  .pm-tab.active{
+    background:#fff;
+    color:#111;
+  }
 
-  /* Image slider arrows */
-  .img-arrow{
+  /* Image arrows */
+  .pm-arrow{
     position:absolute;
     top:50%;
     transform:translateY(-50%);
-    width:40px; height:40px;
-    border-radius:999px;
+    z-index:5;
+    width:44px;
+    height:44px;
     border:none;
-    background:rgba(0,0,0,0.35);
-    color:#fff;
+    border-radius:999px;
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
-    z-index:4;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  }
-  .img-arrow:hover{ background:rgba(0,0,0,0.5); }
-  .img-arrow.left{ left:12px; }
-  .img-arrow.right{ right:12px; }
-
-  /* 360 custom controller (no native controls) */
-  .ctrl-bar{
-    position:absolute;
-    left:50%;
-    bottom:18px;
-    transform:translateX(-50%);
-    width:min(720px, calc(100% - 40px));
     background:rgba(0,0,0,0.35);
-    border:1px solid rgba(255,255,255,0.14);
-    border-radius:999px;
-    padding:10px 14px;
-    display:flex;
-    gap:12px;
-    align-items:center;
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-    z-index:6;
-  }
-  .ctrl-btn{
-    width:36px; height:36px;
-    border:none;
-    border-radius:999px;
-    background:rgba(255,255,255,0.14);
     color:#fff;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+  }
+  .pm-arrow:hover{ background:rgba(0,0,0,0.50); }
+  .pm-arrow.left{ left:14px; }
+  .pm-arrow.right{ right:14px; }
+
+  /* 360 custom controller */
+  .v360-ui{
+    position:absolute;
+    left:18px;
+    right:18px;
+    bottom:18px;
+    z-index:6;
+    height:44px;
+    border-radius:999px;
+    background:rgba(0,0,0,0.55);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 12px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+  }
+  .v360-btn{
+    width:38px;
+    height:28px;
+    border-radius:10px;
+    border:none;
     cursor:pointer;
+    background:rgba(255,255,255,0.12);
+    color:#fff;
     display:flex;
     align-items:center;
     justify-content:center;
     font-weight:900;
   }
-  .ctrl-range{
-    flex:1;
+  .v360-range{
     -webkit-appearance:none;
     appearance:none;
+    width:100%;
     height:10px;
     border-radius:999px;
     background:rgba(255,255,255,0.18);
     outline:none;
+    cursor:pointer;
   }
-  .ctrl-range::-webkit-slider-thumb{
+  .v360-range::-webkit-slider-thumb{
     -webkit-appearance:none;
     appearance:none;
-    width:54px; height:18px;
+    width:44px;
+    height:22px;
     border-radius:999px;
     background:#fff;
-    cursor:pointer;
+    box-shadow:0 10px 20px rgba(0,0,0,0.25);
   }
-  .ctrl-range::-moz-range-thumb{
-    width:54px; height:18px;
+  .v360-range::-moz-range-thumb{
+    width:44px;
+    height:22px;
     border-radius:999px;
     background:#fff;
-    cursor:pointer;
     border:none;
   }
 
   .solo-info-block{ padding:0 10px; }
-  .solo-desc{
-    text-align:left; color:#666; font-size:14px; line-height:1.65;
-    border-top:1px solid #eee; padding-top:22px; margin-bottom:22px;
-  }
-  .data-row{ display:flex; gap:28px; margin-top:14px; flex-wrap:wrap; }
-  .data-item span:first-child{ display:block; font-size:10px; color:#999; text-transform:uppercase; font-weight:900; margin-bottom:4px; letter-spacing:0.08em; }
-  .data-item span:last-child{ font-size:15px; font-weight:900; color:#222; }
+  .solo-desc{ text-align:left; color:#666; font-size:14px; line-height:1.6; border-top:1px solid #eee; padding-top:22px; margin-bottom:26px; }
+  .data-row{ display:flex; gap:30px; margin-top:14px; flex-wrap:wrap; }
+  .data-item span:first-child{ display:block; font-size:10px; color:#999; text-transform:uppercase; font-weight:800; margin-bottom:4px; letter-spacing:.06em; }
+  .data-item span:last-child{ font-size:15px; font-weight:800; color:#222; }
 
-  .artist-profile{
-    display:flex; align-items:center; gap:14px;
-    margin-top:18px; padding:16px;
-    background:#fafafa; border-radius:20px;
-    cursor:pointer; transition:all .2s;
-    border:1px solid transparent;
-  }
-  .artist-profile:hover{ background:#fff; border-color:#eee; box-shadow:0 8px 20px rgba(0,0,0,0.05); transform:translateY(-2px); }
+  .artist-profile{ display:flex; align-items:center; gap:14px; margin-top:26px; padding:16px; background:#fafafa; border-radius:20px; cursor:pointer; transition:all .18s ease; border:1px solid transparent; position:relative; }
+  .artist-profile:hover{ background:#fff; border-color:#eee; box-shadow:0 5px 15px rgba(0,0,0,0.05); transform:translateY(-2px); }
   .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
   .avatar img{ width:100%; height:100%; object-fit:cover; }
   .artist-info{ flex:1; }
   .artist-info h4{ margin:0; font-size:13px; color:#222; }
   .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
-  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.05em; }
+  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:.05em; }
 
-  .actions{ display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+  .actions{ display:flex; gap:12px; margin-top:26px; flex-wrap:wrap; }
   .btn{ padding:14px 20px; border-radius:14px; border:none; font-size:13px; font-weight:800; cursor:pointer; transition:transform .1s; }
-  .btn:active{ transform:scale(0.97); }
-  .btn-primary{ background:#111; color:#fff; flex:1; min-width:180px; }
+  .btn:active{ transform:scale(.96); }
+  .btn-primary{ background:#111; color:#fff; flex:1; }
   .btn-ghost{ background:#f0f0f0; color:#666; }
 
   /* CONTACT */
+  #sect-contact form{ max-width:520px; }
   .form-title{ font-size:18px; font-weight:900; margin:0 0 18px; text-align:center; }
-  .form-group{ margin-bottom:15px; }
+  .form-group{ margin-bottom:14px; }
   .form-input{
-    display:block; width:100%;
+    display:block;
+    width:100%;
     padding:14px;
     border:1px solid #eee;
     border-radius:12px;
     background:#fafafa;
     font-size:14px;
     color:#111;
-    margin-bottom:0;
   }
   .form-input:focus{ outline:none; border-color:#111; background:#fff; }
   .btn-submit{
@@ -529,318 +489,380 @@
     cursor:pointer;
     text-align:center;
   }
-  #formSuccess, #formSuccessModal{
-    display:none;
-    border-radius:12px;
-    margin-top:15px;
-    background-color:#f0f0f0;
-    color:#333;
-    padding:20px;
-    text-align:center;
-    font-size:14px;
-  }
+  #formSuccess,#formSuccessModal{ display:none; border-radius:12px; margin-top:15px; background:#f0f0f0; color:#333; padding:20px; text-align:center; font-size:14px; }
 
   /* MODALS */
-  .modal-overlay{
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.4);
-    backdrop-filter:blur(4px);
-    z-index:9999;
-    display:none; align-items:center; justify-content:center;
-    opacity:0; transition:opacity .25s ease;
-  }
+  .modal-overlay{ position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; opacity:0; transition:opacity .25s ease; }
   .modal-overlay.open{ display:flex; opacity:1; }
-  .modal-box{
-    background:#fff;
-    width:90%;
-    max-width:420px;
-    padding:28px;
-    border-radius:24px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.2);
-    transform:translateY(18px);
-    transition:transform .25s ease;
-    position:relative;
-    max-height:90vh; overflow-y:auto;
-  }
+  .modal-box{ background:#fff; width:90%; max-width:420px; padding:30px; border-radius:24px; box-shadow:0 20px 40px rgba(0,0,0,0.2); transform:translateY(20px); transition:transform .25s cubic-bezier(.2,.8,.2,1); position:relative; max-height:90vh; overflow-y:auto; }
   .modal-overlay.open .modal-box{ transform:translateY(0); }
-  .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
+  .close-modal{ position:absolute; top:18px; right:18px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
   .artist-modal-header{ text-align:center; margin-bottom:16px; }
   .artist-modal-avatar{ width:80px; height:80px; border-radius:50%; margin:0 auto 12px; overflow:hidden; background:#eee; }
   .artist-modal-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .artist-modal-bio{ font-size:13px; line-height:1.65; color:#555; text-align:center; }
+  .artist-modal-bio{ font-size:13px; line-height:1.6; color:#555; text-align:center; margin:0; }
 
-  /* ===== MOBILE BEHAVIOR (scroll over map) ===== */
+  @keyframes slideIn{ from{ opacity:0; transform:translateX(20px);} to{ opacity:1; transform:translateX(0);} }
+
+  /* ===== MOBILE ===== */
   @media (max-width: 900px){
-    body{ overflow-y:auto; height:auto; } /* page scroll */
-    .layout{ display:block; height:auto; }
+    body{ overflow-y:auto; overflow-x:hidden; height:auto; } /* allow scroll over map */
+    .layout{ display:block; height:auto; overflow:visible; }
 
-    /* map becomes fixed background */
+    /* map fixed, smaller by 10% */
     #map{
       position:fixed;
       top:0; left:0;
       width:100%;
-      height:100vh;
+      height:45vh; /* was 50vh */
       flex:none;
       z-index:0;
     }
 
-    /* shop flows over map */
+    /* shop overlays map and scrolls over it */
     .shop{
-      position:relative;
-      z-index:2;
       width:100%;
       height:auto;
-      margin-top:45vh;            /* map takes ~45% (10% less than 50vh) */
+      flex:none;
+      margin-top:35vh; /* overlaps map by 10vh */
       border-radius:24px 24px 0 0;
+      padding-bottom:40px;
+      z-index:2;
       overflow:visible;
-      box-shadow:0 -18px 45px rgba(0,0,0,0.10);
-      padding-bottom:120px;       /* space for bottom nav */
     }
 
-    /* sections become normal flow; active section displays */
+    /* sections become normal-flow blocks */
     .app-section{
       position:relative;
       inset:auto;
-      height:auto;
-      overflow:visible;
-      padding:20px;
       transform:none;
+      transition:none;
       opacity:1;
       visibility:visible;
       pointer-events:auto;
+      padding:20px;
+      height:auto;
       display:none;
+      overflow:visible; /* body scroll */
     }
     .app-section.active-section{ display:block; }
 
-    .side-nav{ display:none; }
-    .side-nav-mobile{ display:flex; }
+    #sect-gallery{ padding:0; }
+    .shop-head{ padding:18px 18px; }
+    .shop-body{ padding:16px 18px 70px; }
 
-    .home-logo-hero{ height:320px; border-radius:22px; }
-    .services-wrap{ padding:18px; border-radius:22px; }
-    .services-grid{ grid-template-columns:repeat(2, 1fr); gap:18px 14px; }
-
-    .about-grid{ grid-template-columns:1fr; }
-    .shop-head{ padding:16px 16px; }
-    .shop-body{ padding:16px 16px 64px; }
-    .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
-    .card{ padding:14px; border-radius:26px; }
+    .grid{ grid-template-columns:repeat(2, 1fr); gap:15px; }
+    .card{ padding:15px; min-height:240px; }
     .card-media{ height:120px; }
 
-    .solo-media-container{ height:320px; }
-    .media-tabs{
-      top:-14px; right:10px;
-      padding:6px;
-      gap:6px;
+    /* services grid */
+    .services-wrap{ padding:20px; }
+    .services-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; }
+    .svc-title{ font-size:18px; }
+    .svc-desc{ font-size:13px; }
+
+    /* home hero */
+    .home-logo-hero{ height:300px; border-radius:24px; }
+
+    /* SOLO 16:9 keeps */
+    .solo-media-container{ border-radius:22px; }
+
+    /* side nav becomes horizontal over map bottom (same style) */
+    .side-nav{
+      top:auto;
+      bottom:14px;
+      left:50%;
+      right:auto;
+      transform:translateX(-50%);
+      flex-direction:row;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,0.10);
+      box-shadow:0 18px 40px rgba(0,0,0,0.35);
+      overflow:hidden;
+      max-width:calc(100% - 24px);
     }
-    .tab-btn{ font-size:11px; padding:7px 10px; }
+    .nav-item{
+      padding:14px 14px;
+      font-size:12px;
+      border-bottom:none;
+      border-right:1px solid rgba(255,255,255,0.10);
+      white-space:nowrap;
+    }
+    .nav-item:last-child{ border-right:none; }
+    .nav-item:hover, .nav-item.active{ padding-right:14px; } /* no shift on mobile */
   }
 </style>
 </head>
 
 <body>
-  <div class="layout">
-    <div id="map">
-      <!-- Desktop side nav -->
-      <nav class="side-nav" id="sideNavDesktop">
-        <div class="nav-item active" id="navHome">Home</div>
-        <div class="nav-item" id="navAbout">About Us</div>
-        <div class="nav-item" id="navServices">Services</div>
-        <div class="nav-item" id="navGallery">Gallery</div>
-        <div class="nav-item" id="navContact">Contacts</div>
-      </nav>
-
-      <!-- Mobile bottom nav -->
-      <nav class="side-nav side-nav-mobile" id="sideNavMobile">
-        <div class="nav-item active" id="mNavHome">Home</div>
-        <div class="nav-item" id="mNavAbout">About Us</div>
-        <div class="nav-item" id="mNavServices">Services</div>
-        <div class="nav-item" id="mNavGallery">Gallery</div>
-        <div class="nav-item" id="mNavContact">Contacts</div>
-      </nav>
-    </div>
-
-    <aside class="shop" id="shop">
-      <!-- HOME -->
-      <section id="sect-home" class="app-section active-section">
-        <div class="home-logo-hero">
-          <img
-            src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-            alt="FNN ART Logo"
-          />
-        </div>
-
-        <h1 class="sec-title">Welcome to FNN</h1>
-        <p class="sec-sub">
-          A modern art platform specializing in the presentation of original artworks by selected artists.
-          We elevate art as cultural value and creative identity—honoring both artist and artwork—while connecting
-          creative expression with audiences and institutions, with the ambition to become the Art Content Center (NDCC)
-          for the art scene in the Kingdom of Saudi Arabia.
-        </p>
-
-        <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
-      </section>
-
-      <!-- ABOUT -->
-      <section id="sect-about" class="app-section">
-        <h1 class="sec-title">About FNN</h1>
-        <p class="sec-sub">
-          FNN is a modern art platform specializing in the presentation of original artworks by selected artists.
-          Our mission is to elevate art as a cultural value and creative identity—honoring both the artist and the artwork—
-          while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC)
-          for the art scene in the Kingdom of Saudi Arabia.
-        </p>
-
-        <div class="about-grid">
-          <div class="about-card">
-            <div class="about-kicker">What we do</div>
-            <p>
-              Curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both
-              cultural capital and contemporary dialogue.
-            </p>
-            <div class="pill-row">
-              <span class="pill">Curated Art Platforms</span>
-              <span class="pill">Art Objects &amp; Installations</span>
-              <span class="pill">Exhibitions &amp; Programs</span>
-              <span class="pill">Publications &amp; Art Content</span>
-            </div>
-          </div>
-
-          <div class="about-card">
-            <div class="about-kicker">NDCC vision</div>
-            <p>
-              A central node for art content creation, curation, archiving, and distribution—bridging artists, collectors, institutions,
-              and the public, extending the physical art experience through digital presence and visual archives.
-            </p>
-            <div class="pill-row">
-              <span class="pill">Cultural Partnerships</span>
-              <span class="pill">Digital Presence</span>
-              <span class="pill">Audience Engagement</span>
-              <span class="pill">Narrative Building</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="about-img">
-          <img
-            src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693d582b580fad0c77f39d0e_Gemini_Generated_Image_ir55ypir55ypir55%20(1).png"
-            alt="About image"
-          />
-        </div>
-      </section>
-
-      <!-- SERVICES -->
-      <section id="sect-services" class="app-section">
-        <h1 class="sec-title">Services</h1>
-        <p class="sec-sub">A complete production and consulting stack—built to elevate art from concept to cultural impact.</p>
-
-        <div class="services-wrap">
-          <div class="services-grid" id="servicesGrid"></div>
-        </div>
-      </section>
-
-      <!-- GALLERY -->
-      <section id="sect-gallery" class="app-section">
-        <header class="shop-head">
-          <nav class="nav-group" id="filters">
-            <button class="chip active" data-filter="all" id="btnAll">ALL</button>
-            <button class="chip" data-filter="cabinet">Cabinets</button>
-            <button class="chip" data-filter="sideboard">Sideboards</button>
-            <button class="chip" data-filter="decor">Decor</button>
-          </nav>
-        </header>
-
-        <div class="shop-body">
-          <div class="grid" id="grid"></div>
-
-          <div class="solo-wrap" id="soloWrap">
-            <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
-
-            <div class="solo-media-container" id="soloMediaWrap">
-              <div class="media-tabs" id="mediaTabs">
-                <button class="tab-btn active" data-tab="images">Images</button>
-                <button class="tab-btn" data-tab="v360">360</button>
-                <button class="tab-btn" data-tab="video">Video</button>
-                <button class="tab-btn" data-tab="model">3D</button>
-              </div>
-
-              <div class="solo-media-stage" id="soloMedia"></div>
-            </div>
-
-            <div class="solo-info-block">
-              <div class="solo-desc">
-                <strong id="soloTitle">PRODUCT</strong><br>
-                Contemporary design meeting functionality.
-                <div class="data-row">
-                  <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
-                  <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
-                  <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
-                </div>
-              </div>
-
-              <div class="artist-profile" id="artistBtn">
-                <div class="avatar"><img id="artistImg" src="" alt="Designer"></div>
-                <div class="artist-info"><h4 id="artistName">--</h4><p id="artistRole">--</p></div>
-                <div class="artist-cta">View Bio →</div>
-              </div>
-
-              <div class="actions">
-                <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
-                <button class="btn btn-ghost" id="btnClose">Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CONTACT -->
-      <section id="sect-contact" class="app-section">
-        <h1 class="sec-title">Get in Touch</h1>
-        <p class="sec-sub">Interested in a piece? Let us know.</p>
-
-        <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_template" value="table">
-          <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
-          <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-          <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
-          <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-          <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
-        </form>
-
-        <div id="formSuccess">Thank you! Your inquiry has been received.</div>
-      </section>
-    </aside>
+<div class="layout">
+  <div id="map">
+    <nav class="side-nav" id="sideNav">
+      <div class="nav-item" id="navHome">Home</div>
+      <div class="nav-item" id="navAbout">About Us</div>
+      <div class="nav-item" id="navServices">Services</div>
+      <div class="nav-item active" id="navGallery">Gallery</div>
+      <div class="nav-item" id="navContact">Contacts</div>
+    </nav>
   </div>
 
-  <!-- ARTIST & CONTACT MODALS -->
-  <div class="modal-overlay" id="modalArtistOverlay">
-    <div class="modal-box">
-      <button class="close-modal" id="closeArtistModal">×</button>
-      <div class="artist-modal-header">
-        <div class="artist-modal-avatar"><img id="modalArtistImg" src="" alt=""></div>
-        <h3 id="modalArtistName" style="margin:0 0 4px;"></h3>
-        <span style="font-size:12px;color:#999;text-transform:uppercase;" id="modalArtistRole"></span>
+  <aside class="shop" id="shop">
+
+    <!-- HOME -->
+    <section id="sect-home" class="app-section">
+      <div class="home-logo-hero">
+        <img
+          src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
+          alt="FNN ART Logo"
+        />
       </div>
-      <p class="artist-modal-bio" id="modalArtistBio"></p>
-    </div>
-  </div>
 
-  <div class="modal-overlay" id="modalContactOverlay">
-    <div class="modal-box">
-      <button class="close-modal" id="closeContactModal">×</button>
-      <h3 class="form-title">Inquire about this piece</h3>
-      <form id="ajaxFormModal" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
+      <h1 class="sec-title">Welcome to FNN</h1>
+      <p class="sec-sub">
+        A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
+      </p>
+      <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="sect-about" class="app-section">
+      <h1 class="sec-title">About FNN</h1>
+
+      <div class="about-rich">
+        <p class="sec-sub" style="max-width:none;">
+          FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
+        </p>
+
+        <p class="sec-sub" style="max-width:none;">
+          On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+        </p>
+
+        <h3>In Arts &amp; Culture</h3>
+        <ul>
+          <li><strong>Curated Art Platforms:</strong> FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.</li>
+          <li><strong>Art Objects &amp; Installations:</strong> Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.</li>
+          <li><strong>Exhibitions &amp; Programs:</strong> Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.</li>
+          <li><strong>Publications &amp; Art Content:</strong> Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.</li>
+        </ul>
+
+        <h3>In Creative Infrastructure</h3>
+        <ul>
+          <li><strong>Art Content Center (NDCC):</strong> FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.</li>
+          <li><strong>Cultural Partnerships:</strong> Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.</li>
+          <li><strong>Digital Presence:</strong> Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.</li>
+        </ul>
+
+        <h3>In Media &amp; Cultural Impact</h3>
+        <ul>
+          <li><strong>Cultural Narrative Building:</strong> FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.</li>
+          <li><strong>Audience Engagement:</strong> Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="sect-services" class="app-section">
+      <h1 class="sec-title">Services</h1>
+      <p class="sec-sub" style="max-width:none;">
+        A complete set of cultural and creative services—designed to support artists, institutions, and audiences.
+      </p>
+
+      <div class="services-wrap">
+        <div class="services-grid">
+          <!-- 12 cards -->
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M9 18h6" /><path d="M10 22h4" /><path d="M12 2a7 7 0 0 0-4 12c.6.6 1 1.4 1 2h6c0-.6.4-1.4 1-2A7 7 0 0 0 12 2Z"/>
+            </svg>
+            <div class="svc-title">Creative Planning</div>
+            <p class="svc-desc">Sculptural and contemporary art planning from a professional perspective—translating culture into form.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 20h16"/><path d="M7 17l10-10"/><path d="M9 7l8 8"/><path d="M7 17l-2 1 1-2"/>
+            </svg>
+            <div class="svc-title">Original Design</div>
+            <p class="svc-desc">Inspired by renowned artists—featuring original designs by professional sculpture and art design teams.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><path d="M8 6v12"/>
+            </svg>
+            <div class="svc-title">Excellent Structure</div>
+            <p class="svc-desc">Qualification-led analysis for large-scale works—ensuring stability, safety, and longevity.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 2v20"/><path d="M2 12h20"/><path d="M7 7l10 10"/><path d="M17 7 7 17"/>
+            </svg>
+            <div class="svc-title">Crafted with Ingenuity</div>
+            <p class="svc-desc">Dedicated craftsmanship and refined execution—where detail, patience, and intent define the final work.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 7h16v10H4z"/><path d="M7 7V5h10v2"/><path d="M8 17v2h8v-2"/>
+            </svg>
+            <div class="svc-title">Professional Installation</div>
+            <p class="svc-desc">Integrated construction and installation workflows—safe, precise, and reliable delivery on site.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 14s2-2 8-2 8 2 8 2"/><path d="M6 10l2-6h8l2 6"/><path d="M7 20h10"/>
+            </svg>
+            <div class="svc-title">Refurbishment &amp; Restoration</div>
+            <p class="svc-desc">Renovation and restoration using professional teams and equipment—bringing works back to life.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 17V9"/><path d="M12 17V7"/><path d="M16 17v-5"/>
+            </svg>
+            <div class="svc-title">Art Rental</div>
+            <p class="svc-desc">Rental services for sculptures and works—supporting projects, institutions, and elevated temporary programs.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11Z"/><path d="M12 10.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+            </svg>
+            <div class="svc-title">Site Survey</div>
+            <p class="svc-desc">On-site inspection, survey reporting, and coordination—aligning implementation with the artistic vision.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 12l4 4 12-12"/><path d="M4 7h6"/><path d="M4 17h10"/>
+            </svg>
+            <div class="svc-title">Curatorial Services</div>
+            <p class="svc-desc">Planning and organizing exhibitions—researching, authenticating, and positioning works with context and clarity.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 2a5 5 0 0 0-5 5v2"/><path d="M17 9V7a5 5 0 0 0-5-5"/><path d="M4 22l4-9h8l4 9"/><path d="M9 13V9h6v4"/>
+            </svg>
+            <div class="svc-title">Art Consultant</div>
+            <p class="svc-desc">Professional advice and concept development—matching artists, styles, and programs to your objectives.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M3 7h18"/><path d="M6 7v14"/><path d="M18 7v14"/><path d="M9 11h6"/><path d="M9 15h6"/>
+            </svg>
+            <div class="svc-title">Art Broker</div>
+            <p class="svc-desc">Market services and access—connecting institutions and individuals with reliable, curated opportunities.</p>
+          </div>
+
+          <div class="svc-card">
+            <svg class="svc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 20h9"/><path d="M3 20h4"/><path d="M7 20a5 5 0 0 1 10 0"/><path d="M12 3v10"/><path d="M8 7h8"/>
+            </svg>
+            <div class="svc-title">Artistic Supervisor</div>
+            <p class="svc-desc">From creation to refinement and quality monitoring—guidance and supervision throughout the process.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="sect-gallery" class="app-section active-section">
+      <header class="shop-head">
+        <nav class="nav-group" id="filters">
+          <button class="chip active" data-filter="all" id="btnAll">ALL</button>
+          <button class="chip" data-filter="cabinet">Cabinets</button>
+          <button class="chip" data-filter="sideboard">Sideboards</button>
+          <button class="chip" data-filter="decor">Decor</button>
+        </nav>
+      </header>
+
+      <div class="shop-body">
+        <div class="grid" id="grid"></div>
+
+        <div class="solo-wrap" id="soloWrap">
+          <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
+
+          <div class="solo-media-container" id="soloMedia"></div>
+
+          <div class="solo-info-block">
+            <div class="solo-desc">
+              <strong id="soloTitle">PRODUCT</strong><br>
+              Contemporary design meeting functionality.
+              <div class="data-row">
+                <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
+                <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
+                <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
+              </div>
+            </div>
+
+            <div class="artist-profile" id="artistBtn">
+              <div class="avatar"><img id="artistImg" src="" alt="Designer"></div>
+              <div class="artist-info"><h4 id="artistName">--</h4><p id="artistRole">--</p></div>
+              <div class="artist-cta">View Bio →</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
+              <button class="btn btn-ghost" id="btnClose">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="sect-contact" class="app-section">
+      <h1 class="sec-title">Get in Touch</h1>
+      <p class="sec-sub">Interested in a piece? Let us know.</p>
+
+      <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_template" value="table">
         <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
         <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-        <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubjectModal"></div>
+        <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
         <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-        <button type="submit" class="btn-submit" id="formSubmitBtnModal">Send Inquiry</button>
+        <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
       </form>
-      <div id="formSuccessModal">Thank you! Your inquiry has been received.</div>
+      <div id="formSuccess">Thank you! Your inquiry has been received.</div>
+    </section>
+
+  </aside>
+</div>
+
+<!-- ARTIST & CONTACT MODALS -->
+<div class="modal-overlay" id="modalArtistOverlay">
+  <div class="modal-box">
+    <button class="close-modal" id="closeArtistModal">×</button>
+    <div class="artist-modal-header">
+      <div class="artist-modal-avatar"><img id="modalArtistImg" src="" alt=""></div>
+      <h3 id="modalArtistName" style="margin:0 0 6px;"></h3>
+      <span style="font-size:12px; color:#999; text-transform:uppercase;" id="modalArtistRole"></span>
     </div>
+    <p class="artist-modal-bio" id="modalArtistBio"></p>
   </div>
+</div>
+
+<div class="modal-overlay" id="modalContactOverlay">
+  <div class="modal-box">
+    <button class="close-modal" id="closeContactModal">×</button>
+    <h3 class="form-title">Inquire about this piece</h3>
+    <form id="ajaxFormModal" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
+      <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
+      <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubjectModal"></div>
+      <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
+      <button type="submit" class="btn-submit" id="formSubmitBtnModal">Send Inquiry</button>
+    </form>
+    <div id="formSuccessModal">Thank you! Your inquiry has been received.</div>
+  </div>
+</div>
 
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
@@ -848,11 +870,11 @@
 <script>
   /* ===== MAP CONFIG ===== */
   const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbWM0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
-  const USER_STYLE   = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
+  const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
 
   mapboxgl.accessToken = MAPBOX_TOKEN;
-  const isMobile = () => window.innerWidth < 900;
-  const startZoom = isMobile() ? 0 : 0.8;
+  const isMobile = window.innerWidth < 900;
+  const startZoom = isMobile ? 0 : 0.8;
 
   const map = new mapboxgl.Map({
     container: "map",
@@ -860,75 +882,76 @@
     center: [0, 20],
     zoom: startZoom,
     pitch: 0,
-    projection: 'globe'
+    projection: "globe"
   });
 
-  map.on('style.load', () => {
-    try{
+  map.on("style.load", () => {
+    try {
       map.setFog({
-        'color': 'rgb(255, 255, 255)',
-        'high-color': 'rgb(200, 200, 200)',
-        'space-color': 'rgb(0, 0, 0)',
-        'star-intensity': 0.6
+        "color": "rgb(255, 255, 255)",
+        "high-color": "rgb(200, 200, 200)",
+        "space-color": "rgb(0, 0, 0)",
+        "star-intensity": 0.6
       });
-    }catch(e){}
+    } catch(e){}
 
     const layers = map.getStyle().layers || [];
-    let labelLayerId = null;
-    for (const layer of layers){
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']){
-        labelLayerId = layer.id; break;
+    let labelLayerId;
+    for (const layer of layers) {
+      if (layer.type === "symbol" && layer.layout && layer.layout["text-field"]) {
+        labelLayerId = layer.id;
+        break;
       }
     }
-
-    if (!map.getLayer('3d-buildings-custom')) {
+    if (!map.getLayer("3d-buildings-custom")) {
       map.addLayer({
-        'id': '3d-buildings-custom',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 15,
-        'paint': {
-          'fill-extrusion-color': '#aaa',
-          'fill-extrusion-height': ['get', 'height'],
-          'fill-extrusion-base': ['get', 'min_height'],
-          'fill-extrusion-opacity': 0.6
+        "id": "3d-buildings-custom",
+        "source": "composite",
+        "source-layer": "building",
+        "filter": ["==", "extrude", "true"],
+        "type": "fill-extrusion",
+        "minzoom": 15,
+        "paint": {
+          "fill-extrusion-color": "#aaa",
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": ["get", "min_height"],
+          "fill-extrusion-opacity": 0.6
         }
       }, labelLayerId);
     }
 
-    for (const layer of layers){
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']){
-        map.setLayoutProperty(layer.id, 'text-size',
+    for (const layer of layers) {
+      if (layer.type === "symbol" && layer.layout && layer.layout["text-field"]) {
+        map.setLayoutProperty(layer.id, "text-size",
           ["interpolate", ["linear"], ["zoom"], 0, 6, 10, 8, 22, 10]
         );
       }
     }
   });
 
-  /* ===== NAVIGATION ===== */
-  const navIdMap = {
-    'sect-home':     ['navHome','mNavHome'],
-    'sect-about':    ['navAbout','mNavAbout'],
-    'sect-services': ['navServices','mNavServices'],
-    'sect-gallery':  ['navGallery','mNavGallery'],
-    'sect-contact':  ['navContact','mNavContact']
-  };
-
-  window.switchSection = function(id){
-    document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active-section'));
+  /* ===== NAVIGATION LOGIC ===== */
+  window.switchSection = function(id) {
+    document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active-section"));
     const target = document.getElementById(id);
-    if (target) target.classList.add('active-section');
+    if (target) target.classList.add("active-section");
 
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    (navIdMap[id] || []).forEach(navId => {
-      const el = document.getElementById(navId);
-      if (el) el.classList.add('active');
-    });
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    const navIdMap = {
+      "sect-home": "navHome",
+      "sect-about": "navAbout",
+      "sect-services": "navServices",
+      "sect-gallery": "navGallery",
+      "sect-contact": "navContact"
+    };
+    const navEl = document.getElementById(navIdMap[id]);
+    if (navEl) navEl.classList.add("active");
 
-    if (id === 'sect-home'){
-      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
+    // focus nav background in solo
+    const sideNav = document.querySelector(".side-nav");
+    if (sideNav) sideNav.classList.toggle("focused", document.getElementById("sect-gallery").classList.contains("solo"));
+
+    if (id === "sect-home") {
+      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:2000 });
     }
   };
 
@@ -937,107 +960,63 @@
     if (el) el.addEventListener(ev, handler);
   };
 
-  safeAdd('navHome','click',()=>switchSection('sect-home'));
-  safeAdd('navAbout','click',()=>switchSection('sect-about'));
-  safeAdd('navServices','click',()=>switchSection('sect-services'));
-  safeAdd('navGallery','click',()=>switchSection('sect-gallery'));
-  safeAdd('navContact','click',()=>switchSection('sect-contact'));
+  safeAdd("navHome", "click", () => switchSection("sect-home"));
+  safeAdd("navAbout", "click", () => switchSection("sect-about"));
+  safeAdd("navServices", "click", () => switchSection("sect-services"));
+  safeAdd("navGallery", "click", () => switchSection("sect-gallery"));
+  safeAdd("navContact", "click", () => switchSection("sect-contact"));
 
-  safeAdd('mNavHome','click',()=>switchSection('sect-home'));
-  safeAdd('mNavAbout','click',()=>switchSection('sect-about'));
-  safeAdd('mNavServices','click',()=>switchSection('sect-services'));
-  safeAdd('mNavGallery','click',()=>switchSection('sect-gallery'));
-  safeAdd('mNavContact','click',()=>switchSection('sect-contact'));
+  /* ===== FORMS ===== */
+  const form = document.getElementById("ajaxForm");
+  const submitBtn = document.getElementById("formSubmitBtn");
+  const successMsg = document.getElementById("formSuccess");
 
-  /* ===== SERVICES CONTENT (12 items) ===== */
-  const SERVICES = [
-    { t:"Creative Planning", d:"Sculptural and contemporary art planning from a professional perspective—translating culture into form." },
-    { t:"Original design", d:"Inspired by renowned artists—featuring original designs by a professional sculpture and art design team." },
-    { t:"Excellent structure", d:"Qualification-led structural analysis for large-scale works—ensuring stability, safety, and longevity." },
-    { t:"Crafted with ingenuity", d:"Dedicated craftsmanship and refined execution—where detail, patience, and intent define the final work." },
-    { t:"Professional installation", d:"Integrated construction and installation workflows—safe, precise, and reliable delivery on site." },
-    { t:"Refurbishment and Restoration", d:"Renovation and restoration using professional teams and equipment—bringing works back to life." },
-    { t:"Art rental", d:"Rental services for sculptures and artworks—supporting projects, institutions, and elevated temporary programs." },
-    { t:"Site survey", d:"On-site inspection, survey reporting, and coordination—aligning implementation with the artistic vision." },
-    { t:"Curatorial services", d:"Research, authentication, classification, and exhibition organization—building strong collections and programs." },
-    { t:"Art Consultant", d:"Concept proposals, recommendations, and guidance—helping stakeholders choose the right art direction." },
-    { t:"Art broker", d:"Domestic and international market support—connecting institutions and collectors with artists and opportunities." },
-    { t:"Artistic Supervisor", d:"From design creation to quality monitoring—third-party oversight for excellence throughout execution." }
-  ];
-
-  const svcIcon = () => `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M12 2v2"/>
-      <path d="M12 20v2"/>
-      <path d="M4.2 4.2l1.4 1.4"/>
-      <path d="M18.4 18.4l1.4 1.4"/>
-      <path d="M2 12h2"/>
-      <path d="M20 12h2"/>
-      <path d="M4.2 19.8l1.4-1.4"/>
-      <path d="M18.4 5.6l1.4-1.4"/>
-      <path d="M9 18h6"/>
-      <path d="M10 14a4 4 0 1 1 4 0v2h-4z"/>
-    </svg>
-  `;
-
-  (function renderServices(){
-    const wrap = document.getElementById('servicesGrid');
-    if(!wrap) return;
-    wrap.innerHTML = SERVICES.map(s => `
-      <div class="svc">
-        <div class="ico">${svcIcon()}</div>
-        <h3>${s.t}</h3>
-        <p>${s.d}</p>
-      </div>
-    `).join('');
-  })();
-
-  /* ===== FORM LOGIC ===== */
-  function wireAjaxForm(formId, btnId, successId){
-    const form = document.getElementById(formId);
-    const btn = document.getElementById(btnId);
-    const ok  = document.getElementById(successId);
-    if(!form) return;
-
-    form.addEventListener('submit', function(e){
+  if (form) {
+    form.addEventListener("submit", function(e) {
       e.preventDefault();
-      if(btn){ btn.textContent="Sending..."; btn.style.opacity="0.7"; }
-      fetch(form.action, {
-        method:"POST",
-        body:new FormData(form),
-        headers:{ 'Accept':'application/json' }
-      }).then(r=>{
-        if(r.ok){
-          form.style.display="none";
-          if(ok) ok.style.display="block";
-        }else{
-          alert("Oops! Problem submitting.");
-          if(btn){ btn.textContent="Try Again"; btn.style.opacity="1"; }
-        }
-      }).catch(()=>{
-        alert("Oops! Problem submitting.");
-        if(btn){ btn.textContent="Try Again"; btn.style.opacity="1"; }
-      });
+      if (submitBtn) { submitBtn.textContent = "Sending..."; submitBtn.style.opacity = "0.7"; }
+      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ "Accept":"application/json" } })
+        .then(r => {
+          if (r.ok) { form.style.display="none"; if (successMsg) successMsg.style.display="block"; }
+          else { alert("Oops! Problem submitting."); if (submitBtn) submitBtn.textContent="Try Again"; }
+        })
+        .catch(() => { alert("Oops! Problem submitting."); if (submitBtn) submitBtn.textContent="Try Again"; });
     });
   }
-  wireAjaxForm('ajaxForm','formSubmitBtn','formSuccess');
-  wireAjaxForm('ajaxFormModal','formSubmitBtnModal','formSuccessModal');
+
+  const formModal = document.getElementById("ajaxFormModal");
+  const submitBtnModal = document.getElementById("formSubmitBtnModal");
+  const successMsgModal = document.getElementById("formSuccessModal");
+
+  if (formModal) {
+    formModal.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (submitBtnModal) { submitBtnModal.textContent = "Sending..."; submitBtnModal.style.opacity = "0.7"; }
+      fetch(formModal.action, { method:"POST", body:new FormData(formModal), headers:{ "Accept":"application/json" } })
+        .then(r => {
+          if (r.ok) { formModal.style.display="none"; if (successMsgModal) successMsgModal.style.display="block"; }
+          else { alert("Oops! Problem submitting."); if (submitBtnModal) submitBtnModal.textContent="Try Again"; }
+        })
+        .catch(() => { alert("Oops! Problem submitting."); if (submitBtnModal) submitBtnModal.textContent="Try Again"; });
+    });
+  }
 
   /* ===== MAP ANIMATION ===== */
   let currentMarker = null;
   let rotationFrame = null;
 
-  function gotoStore(store){
-    if(!store) return;
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
-    if(currentMarker) currentMarker.remove();
+  function gotoStore(store) {
+    if (!store) return;
+    if (rotationFrame) { cancelAnimationFrame(rotationFrame); rotationFrame = null; }
+    if (currentMarker) currentMarker.remove();
 
-    const el = document.createElement('div');
-    el.style.backgroundColor='#111';
-    el.style.width='20px';
-    el.style.height='20px';
-    el.style.borderRadius='50%';
-    el.style.border='2px solid white';
+    const el = document.createElement("div");
+    el.style.backgroundColor="#111";
+    el.style.width="20px";
+    el.style.height="20px";
+    el.style.borderRadius="50%";
+    el.style.border="2px solid white";
+
     currentMarker = new mapboxgl.Marker(el).setLngLat(store.coords).addTo(map);
 
     map.flyTo({
@@ -1048,10 +1027,10 @@
       speed: 0.3,
       curve: 1.2,
       essential: true,
-      duration: 10000
+      duration: 9000
     });
 
-    map.once('moveend', () => {
+    map.once("moveend", () => {
       function rotate(){
         map.rotateTo((map.getBearing()+0.05)%360, {duration:0});
         rotationFrame = requestAnimationFrame(rotate);
@@ -1060,8 +1039,8 @@
     });
   }
 
-  /* ===== MEDIA DEFAULTS ===== */
-  const DEFAULT_IMAGES = [
+  /* ===== PRODUCT MEDIA ASSETS ===== */
+  const PRODUCT_IMAGES = [
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
@@ -1070,40 +1049,102 @@
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c641d77b3de17010_Gemini_Generated_Image_mhci8mmhci8mmhci.png"
   ];
 
-  /* raw GitHub URLs (important) */
-  const DEFAULT_360  = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
-  const DEFAULT_VIDEO = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
+  const VIDEO_360 = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
+  const VIDEO_MAIN = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
 
-  /* ===== DATA (12 products kept) ===== */
+  /* ===== DATA ===== */
   const PRODUCTS = [
-    { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
-    { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
-    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
-    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } },
-    { id:"item-5", name:"Radiance Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb", specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] }, artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." } },
-    { id:"item-6", name:"Modular Unit", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb", specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] }, artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." } },
-    { id:"item-7", name:"Lunar Chest", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb", specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] }, artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." } },
-    { id:"item-8", name:"Obsidian Block", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb", specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.520] }, artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." } },
-    { id:"item-9", name:"Azure Tower", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb", specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] }, artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." } },
-    { id:"item-10", name:"Solar Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb", specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] }, artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." } },
-    { id:"item-11", name:"Nordic Wave", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb", specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] }, artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." } },
-    { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
-  ].map(p => ({
-    ...p,
-    media: { images: DEFAULT_IMAGES, v360: DEFAULT_360, video: DEFAULT_VIDEO }
-  }));
+    { id:"item-1", name:"Arch Cabinet", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb",
+      specs:{ mat:"Velvet & Wood", dim:"120x60x90" },
+      store:{ name:"Milan Design District", coords:[9.1900,45.4642] },
+      artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." }
+    },
+    { id:"item-2", name:"Geometric Side", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb",
+      specs:{ mat:"Lacquered Wood", dim:"180x50x200" },
+      store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] },
+      artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." }
+    },
+    { id:"item-3", name:"Art Deco Tall", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb",
+      specs:{ mat:"Marble & Brass", dim:"220x80x95" },
+      store:{ name:"New York SoHo", coords:[-74.006,40.7128] },
+      artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." }
+    },
+    { id:"item-4", name:"Striped Console", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb",
+      specs:{ mat:"Resin & Paint", dim:"100x60x140" },
+      store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] },
+      artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." }
+    },
+    { id:"item-5", name:"Radiance Credenza", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb",
+      specs:{ mat:"Ebony & Gold", dim:"200x55x85" },
+      store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] },
+      artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." }
+    },
+    { id:"item-6", name:"Modular Unit", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb",
+      specs:{ mat:"Ceramic Composite", dim:"120x120x120" },
+      store:{ name:"Copenhagen", coords:[12.5683,55.6761] },
+      artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." }
+    },
+    { id:"item-7", name:"Lunar Chest", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb",
+      specs:{ mat:"Oak & Silver", dim:"110x55x130" },
+      store:{ name:"London Tate Modern", coords:[-0.099,51.507] },
+      artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." }
+    },
+    { id:"item-8", name:"Obsidian Block", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb",
+      specs:{ mat:"Blackened Steel", dim:"200x60x80" },
+      store:{ name:"Berlin Mitte", coords:[13.405,52.520] },
+      artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." }
+    },
+    { id:"item-9", name:"Azure Tower", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb",
+      specs:{ mat:"Blue Lacquer", dim:"80x80x180" },
+      store:{ name:"Barcelona Eixample", coords:[2.168,41.387] },
+      artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." }
+    },
+    { id:"item-10", name:"Solar Credenza", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb",
+      specs:{ mat:"Teak & Brass", dim:"220x50x75" },
+      store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] },
+      artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." }
+    },
+    { id:"item-11", name:"Nordic Wave", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb",
+      specs:{ mat:"Ash Wood", dim:"140x40x90" },
+      store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] },
+      artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." }
+    },
+    { id:"item-12", name:"Crimson Vanity", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb",
+      specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" },
+      store:{ name:"Seoul Gangnam", coords:[127.027,37.497] },
+      artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." }
+    }
+  ];
 
-  /* ===== GALLERY RENDER ===== */
   const grid = document.getElementById("grid");
   const soloMedia = document.getElementById("soloMedia");
-  const tabsEl = document.getElementById("mediaTabs");
 
-  let currentProduct = null;
-  let imgIdx = 0;
-  let raf360 = null;
-
-  function render(list){
-    if(!grid) return;
+  function render(list) {
+    if (!grid) return;
     grid.innerHTML = "";
     list.forEach(p => {
       const el = document.createElement("article");
@@ -1111,18 +1152,17 @@
       el.innerHTML = `
         <div class="card-media"><img src="${p.img}" alt="${p.name}"/></div>
         <div class="card-name">${p.name}</div>
-        <div class="card-sub">Edition 2024</div>
-      `;
+        <div class="card-sub">Edition 2024</div>`;
       el.addEventListener("click", () => openSolo(p));
       grid.appendChild(el);
     });
   }
 
   const filtersEl = document.getElementById("filters");
-  if(filtersEl){
+  if (filtersEl) {
     filtersEl.addEventListener("click", e => {
       const btn = e.target.closest(".chip");
-      if(!btn) return;
+      if (!btn) return;
       document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
       btn.classList.add("active");
       const f = btn.dataset.filter;
@@ -1130,145 +1170,158 @@
     });
   }
 
-  function stop360RAF(){
-    if(raf360){ cancelAnimationFrame(raf360); raf360 = null; }
-  }
+  /* ===== PRODUCT SOLO MEDIA ===== */
+  let currentProduct = null;
+  let imgIndex = 0;
+  let activeTab = "images";
 
-  function setActiveTab(name){
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    const btn = tabsEl && tabsEl.querySelector(`[data-tab="${name}"]`);
-    if(btn) btn.classList.add('active');
-  }
-
-  function mountImages(p){
-    stop360RAF();
-    const imgs = (p.media && p.media.images) ? p.media.images : [];
-    imgIdx = 0;
-
-    const draw = () => {
-      const src = imgs[imgIdx] || p.img;
-      soloMedia.innerHTML = `
-        <button class="img-arrow left" id="imgPrev" aria-label="Previous">‹</button>
-        <button class="img-arrow right" id="imgNext" aria-label="Next">›</button>
-        <img src="${src}" alt="${p.name}" />
-      `;
-      const prev = document.getElementById('imgPrev');
-      const next = document.getElementById('imgNext');
-      if(prev) prev.onclick = () => { imgIdx = (imgIdx - 1 + imgs.length) % imgs.length; draw(); };
-      if(next) next.onclick = () => { imgIdx = (imgIdx + 1) % imgs.length; draw(); };
-    };
-    draw();
-  }
-
-  function mount360(p){
-    stop360RAF();
-    const src = (p.media && p.media.v360) ? p.media.v360 : DEFAULT_360;
-
+  function buildSoloMediaShell() {
     soloMedia.innerHTML = `
-      <video id="v360" playsinline preload="auto" muted style="width:100%;height:100%;object-fit:cover;"></video>
-      <div class="ctrl-bar" id="ctrlBar">
-        <button class="ctrl-btn" id="btnPlayPause" aria-label="Play/Pause">❚❚</button>
-        <input class="ctrl-range" id="rng360" type="range" min="0" max="1000" value="0" />
+      <div class="pm-nav" id="pmNav">
+        <button class="pm-tab active" data-tab="images">Images</button>
+        <button class="pm-tab" data-tab="v360">360</button>
+        <button class="pm-tab" data-tab="video">Video</button>
+        <button class="pm-tab" data-tab="d3">3D</button>
+      </div>
+
+      <button class="pm-arrow left" id="pmPrev" aria-label="Previous">‹</button>
+      <button class="pm-arrow right" id="pmNext" aria-label="Next">›</button>
+
+      <div class="pm-stage" id="pmStage"></div>
+    `;
+
+    const nav = document.getElementById("pmNav");
+    if (nav) {
+      nav.addEventListener("click", (e) => {
+        const b = e.target.closest(".pm-tab");
+        if (!b) return;
+        setTab(b.dataset.tab);
+      });
+    }
+    safeAdd("pmPrev", "click", () => { imgIndex = (imgIndex - 1 + PRODUCT_IMAGES.length) % PRODUCT_IMAGES.length; if(activeTab==="images") paintImages(); });
+    safeAdd("pmNext", "click", () => { imgIndex = (imgIndex + 1) % PRODUCT_IMAGES.length; if(activeTab==="images") paintImages(); });
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll(".pm-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+
+    // arrows only for images
+    const prev = document.getElementById("pmPrev");
+    const next = document.getElementById("pmNext");
+    const showArrows = (tab === "images");
+    if (prev) prev.style.display = showArrows ? "flex" : "none";
+    if (next) next.style.display = showArrows ? "flex" : "none";
+
+    // stop any 360 playback when leaving tab
+    const v = document.getElementById("v360Video");
+    if (v && tab !== "v360") { try { v.pause(); } catch(e){} }
+
+    if (tab === "images") paintImages();
+    if (tab === "v360") paint360();
+    if (tab === "video") paintVideo();
+    if (tab === "d3") paint3D();
+  }
+
+  function stage() { return document.getElementById("pmStage"); }
+
+  function paintImages() {
+    const s = stage();
+    if (!s) return;
+    s.innerHTML = `<img src="${PRODUCT_IMAGES[imgIndex]}" alt="Product image ${imgIndex+1}" style="object-fit:cover;">`;
+  }
+
+  function paint360() {
+    const s = stage();
+    if (!s) return;
+
+    s.innerHTML = `
+      <video id="v360Video" src="${VIDEO_360}" muted playsinline preload="auto"></video>
+      <div class="v360-ui">
+        <button class="v360-btn" id="v360Play" aria-label="Play/Pause">⏯</button>
+        <input class="v360-range" id="v360Range" type="range" min="0" max="1000" value="0" />
       </div>
     `;
 
-    const v = document.getElementById('v360');
-    const btn = document.getElementById('btnPlayPause');
-    const rng = document.getElementById('rng360');
-
-    if(!v || !rng || !btn) return;
-
-    v.src = src;
-    v.controls = false;
+    const v = document.getElementById("v360Video");
+    const r = document.getElementById("v360Range");
+    const p = document.getElementById("v360Play");
+    if (!v || !r || !p) return;
 
     const syncRange = () => {
-      if (!v.duration || isNaN(v.duration)) return;
+      if (!isFinite(v.duration) || v.duration <= 0) return;
       const val = Math.round((v.currentTime / v.duration) * 1000);
-      rng.value = String(Math.max(0, Math.min(1000, val)));
+      r.value = String(val);
     };
 
-    const tick = () => { syncRange(); raf360 = requestAnimationFrame(tick); };
+    v.addEventListener("loadedmetadata", () => { v.currentTime = 0; syncRange(); });
+    v.addEventListener("timeupdate", syncRange);
 
-    v.addEventListener('loadedmetadata', () => {
-      try { v.play(); btn.textContent = "❚❚"; } catch(e){}
-      stop360RAF();
-      tick();
+    r.addEventListener("input", () => {
+      if (!isFinite(v.duration) || v.duration <= 0) return;
+      const t = (Number(r.value) / 1000) * v.duration;
+      v.currentTime = Math.max(0, Math.min(v.duration, t));
     });
 
-    btn.addEventListener('click', () => {
-      if (v.paused){
-        v.play(); btn.textContent = "❚❚";
-      } else {
-        v.pause(); btn.textContent = "▶";
-      }
+    p.addEventListener("click", async () => {
+      try {
+        if (v.paused) await v.play();
+        else v.pause();
+      } catch(e){}
     });
 
-    rng.addEventListener('input', () => {
-      if (!v.duration || isNaN(v.duration)) return;
-      const t = (Number(rng.value) / 1000) * v.duration;
-      v.currentTime = t;
-    });
-
-    v.addEventListener('ended', () => { btn.textContent = "▶"; });
+    // start paused (like your example)
+    v.pause();
   }
 
-  function mountVideo(p){
-    stop360RAF();
-    const src = (p.media && p.media.video) ? p.media.video : DEFAULT_VIDEO;
-    soloMedia.innerHTML = `
-      <video src="${src}" playsinline controls style="width:100%;height:100%;object-fit:cover;"></video>
+  function paintVideo() {
+    const s = stage();
+    if (!s) return;
+    s.innerHTML = `
+      <video src="${VIDEO_MAIN}" controls playsinline style="object-fit:cover;"></video>
     `;
   }
 
-  function mountModel(p){
-    stop360RAF();
-    if (!p.model){
-      soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}" />`;
+  function paint3D() {
+    const s = stage();
+    if (!s) return;
+
+    if (!currentProduct || !currentProduct.model) {
+      s.innerHTML = `<img src="${currentProduct ? currentProduct.img : ""}" alt="Product" style="object-fit:contain;">`;
       return;
     }
-    const safeUrl = p.model.replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
 
-    soloMedia.innerHTML = `
+    const safeUrl = currentProduct.model
+      .replace(/\(/g, "%28")
+      .replace(/\)/g, "%29")
+      .replace(/ /g, "%20");
+
+    s.innerHTML = `
       <model-viewer
         id="viewer3d"
         src="${safeUrl}"
         camera-controls
         auto-rotate
         shadow-intensity="1"
-        style="background:transparent;width:100%;height:100%;"
         camera-orbit="45deg 75deg 3m"
         environment-image="neutral"
-        alt="3D">
-      </model-viewer>
+        alt="3D"
+        style="background:transparent;"
+      ></model-viewer>
     `;
-    const viewer = document.getElementById('viewer3d');
-    if(viewer){
-      viewer.addEventListener('error', () => {
-        soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}" />`;
+
+    const viewer = document.getElementById("viewer3d");
+    if (viewer) {
+      viewer.addEventListener("error", () => {
+        s.innerHTML = `<img src="${currentProduct.img}" alt="${currentProduct.name}" style="object-fit:contain;">`;
       });
     }
   }
 
-  function setMedia(tab){
-    if(!currentProduct) return;
-    setActiveTab(tab);
-    if(tab === 'images') return mountImages(currentProduct);
-    if(tab === 'v360')   return mount360(currentProduct);
-    if(tab === 'video')  return mountVideo(currentProduct);
-    if(tab === 'model')  return mountModel(currentProduct);
-  }
-
-  if(tabsEl){
-    tabsEl.addEventListener('click', (e) => {
-      const b = e.target.closest('.tab-btn');
-      if(!b) return;
-      const t = b.getAttribute('data-tab');
-      setMedia(t);
-    });
-  }
-
-  function openSolo(p){
+  function openSolo(p) {
     currentProduct = p;
+    imgIndex = 0;
+    activeTab = "images";
 
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
@@ -1277,63 +1330,90 @@
     document.getElementById("soloStore").textContent = p.store.name;
     document.getElementById("spMat").textContent = p.specs.mat;
     document.getElementById("spDim").textContent = p.specs.dim;
-
     document.getElementById("artistName").textContent = p.artist.name;
     document.getElementById("artistRole").textContent = p.artist.role;
     document.getElementById("artistImg").src = p.artist.img;
-
     document.getElementById("modalArtistName").textContent = p.artist.name;
     document.getElementById("modalArtistRole").textContent = p.artist.role;
     document.getElementById("modalArtistImg").src = p.artist.img;
     document.getElementById("modalArtistBio").textContent = p.artist.bio;
 
     const fs = document.getElementById("formSubject");
-    if(fs) fs.value = "Inquiry: " + p.name;
+    if (fs) fs.value = "Inquiry: " + p.name;
     const fsM = document.getElementById("formSubjectModal");
-    if(fsM) fsM.value = "Inquiry: " + p.name;
+    if (fsM) fsM.value = "Inquiry: " + p.name;
 
-    setMedia('images');
+    const sideNav = document.querySelector(".side-nav");
+    if (sideNav) sideNav.classList.add("focused");
+
+    buildSoloMediaShell();
+    setTab("images");
     gotoStore(p.store);
   }
 
-  function closeSolo(){
-    currentProduct = null;
-    stop360RAF();
-
+  function closeSolo() {
     const shopEl = document.getElementById("shop");
     const galleryEl = document.getElementById("sect-gallery");
-    if(shopEl) shopEl.classList.remove("solo");
-    if(galleryEl) galleryEl.classList.remove("solo");
+    if (shopEl) shopEl.classList.remove("solo");
+    if (galleryEl) galleryEl.classList.remove("solo");
 
-    map.flyTo({ center:[0,20], zoom:isMobile() ? 0 : 0.8, pitch:0, bearing:0, duration:2000 });
+    const sideNav = document.querySelector(".side-nav");
+    if (sideNav) sideNav.classList.remove("focused");
+
+    if (rotationFrame) { cancelAnimationFrame(rotationFrame); rotationFrame = null; }
+
+    const isMobileReset = window.innerWidth < 900;
+    map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
   }
 
-  safeAdd("btnBack","click",closeSolo);
-  safeAdd("btnClose","click",closeSolo);
-  safeAdd("btnContactProduct","click",()=>switchSection('sect-contact'));
+  safeAdd("btnBack", "click", closeSolo);
+  safeAdd("btnClose", "click", closeSolo);
+  safeAdd("btnContactProduct", "click", () => switchSection("sect-contact"));
 
   /* Modals */
   const modalArtist = document.getElementById("modalArtistOverlay");
   const modalContact = document.getElementById("modalContactOverlay");
 
   const artistBtnEl = document.getElementById("artistBtn");
-  if(artistBtnEl) artistBtnEl.addEventListener("click", () => modalArtist && modalArtist.classList.add("open"));
-  safeAdd("closeArtistModal","click",() => modalArtist && modalArtist.classList.remove("open"));
-  safeAdd("closeContactModal","click",() => modalContact && modalContact.classList.remove("open"));
+  if (artistBtnEl) artistBtnEl.addEventListener("click", () => { if (modalArtist) modalArtist.classList.add("open"); });
+
+  safeAdd("closeArtistModal", "click", () => { if (modalArtist) modalArtist.classList.remove("open"); });
+  safeAdd("closeContactModal", "click", () => { if (modalContact) modalContact.classList.remove("open"); });
 
   window.addEventListener("click", e => {
-    if(e.target === modalArtist && modalArtist) modalArtist.classList.remove("open");
-    if(e.target === modalContact && modalContact) modalContact.classList.remove("open");
+    if (e.target === modalArtist && modalArtist) modalArtist.classList.remove("open");
+    if (e.target === modalContact && modalContact) modalContact.classList.remove("open");
   });
 
-  /* Init gallery */
-  (function init(){
-    const btnAll = document.getElementById('btnAll');
-    if(btnAll){
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      btnAll.classList.add("active");
+  /* ===== INIT (render all 12 products) ===== */
+  (function initGalleryOnLoad(){
+    function initGallery(){
+      try{
+        const gridNode = document.getElementById("grid");
+        if(!gridNode) return;
+
+        // make Gallery active by default
+        document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active-section"));
+        document.getElementById("sect-gallery").classList.add("active-section");
+
+        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+        const navGallery = document.getElementById("navGallery");
+        if (navGallery) navGallery.classList.add("active");
+
+        // set ALL filter
+        document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        const btnAll = document.getElementById("btnAll") || document.querySelector('.chip[data-filter="all"]');
+        if (btnAll) btnAll.classList.add("active");
+
+        render(PRODUCTS); // all 12
+      }catch(e){}
     }
-    render(PRODUCTS);
+
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(initGallery, 20);
+    } else {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(initGallery, 20));
+    }
   })();
 </script>
 </body>
