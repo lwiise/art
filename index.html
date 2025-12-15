@@ -1170,7 +1170,6 @@ In Media & Cultural Impact:
     const tabs = soloTabs.querySelector('#mediaTabs');
     if(!tabs) return;
 
-    // prevent duplicate binding
     if(tabs.dataset.bound === "1") return;
     tabs.dataset.bound = "1";
 
@@ -1199,7 +1198,6 @@ In Media & Cultural Impact:
   ];
 
   const grid = document.getElementById("grid");
-  const soloMedia = document.getElementById("soloMedia");
 
   function render(list){
     if(!grid) return;
@@ -1256,9 +1254,7 @@ In Media & Cultural Impact:
     const sideNav = document.querySelector('.side-nav');
     if(sideNav) sideNav.classList.add('focused');
 
-    // default: images
     renderActiveMedia(p, 'images');
-
     gotoStore(p.store);
   }
 
@@ -1287,7 +1283,7 @@ In Media & Cultural Impact:
   safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
   window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
 
-  /* ===== OUR PROCESS ANIMATION (FIX: ALWAYS ENDS AT STEP 8) ===== */
+  /* ===== OUR PROCESS ANIMATION (UPDATED: STAYS CENTER, CLAMP 1..8) ===== */
   function setupProcessAnimation(){
     const dot = document.getElementById("procDot");
     const itemsWrap = document.getElementById("procItems");
@@ -1324,10 +1320,22 @@ In Media & Cultural Impact:
       line.style.bottom = "auto";
     };
 
-    const moveDotByScrollProgress = () => {
-      const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
-      const t = Math.min(1, Math.max(0, scroller.scrollTop / maxScroll));  // ✅ clamps to 0..1
-      const y = topY + (totalH * t);                                       // ✅ ends at step 8 when t=1
+    const moveDotLockedToViewportCenter = () => {
+      const railRect = rail.getBoundingClientRect();
+      const scrollerRect = scroller.getBoundingClientRect();
+
+      // center of the visible scroll area (so dot appears to "stay in the middle")
+      const centerY = scrollerRect.top + (scroller.clientHeight / 2);
+
+      // convert to rail space
+      const relY = centerY - railRect.top;
+
+      const minY = topY;
+      const maxY = topY + totalH;
+
+      // clamp so it starts at Step 1 and ends at Step 8
+      const y = Math.min(maxY, Math.max(minY, relY));
+
       dot.style.transform = `translate(-50%, ${y - 9}px)`;
     };
 
@@ -1337,19 +1345,19 @@ In Media & Cultural Impact:
       raf = requestAnimationFrame(() => {
         raf = null;
         computeGeometry();
-        moveDotByScrollProgress();
+        moveDotLockedToViewportCenter();
       });
     };
 
     requestAnimationFrame(() => {
       computeGeometry();
-      moveDotByScrollProgress();
+      moveDotLockedToViewportCenter();
     });
 
     scroller.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("resize", () => {
       computeGeometry();
-      moveDotByScrollProgress();
+      moveDotLockedToViewportCenter();
     });
   }
 
