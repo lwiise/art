@@ -8,408 +8,429 @@
 <style>
   :root{
     --bg:#fff;
-    --text-main:#111;
+    --text-main:#222;
     --muted:#666;
     --accent:#111;
     --card-radius:32px;
     --btn-radius:30px;
-
-    --glass: rgba(0,0,0,0.55);
-    --glass-border: rgba(255,255,255,0.12);
+    --shadow: 0 14px 40px rgba(0,0,0,.08);
+    --shadow-soft: 0 10px 25px rgba(0,0,0,.06);
   }
 
-  /* ===== Base ===== */
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
-  html,body{ height:100%; }
   body{
     margin:0;
+    height:100vh;
     width:100vw;
     background:var(--bg);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     color:var(--text-main);
-    overflow:hidden; /* desktop: no page scroll; sections scroll internally */
+    overflow:hidden;
   }
 
-  /* ===== LAYOUT ===== */
   .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
 
-  /* Map (LEFT) */
+  /* LEFT */
   #map{
-    flex: 0 0 31vw;     /* 31% */
+    flex: 0 0 31vw;   /* 31% map */
     height:100vh;
     background:#000;
     position:relative;
     overflow:hidden;
   }
-  .mapboxgl-canvas{ outline:none; filter: grayscale(100%) contrast(1.2) brightness(0.9); }
+  .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
 
-  /* ===== Side Nav (DESKTOP) ===== */
+  /* Desktop side nav */
   .side-nav{
     position:absolute; top:50%; right:0; transform:translateY(-50%);
-    display:flex; flex-direction:column; z-index:50;
-    background:var(--glass);
-    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border-radius:22px 0 0 22px;
-    border-left:1px solid var(--glass-border);
-    border-top:1px solid var(--glass-border);
-    border-bottom:1px solid var(--glass-border);
-    box-shadow:-10px 0 30px rgba(0,0,0,0.35);
-    overflow:hidden;
+    display:flex; flex-direction:column; z-index:10;
+    background: rgba(0,0,0,.55);                 /* darker bg */
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius:20px 0 0 20px;
+    border-left:1px solid rgba(255,255,255,.14);
+    border-top:1px solid rgba(255,255,255,.10);
+    border-bottom:1px solid rgba(255,255,255,.10);
+    box-shadow:-12px 0 34px rgba(0,0,0,.35);
   }
   .nav-item{
     padding:28px 38px;
-    color:rgba(255,255,255,0.88);
+    color:rgba(255,255,255,.82);
     font-weight:700;
     font-size:13px;
     text-transform:uppercase;
     letter-spacing:.08em;
-    border-bottom:1px solid rgba(255,255,255,0.10);
+    border-bottom:1px solid rgba(255,255,255,.10);
     cursor:pointer;
     text-align:center;
-    text-shadow:0 2px 10px rgba(0,0,0,0.55);
-    transition:background .25s ease, transform .25s ease;
-    user-select:none;
+    text-shadow:0 2px 12px rgba(0,0,0,.6);
+    transition:all .25s ease;
   }
   .nav-item:last-child{ border-bottom:none; }
-  .nav-item:hover{ background:rgba(255,255,255,0.12); }
-  .nav-item.active{ background:rgba(255,255,255,0.16); }
+  .nav-item:hover,
+  .nav-item.active{
+    background:rgba(255,255,255,.16);
+    color:#fff;
+    padding-right:46px;
+  }
 
-  /* ===== Mobile Map Nav (HORIZONTAL) ===== */
+  /* Mobile nav (over the map, horizontal, same style vibe) */
   .mobile-nav{
-    display:none;
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:14px;
-    z-index:60;
-    background:var(--glass);
-    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border:1px solid var(--glass-border);
-    border-radius:22px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.35);
-    overflow:hidden;
-    width:min(92vw,620px);
+    position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+    display:none; z-index:20;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:999px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    padding:8px;
+    gap:8px;
+    align-items:center;
+    justify-content:center;
+    max-width:calc(100% - 24px);
+    overflow:auto;
+    scrollbar-width:none;
   }
-  .mobile-nav .nav-row{
-    display:flex;
-    width:100%;
+  .mobile-nav::-webkit-scrollbar{ display:none; }
+  .mnav-item{
+    padding:10px 14px;
+    color:rgba(255,255,255,.82);
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    border-radius:999px;
+    white-space:nowrap;
+    cursor:pointer;
+    transition:all .2s ease;
+    user-select:none;
   }
-  .mobile-nav .nav-item{
-    padding:16px 12px;
-    flex:1;
-    border-bottom:none;
-    border-right:1px solid rgba(255,255,255,0.10);
-    font-size:11px;
+  .mnav-item.active,
+  .mnav-item:hover{
+    background:rgba(255,255,255,.16);
+    color:#fff;
   }
-  .mobile-nav .nav-item:last-child{ border-right:none; }
 
-  /* ===== SHOP (RIGHT) ===== */
+  /* RIGHT */
   .shop{
-    flex: 1 1 auto; /* remainder = ~69% */
+    flex: 1; /* rest (69%) */
+    display:flex;
+    flex-direction:column;
     height:100vh;
     background:#fff;
     position:relative;
     z-index:2;
-    box-shadow:-10px 0 40px rgba(0,0,0,0.05);
+    box-shadow:-10px 0 40px rgba(0,0,0,.06);
     overflow:hidden;
   }
 
   /* Sections */
   .app-section{
     position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    background:#fff;
+    display:flex;
+    flex-direction:column;
     opacity:0; visibility:hidden; pointer-events:none;
-    transform:translateY(14px);
+    transform:translateY(16px);
     transition:opacity .35s ease, transform .35s ease;
     z-index:1;
+    background:#fff;
+    overflow:hidden; /* IMPORTANT: scrolling is in .section-scroll */
     padding:40px;
-    overflow-y:auto; /* section scroll */
   }
   .app-section.active-section{
     opacity:1; visibility:visible; pointer-events:auto;
-    transform:translateY(0);
-    z-index:10;
+    transform:translateY(0); z-index:10;
   }
 
-  /* Headings */
-  h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 12px; letter-spacing:-.02em; }
-  p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 18px; max-width:760px; }
+  .section-scroll{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding-right:6px;
+  }
+  .section-scroll::-webkit-scrollbar{ width:10px; }
+  .section-scroll::-webkit-scrollbar-thumb{ background:#e9e9e9; border-radius:999px; }
 
-  /* ===== HOME ===== */
-  #sect-home{ gap:18px; }
+  /* Shared headings */
+  h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 10px; letter-spacing:-0.02em; color:#111; }
+  p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 18px; }
+  p.sec-sub.wide{ max-width:none; } /* home paragraph full width */
+
+  /* HOME */
+  #sect-home{ padding:40px; }
   .home-hero{
     width:100%;
-    height:420px;
-    border-radius:28px;
-    background:#f3f3f3;
-    position:relative;
-    overflow:hidden;
+    min-height: 420px;
+    border-radius:26px;
+    background:#f4f4f4;
+    box-shadow: var(--shadow-soft);
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 18px 50px rgba(0,0,0,0.06);
+    padding:24px;
+    margin-bottom:22px;
+    overflow:hidden;
   }
   .home-hero img{
     width:100%;
     height:100%;
-    object-fit:contain; /* fills the empty grey area (no extra empty panel) */
-    padding:26px;
-    filter: drop-shadow(0 18px 22px rgba(0,0,0,0.10));
+    object-fit:contain;
+    max-height: 520px;
+    display:block;
   }
-  /* Home paragraph full width */
-  #sect-home .sec-sub{ max-width:none; width:100%; }
-
   .btn-hero{
     display:inline-block;
     padding:14px 36px;
     background:#111;
     color:#fff;
     border:none;
-    border-radius:50px;
+    border-radius:999px;
     font-size:14px;
     font-weight:800;
     cursor:pointer;
-    box-shadow:0 10px 22px rgba(0,0,0,0.14);
-    width:max-content;
+    box-shadow:0 10px 24px rgba(0,0,0,.14);
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .btn-hero:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,0.18); }
+  .btn-hero:hover{ transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,.18); background:#000; }
 
-  /* ===== ABOUT ===== */
-  .about-wrap{
-    display:flex;
-    flex-direction:column;
-    gap:22px;
-  }
-  .about-block{
-    background:#fafafa;
-    border:1px solid #eee;
-    border-radius:24px;
-    padding:22px;
-  }
-  .about-block h3{
-    margin:0 0 10px;
-    font-size:13px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:#8a8a8a;
-    font-weight:900;
-  }
-  .about-block p, .about-block li{
-    color:#444;
-    line-height:1.8;
-    font-size:15px;
-    margin:0;
-  }
+  /* ABOUT */
+  .about-wrap{ max-width: 980px; }
+  .about-title{ font-size:34px; font-weight:900; margin:0 0 10px; letter-spacing:-.02em; }
+  .about-body{ color:#555; font-size:15px; line-height:1.8; }
+  .about-body p{ margin:0 0 12px; }
   .about-grid{
+    margin-top:26px;
     display:grid;
     grid-template-columns: 1fr 1fr;
-    gap:16px;
+    gap:18px;
   }
-  .pill-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:14px;
+  .about-card{
+    border:1px solid #eee;
+    border-radius:22px;
+    padding:20px;
+    background:#fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,.04);
   }
+  .about-card h3{
+    margin:0 0 10px;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#999;
+    font-weight:900;
+  }
+  .pill-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
   .pill{
     padding:10px 14px;
     border-radius:999px;
-    border:1px solid #eaeaea;
-    background:#fff;
+    border:1px solid #eee;
+    background:#fafafa;
     font-weight:800;
     font-size:13px;
     color:#222;
   }
-  .about-list{
-    margin:14px 0 0;
+  .bullet{
+    margin:12px 0 0 0;
     padding-left:18px;
+    color:#555;
+    line-height:1.8;
   }
-  .about-list li{ margin:8px 0; }
 
-  /* ===== SERVICES ===== */
-  .services-shell{
-    border-radius:28px;
-    border:1px solid #ededed;
-    background:
-      repeating-linear-gradient(135deg, #fafafa 0, #fafafa 12px, #f6f6f6 12px, #f6f6f6 24px);
-    padding:22px;
-  }
+  /* SERVICES */
+  #sect-services{ padding:40px; }
+  .services-wrap{ width:100%; }
+  .services-head{ max-width:980px; }
   .services-grid{
+    margin-top:20px;
     display:grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap:18px;
   }
   .svc-card{
-    background:rgba(255,255,255,0.75);
-    border:1px solid rgba(0,0,0,0.06);
+    background:#fff;                /* plain white bg */
+    border:1px solid #eee;
     border-radius:22px;
-    padding:18px 16px 16px;
-    backdrop-filter: blur(8px);
-    transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-    min-height:170px;
+    padding:20px 18px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.06); /* add shadow */
+    transition:transform .18s ease, box-shadow .18s ease;
+    min-height: 170px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
   }
   .svc-card:hover{
-    transform: translateY(-6px);
-    box-shadow:0 18px 44px rgba(0,0,0,0.10);
-    background:rgba(255,255,255,0.90);
+    transform:translateY(-4px);
+    box-shadow: 0 16px 38px rgba(0,0,0,.10);
   }
-  .svc-ico{
-    width:38px; height:38px;
-    border-radius:14px;
+  .svc-ic{
+    width:34px; height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #eee;
+    background:#fafafa;
+  }
+  .svc-card h3{ margin:0; font-size:18px; font-weight:900; color:#111; }
+  .svc-card p{ margin:0; color:#666; line-height:1.65; font-size:14px; }
+
+  /* OUR PROCESS (white theme, single animated circle) */
+  .process-wrap{
+    margin-top:26px;
+    border-radius:28px;
+    border:1px solid #eee;
     background:#fff;
-    border:1px solid rgba(0,0,0,0.06);
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.06);
+    padding:26px;
+    overflow:hidden;
   }
-  .svc-ico svg{ width:20px; height:20px; opacity:.75; }
-  .svc-title{
-    margin:0 0 8px;
-    font-size:18px;
-    font-weight:900;
-    letter-spacing:-.01em;
+  .process-top{
+    max-width: 980px;
+    margin-bottom:18px;
   }
-  .svc-desc{
+  .process-top h2{
+    margin:0 0 6px;
+    font-size:34px;
+    font-weight:950;
+    letter-spacing:-.02em;
+    color:#111;
+  }
+  .process-top p{
     margin:0;
-    color:#555;
-    font-size:14px;
-    line-height:1.6;
+    color:#666;
+    line-height:1.7;
+    font-size:15px;
   }
 
-  /* ===== Our Process (animated timeline) ===== */
-  .process{
-    margin-top:22px;
-    border-radius:28px;
-    background:#0f0f10;
-    color:#fff;
-    padding:26px 22px;
+  .process-grid{
+    position:relative;
+    display:grid;
+    grid-template-columns: 46px 1fr;
+    gap:18px;
+    align-items:start;
+  }
+
+  /* left rail */
+  .proc-rail{
+    position:relative;
+    width:46px;
+    display:flex;
+    justify-content:center;
+  }
+  .proc-line{
+    position:absolute;
+    top:0; bottom:0;
+    width:2px;
+    background: linear-gradient(#e9e9e9, #dcdcdc);
+    border-radius:999px;
+  }
+  .proc-dot{
+    position:absolute;
+    left:50%;
+    transform: translate(-50%, 0);
+    width:16px; height:16px;
+    border-radius:999px;
+    background:#111;
+    box-shadow:0 10px 18px rgba(0,0,0,.18);
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+    will-change: transform;
+  }
+  .proc-dot::after{
+    content:"";
+    position:absolute;
+    inset:-6px;
+    border-radius:999px;
+    border:1px solid rgba(17,17,17,.12);
+  }
+  .proc-dot.pulse{
+    animation:pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 10px 18px rgba(0,0,0,.18); transform: translate(-50%, var(--dotY)) scale(1); }
+    50%{ box-shadow:0 16px 26px rgba(0,0,0,.22); transform: translate(-50%, var(--dotY)) scale(1.08); }
+  }
+
+  .proc-items{ display:flex; flex-direction:column; gap:16px; }
+  .proc-step{
+    border:1px solid #eee;
+    border-radius:24px;
+    background:#fff;
+    box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    padding:22px;
+    display:grid;
+    grid-template-columns: 1.15fr .85fr;   /* image right */
+    gap:18px;
+    min-height: 150px;                    /* more height */
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .proc-step:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 16px 38px rgba(0,0,0,.10);
+    border-color:#e6e6e6;
+  }
+  .proc-step.is-active{
+    border-color:#dcdcdc;
+    box-shadow: 0 18px 44px rgba(0,0,0,.12);
+  }
+  .proc-meta{
+    font-weight:950;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:#999;
+    margin-bottom:6px;
+  }
+  .proc-title{
+    font-size:22px;
+    font-weight:950;
+    margin:0 0 6px;
+    color:#111;
+  }
+  .proc-desc{
+    margin:0;
+    color:#666;
+    line-height:1.75;
+    font-size:14px;
+  }
+  .proc-visual{
+    height:100%;
+    min-height:120px;
+    border-radius:18px;
+    border:1px solid #eee;
+    background: radial-gradient(circle at 30% 20%, #ffffff, #f4f4f4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
     position:relative;
     overflow:hidden;
   }
-  .process::before{
-    content:"";
-    position:absolute; inset:-80px;
-    background:
-      radial-gradient(600px 240px at 10% 10%, rgba(255,255,255,0.08), transparent 60%),
-      radial-gradient(700px 320px at 80% 30%, rgba(255,255,255,0.06), transparent 65%);
-    pointer-events:none;
-  }
-  .process-head{
-    position:relative;
-    display:flex;
-    align-items:flex-end;
-    justify-content:space-between;
-    gap:18px;
-    margin-bottom:18px;
-  }
-  .process-head h2{
-    margin:0;
-    font-size:28px;
-    font-weight:950;
-    letter-spacing:-.02em;
-    transform: translateY(10px);
-    opacity:0;
-    transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .55s ease;
-  }
-  .process-head p{
-    margin:0;
-    colorC
-    olor:rgba(255,255,255,0.70);
-    max-width:520px;
-    line-height:1.6;
-    font-size:14px;
-    transform: translateY(10px);
-    opacity:0;
-    transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .55s ease;
-    transition-delay:.08s;
-  }
-  .process.is-in .process-head h2,
-  .process.is-in .process-head p{
-    transform: translateY(0);
-    opacity:1;
+  .proc-visual svg{
+    width:64px; height:64px;
+    opacity:.7;
   }
 
-  .timeline{
-    position:relative;
-    display:grid;
-    grid-template-columns: 1fr;
-    gap:16px;
-    padding:8px 0 6px;
-  }
-  .timeline::before{
-    content:"";
-    position:absolute;
-    left:18px;
-    top:0;
-    bottom:0;
-    width:2px;
-    background:rgba(255,255,255,0.14);
-  }
-  .t-item{
-    position:relative;
-    padding-left:54px;
-    opacity:0;
-    transform: translateY(16px);
-    transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .6s ease;
-  }
-  .t-item.in{
-    opacity:1;
-    transform: translateY(0);
-  }
-  .t-dot{
-    position:absolute;
-    left:10px;
-    top:18px;
-    width:18px;
-    height:18px;
-    border-radius:50%;
-    background:#fff;
-    box-shadow:0 12px 24px rgba(0,0,0,0.35);
-  }
-  .t-card{
-    background: rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.12);
-    border-radius:20px;
-    padding:16px 16px 14px;
-    backdrop-filter: blur(10px);
-  }
-  .t-step{
-    font-size:11px;
-    letter-spacing:.14em;
-    font-weight:900;
-    text-transform:uppercase;
-    color:rgba(255,255,255,0.72);
-    margin-bottom:8px;
-  }
-  .t-title{
-    margin:0 0 8px;
-    font-size:18px;
-    font-weight:900;
-    letter-spacing:-.01em;
-  }
-  .t-desc{
-    margin:0;
-    color:rgba(255,255,255,0.78);
-    line-height:1.65;
-    font-size:14px;
-  }
-
-  /* ===== GALLERY ===== */
-  #sect-gallery{ padding:0; overflow:hidden; }
+  /* GALLERY */
+  #sect-gallery{ padding:0; }
   .shop-head{
     flex-shrink:0;
     position:sticky; top:0;
-    background:rgba(255,255,255,0.96);
-    backdrop-filter:blur(10px);
-    z-index:30;
-    padding:20px 24px;
+    background:rgba(255,255,255,.96);
+    backdrop-filter: blur(10px);
+    z-index:10;
+    padding: 22px 28px;
     border-bottom:1px solid #f0f0f0;
   }
   .nav-group{
     display:flex;
-    align-items:center;
     gap:10px;
+    align-items:center;
+    flex-wrap:nowrap;
+    overflow:auto;                 /* keep on one line */
+    scrollbar-width:none;
   }
+  .nav-group::-webkit-scrollbar{ display:none; }
   .chip{
     border:none;
     background:transparent;
@@ -420,112 +441,149 @@
     transition: all .2s ease;
     font-weight:700;
     white-space:nowrap;
+    border-radius:999px;
   }
   .chip:hover{ color:#333; }
   .chip.active{
     background:var(--accent);
     color:#fff;
-    padding:8px 18px;
-    border-radius:999px;
+    padding:8px 20px;
   }
 
   .shop-body{
-    padding:22px 24px 70px;
-    height:calc(100% - 66px);
-    overflow-y:auto; /* gallery scroll area */
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding: 18px 28px 60px;
   }
 
   .grid{
     display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap:26px 18px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap:22px;
     width:100%;
   }
+
   .card{
     background:#fff;
-    border:1px solid #f0f0f0;
-    border-radius:26px;
-    padding:22px 18px;
+    border:1px solid #f1f1f1;
+    border-radius: var(--card-radius);
+    padding:24px 18px;
     cursor:pointer;
-    transition: transform .25s ease, box-shadow .25s ease;
-    display:flex; flex-direction:column; align-items:center; text-align:center;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    box-shadow: 0 10px 24px rgba(0,0,0,.04);
   }
-  .card:hover{ transform:translateY(-6px); box-shadow:0 18px 44px rgba(0,0,0,0.08); }
-  .card-media{ width:100%; height:160px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
-  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 10px 14px rgba(0,0,0,0.10)); }
-  .card-name{ font-size:12px; font-weight:900; letter-spacing:.12em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
-  .card-sub{ font-size:10px; color:#c8c8c8; text-transform:uppercase; letter-spacing:.08em; }
+  .card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 18px 44px rgba(0,0,0,.08);
+    border-color:#eaeaea;
+  }
+  .card-media{
+    width:100%;
+    height:180px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:16px;
+  }
+  .card-media img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.08));
+  }
+  .card-name{
+    font-size:12px;
+    font-weight:950;
+    letter-spacing:.10em;
+    color:#b0b0b0;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .card-sub{
+    font-size:10px;
+    color:#ccc;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
 
-  /* ===== Solo Product View ===== */
+  /* SOLO (product page) */
   .solo-wrap{ display:none; }
   #sect-gallery.solo .grid{ display:none; }
   #sect-gallery.solo .solo-wrap{ display:block; }
 
-  .back-nav{ margin:6px 0 14px; }
-  .btn-back{
-    background:none; border:none; padding:0;
-    color:#888; font-size:13px; font-weight:800;
-    cursor:pointer; display:flex; align-items:center; gap:8px;
-  }
-
-  .solo-title-row{
+  .solo-top{
     display:flex;
     align-items:flex-end;
     justify-content:space-between;
-    gap:14px;
+    gap:16px;
     margin-bottom:12px;
   }
   .solo-product-title{
     margin:0;
-    font-size:24px;
+    font-size:22px;
     font-weight:950;
-    letter-spacing:-.02em;
+    letter-spacing:-.01em;
+    color:#111;
+  }
+  .btn-back{
+    background:none; border:none; padding:0;
+    color:#999; font-size:13px; font-weight:800;
+    cursor:pointer; display:flex; align-items:center; gap:8px;
   }
 
-  /* Product media tabs (OUTSIDE frame) */
+  /* media tabs (OUT of frame) */
   .media-tabs{
     display:flex;
-    gap:8px;
-    background:rgba(0,0,0,0.10);
+    gap:10px;
+    background: rgba(0,0,0,.08);
+    border-radius:999px;
     padding:8px;
-    border-radius:999px;
+    align-items:center;
+    justify-content:flex-end;
   }
-  .tab-btn{
+  .mtab{
     border:none;
-    padding:10px 14px;
-    border-radius:999px;
+    background: rgba(0,0,0,.18);
+    color:#fff;
     font-weight:900;
     font-size:12px;
     letter-spacing:.08em;
     text-transform:uppercase;
+    padding:10px 14px;
+    border-radius:999px;
     cursor:pointer;
-    background:rgba(0,0,0,0.10);
-    color:rgba(0,0,0,0.60);
-    transition: background .2s ease, color .2s ease, transform .2s ease;
+    transition: all .2s ease;
+    opacity:.75;
     white-space:nowrap;
   }
-  .tab-btn.active{
+  .mtab.active{
     background:#fff;
     color:#111;
-    box-shadow:0 10px 22px rgba(0,0,0,0.10);
+    opacity:1;
   }
-  .tab-btn:active{ transform:scale(.98); }
+  .mtab:hover{ opacity:1; }
 
   /* 16:9 media frame */
-  .media-frame{
+  .solo-media-container{
     width:100%;
-    aspect-ratio: 16 / 9;
-    border-radius:28px;
+    aspect-ratio: 16 / 9; /* requested */
+    border-radius: 22px;
     overflow:hidden;
-    background:#f2f2f2;
+    background:#f3f3f3;
+    box-shadow: var(--shadow-soft);
     position:relative;
-    border:1px solid #eee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
-  .media-frame-inner{
-    width:100%;
-    height:100%;
-  }
-  .media-frame img, .media-frame video, .media-frame model-viewer{
+  .solo-media-container img,
+  .solo-media-container video,
+  .solo-media-container model-viewer{
     width:100%;
     height:100%;
     object-fit:cover;
@@ -533,114 +591,128 @@
     background:transparent;
   }
 
-  /* Image slider arrows */
-  .slider-arrow{
+  /* images arrows */
+  .media-arrow{
     position:absolute;
     top:50%;
     transform:translateY(-50%);
-    width:44px; height:44px;
-    border-radius:50%;
-    border:none;
-    background:rgba(0,0,0,0.32);
-    color:#fff;
-    font-size:18px;
-    cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    z-index:5;
-    transition: background .2s ease, transform .2s ease;
-  }
-  .slider-arrow:hover{ background:rgba(0,0,0,0.45); }
-  .slider-arrow:active{ transform:translateY(-50%) scale(.98); }
-  .slider-arrow.left{ left:14px; }
-  .slider-arrow.right{ right:14px; }
-
-  /* Custom 360 controls */
-  .vid-ui{
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:16px;
-    width:min(76%, 760px);
-    background:rgba(0,0,0,0.55);
-    border:1px solid rgba(255,255,255,0.18);
+    width:42px; height:42px;
     border-radius:999px;
-    padding:10px 12px;
+    border:none;
+    cursor:pointer;
+    background:rgba(0,0,0,.40);
+    color:#fff;
     display:flex;
     align-items:center;
-    gap:10px;
-    z-index:6;
-    backdrop-filter: blur(10px);
+    justify-content:center;
+    font-size:18px;
+    z-index:5;
+    transition: transform .15s ease, background .15s ease;
   }
-  .vid-ui button{
-    width:40px; height:34px;
-    border-radius:999px;
+  .media-arrow:hover{ background:rgba(0,0,0,.55); transform:translateY(-50%) scale(1.04); }
+  .media-arrow.left{ left:14px; }
+  .media-arrow.right{ right:14px; }
+
+  /* 360 custom controls */
+  .vid-controls{
+    margin-top:12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:flex-start;
+  }
+  .vbtn{
     border:none;
-    background:rgba(255,255,255,0.10);
+    background:#111;
     color:#fff;
+    width:44px; height:44px;
+    border-radius:14px;
     cursor:pointer;
     font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 10px 20px rgba(0,0,0,.14);
+    transition: transform .12s ease;
   }
-  .vid-ui input[type="range"]{
+  .vbtn:active{ transform:scale(.96); }
+  .vslider{
     flex:1;
-    height:6px;
-    accent-color:#fff;
+    appearance:none;
+    height:10px;
+    border-radius:999px;
+    background: linear-gradient(90deg, #111 0%, #111 0%, #e7e7e7 0%, #e7e7e7 100%);
+    outline:none;
+    cursor:pointer;
+  }
+  .vslider::-webkit-slider-thumb{
+    appearance:none;
+    width:22px; height:22px;
+    border-radius:999px;
+    background:#fff;
+    border:3px solid #111;
+    box-shadow: 0 10px 18px rgba(0,0,0,.16);
   }
 
-  /* Product info */
-  .solo-info-block{ padding:18px 6px 0; }
+  .solo-info-block{ padding: 14px 4px 0; }
   .solo-desc{
     text-align:left;
-    color:#555;
+    color:#666;
     font-size:14px;
-    line-height:1.7;
+    line-height:1.75;
     border-top:1px solid #eee;
     padding-top:18px;
     margin-top:18px;
   }
-  .data-row{ display:flex; gap:22px; margin-top:12px; flex-wrap:wrap; }
+  .data-row{ display:flex; gap:24px; margin-top:14px; flex-wrap:wrap; }
   .data-item span:first-child{
-    display:block;
-    font-size:10px;
-    color:#999;
-    text-transform:uppercase;
-    font-weight:900;
-    margin-bottom:4px;
-    letter-spacing:.1em;
+    display:block; font-size:10px; color:#999;
+    text-transform:uppercase; font-weight:900;
+    margin-bottom:4px; letter-spacing:.12em;
   }
   .data-item span:last-child{ font-size:15px; font-weight:900; color:#222; }
 
   .artist-profile{
     display:flex; align-items:center; gap:14px;
-    margin-top:18px; padding:14px;
-    background:#fafafa; border-radius:20px; cursor:pointer;
-    transition: all .2s ease;
+    margin-top:18px; padding:16px;
+    background:#fafafa; border-radius:20px;
+    cursor:pointer; transition: all .2s ease;
     border:1px solid transparent;
   }
-  .artist-profile:hover{ background:#fff; border-color:#eee; box-shadow:0 10px 22px rgba(0,0,0,0.06); transform:translateY(-2px); }
+  .artist-profile:hover{
+    background:#fff; border-color:#eee;
+    box-shadow: 0 8px 18px rgba(0,0,0,.06);
+    transform: translateY(-2px);
+  }
   .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
   .avatar img{ width:100%; height:100%; object-fit:cover; }
+  .artist-info{ flex:1; }
   .artist-info h4{ margin:0; font-size:13px; color:#222; }
   .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
   .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:.08em; }
 
-  .actions{ display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
-  .btn{ padding:14px 18px; border-radius:14px; border:none; font-size:13px; font-weight:800; cursor:pointer; transition: transform .1s; }
-  .btn:active{ transform:scale(.98); }
-  .btn-primary{ background:#111; color:#fff; flex:1; min-width:160px; }
-  .btn-ghost{ background:#f0f0f0; color:#666; min-width:120px; }
+  .actions{ display:flex; gap:12px; margin-top:18px; }
+  .btn{
+    padding:14px 20px;
+    border-radius:14px;
+    border:none;
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+    transition: transform .1s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn-primary{ background:#111; color:#fff; flex:1; }
+  .btn-ghost{ background:#f0f0f0; color:#666; }
 
-  /* ===== CONTACT ===== */
+  /* CONTACT */
   .form-title{ font-size:18px; font-weight:950; margin:0 0 16px; text-align:center; }
   .form-group{ margin-bottom:12px; }
   .form-input{
-    display:block;
-    width:100%;
+    display:block; width:100%;
     padding:14px;
     border:1px solid #eee;
     border-radius:12px;
     background:#fafafa;
-    font-size:14px;
-    color:#111;
+    font-size:14px; color:#111;
   }
   .form-input:focus{ outline:none; border-color:#111; background:#fff; }
   .btn-submit{
@@ -653,22 +725,13 @@
     font-weight:900;
     cursor:pointer;
   }
-  #formSuccess, #formSuccessModal{
-    display:none;
-    border-radius:12px;
-    margin-top:12px;
-    background:#f0f0f0;
-    color:#333;
-    padding:18px;
-    text-align:center;
-    font-size:14px;
-  }
+  #formSuccess{ display:none; border-radius:12px; margin-top:14px; background:#f0f0f0; color:#333; padding:18px; text-align:center; font-size:14px; }
 
   /* Modals */
   .modal-overlay{
     position:fixed; inset:0;
-    background:rgba(0,0,0,0.45);
-    backdrop-filter:blur(4px);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
     z-index:9999;
     display:none;
     align-items:center;
@@ -680,105 +743,71 @@
   .modal-box{
     background:#fff;
     width:90%;
-    max-width:420px;
-    padding:26px;
+    max-width: 420px;
+    padding:28px;
     border-radius:24px;
-    box-shadow:0 20px 44px rgba(0,0,0,0.22);
-    transform:translateY(16px);
+    box-shadow:0 22px 50px rgba(0,0,0,.22);
+    transform: translateY(16px);
     transition: transform .25s cubic-bezier(.2,.8,.2,1);
     position:relative;
-    max-height:90vh;
+    max-height: 90vh;
     overflow:auto;
   }
-  .modal-overlay.open .modal-box{ transform:translateY(0); }
+  .modal-overlay.open .modal-box{ transform: translateY(0); }
   .close-modal{
-    position:absolute; top:16px; right:16px;
+    position:absolute; top:18px; right:18px;
     background:none; border:none;
-    font-size:20px; color:#999;
-    cursor:pointer;
+    font-size:20px; color:#999; cursor:pointer;
   }
   .artist-modal-header{ text-align:center; margin-bottom:16px; }
-  .artist-modal-avatar{ width:80px; height:80px; border-radius:50%; margin:0 auto 12px; overflow:hidden; }
+  .artist-modal-avatar{ width:82px; height:82px; border-radius:50%; margin:0 auto 12px; overflow:hidden; }
   .artist-modal-avatar img{ width:100%; height:100%; object-fit:cover; }
-  .artist-modal-bio{ font-size:13px; line-height:1.65; color:#555; text-align:center; margin:0; }
+  .artist-modal-bio{ font-size:13px; line-height:1.7; color:#555; text-align:center; margin:0; }
 
   /* ===== MOBILE ===== */
   @media (max-width: 900px){
-    body{ overflow-y:auto; overflow-x:hidden; } /* scroll over map */
-    .layout{ flex-direction:column; overflow:visible; }
+    body{ overflow:hidden; }
+    .layout{ flex-direction:column; }
 
-    /* Map fixed background */
+    /* Map fixed top, shop overlays it */
     #map{
-      position:fixed;
-      top:0; left:0;
       width:100%;
-      height:45vh;     /* map takes ~10% less than 50vh */
-      z-index:0;
+      height:40vh;   /* ~10% less than before */
       flex:none;
+      position:fixed;
+      top:0; left:0; right:0;
+      z-index:1;
     }
 
     .side-nav{ display:none; }
-    .mobile-nav{ display:block; }
+    .mobile-nav{ display:flex; }
 
-    /* Shop overlays and scrolls over map */
     .shop{
-      position:relative;
-      z-index:2;
-      margin-top:45vh;         /* start after the map area */
+      width:100%;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      top:28vh; /* overlaps map; content scrolls OVER map */
+      border-radius:24px 24px 0 0;
+      z-index:5;
       height:auto;
-      min-height:calc(100vh - 45vh);
-      border-radius:26px 26px 0 0;
-      box-shadow:0 -12px 40px rgba(0,0,0,0.08);
-      overflow:visible;
+      box-shadow: 0 -18px 40px rgba(0,0,0,.10);
     }
 
-    .app-section{
-      position:relative;
-      inset:auto;
-      min-height:calc(100vh - 45vh);
-      padding:22px 18px 28px;
-      transform:none;
-      opacity:1;
-      visibility:visible;
-      pointer-events:auto;
-      display:none; /* handled by active-section */
-    }
-    .app-section.active-section{ display:flex; }
-
-    /* Make header chips single line */
-    .shop-head{
-      position:sticky; top:0;
-      padding:18px 16px;
-      overflow-x:auto;
-      scrollbar-width:none;
-    }
-    .shop-head::-webkit-scrollbar{ display:none; }
-    .nav-group{
-      flex-wrap:nowrap;
-      overflow-x:auto;
-      gap:10px;
-      padding-bottom:2px;
-      scrollbar-width:none;
-    }
-    .nav-group::-webkit-scrollbar{ display:none; }
-
-    .shop-body{
-      height:auto;
-      padding:18px 16px 90px;
-      overflow:visible; /* use page scroll on mobile */
-    }
+    .app-section{ padding:22px; }
+    .shop-head{ padding:16px 18px; }
+    .shop-body{ padding:14px 18px 70px; }
 
     .grid{ grid-template-columns: repeat(2, 1fr); gap:14px; }
-    .card{ border-radius:22px; padding:14px 12px; }
-    .card-media{ height:110px; }
+    .card{ padding:16px; border-radius:24px; }
+    .card-media{ height:120px; }
 
-    .services-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+    .home-hero{ min-height: 260px; }
+    h1.sec-title{ font-size:28px; }
+    .services-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 
-    .solo-title-row{ flex-direction:column; align-items:flex-start; }
-    .media-tabs{ width:100%; justify-content:center; flex-wrap:nowrap; overflow-x:auto; }
-    .tab-btn{ flex:0 0 auto; }
-
-    .home-hero{ height:320px; }
+    .process-grid{ grid-template-columns: 34px 1fr; }
+    .proc-step{ grid-template-columns: 1fr; }
+    .proc-visual{ min-height: 110px; }
   }
 </style>
 </head>
@@ -786,7 +815,7 @@
 <body>
 <div class="layout">
   <div id="map">
-    <!-- Desktop side nav -->
+    <!-- desktop nav -->
     <nav class="side-nav" id="sideNav">
       <div class="nav-item active" id="navHome">Home</div>
       <div class="nav-item" id="navAbout">About Us</div>
@@ -795,15 +824,13 @@
       <div class="nav-item" id="navContact">Contacts</div>
     </nav>
 
-    <!-- Mobile horizontal nav (same style) -->
+    <!-- mobile nav -->
     <div class="mobile-nav" id="mobileNav">
-      <div class="nav-row">
-        <div class="nav-item active" id="mNavHome">Home</div>
-        <div class="nav-item" id="mNavAbout">About</div>
-        <div class="nav-item" id="mNavServices">Services</div>
-        <div class="nav-item" id="mNavGallery">Gallery</div>
-        <div class="nav-item" id="mNavContact">Contacts</div>
-      </div>
+      <div class="mnav-item active" id="mNavHome">Home</div>
+      <div class="mnav-item" id="mNavAbout">About</div>
+      <div class="mnav-item" id="mNavServices">Services</div>
+      <div class="mnav-item" id="mNavGallery">Gallery</div>
+      <div class="mnav-item" id="mNavContact">Contacts</div>
     </div>
   </div>
 
@@ -811,63 +838,58 @@
 
     <!-- HOME -->
     <section id="sect-home" class="app-section active-section">
-      <div class="home-hero">
-        <img
-          src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-          alt="FNN Art Logo"
-        />
-      </div>
+      <div class="section-scroll">
+        <div class="home-hero">
+          <img
+            src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
+            alt="FNN Art Logo"
+          />
+        </div>
 
-      <h1 class="sec-title">Welcome to FNN Art</h1>
-      <p class="sec-sub">
-        A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions, and building the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
-      </p>
-      <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
+        <h1 class="sec-title">Welcome to FNN Art</h1>
+        <p class="sec-sub wide">
+          A modern art platform specializing in the presentation of original artworks by selected artists.
+        </p>
+
+        <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
+      </div>
     </section>
 
     <!-- ABOUT -->
     <section id="sect-about" class="app-section">
-      <h1 class="sec-title">About FNN</h1>
-
-      <div class="about-wrap">
-        <div class="about-block">
-          <p>
-            FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
-            <br><br>
-            On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
-          </p>
-        </div>
-
-        <div class="about-grid">
-          <div class="about-block">
-            <h3>In Arts &amp; Culture</h3>
-            <ul class="about-list">
-              <li><strong>Curated Art Platforms:</strong> original works by selected local &amp; international artists—contemporary, conceptual, emerging voices.</li>
-              <li><strong>Art Objects &amp; Installations:</strong> commissioned artworks, sculptural pieces, mixed-media, limited editions.</li>
-              <li><strong>Exhibitions &amp; Programs:</strong> pop-ups, collaborations, thematic programs exploring identity and place.</li>
-              <li><strong>Publications &amp; Art Content:</strong> documentation, essays, catalogs, and digital content for contemporary discourse.</li>
-            </ul>
-            <div class="pill-row">
-              <span class="pill">Curated Art Platforms</span>
-              <span class="pill">Art Objects &amp; Installations</span>
-              <span class="pill">Exhibitions &amp; Programs</span>
-              <span class="pill">Publications &amp; Art Content</span>
-            </div>
+      <div class="section-scroll">
+        <div class="about-wrap">
+          <h1 class="about-title">About FNN</h1>
+          <div class="about-body" id="aboutBody">
+            <!-- injected by JS (so it’s easy to tweak) -->
           </div>
 
-          <div class="about-block">
-            <h3>NDCC &amp; Cultural Impact</h3>
-            <ul class="about-list">
-              <li><strong>Art Content Center (NDCC):</strong> creation, curation, archiving, and distribution—bridging artists, collectors, institutions, and the public.</li>
-              <li><strong>Cultural Partnerships:</strong> collaboration with museums, cultural entities, developers, and brands.</li>
-              <li><strong>Digital Presence:</strong> online exhibitions, artist profiles, and visual archives.</li>
-              <li><strong>Narrative Building:</strong> shaping a contemporary Saudi art narrative and audience engagement.</li>
-            </ul>
-            <div class="pill-row">
-              <span class="pill">Cultural Partnerships</span>
-              <span class="pill">Digital Presence</span>
-              <span class="pill">Audience Engagement</span>
-              <span class="pill">Narrative Building</span>
+          <!-- (Requested) delete image from about section: none here -->
+          <div class="about-grid">
+            <div class="about-card">
+              <h3>What we do</h3>
+              <p style="margin:0;color:#555;line-height:1.75;">
+                Curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+              </p>
+              <div class="pill-row">
+                <span class="pill">Curated Art Platforms</span>
+                <span class="pill">Art Objects & Installations</span>
+                <span class="pill">Exhibitions & Programs</span>
+                <span class="pill">Publications & Art Content</span>
+              </div>
+            </div>
+
+            <div class="about-card">
+              <h3>NDCC vision</h3>
+              <p style="margin:0;color:#555;line-height:1.75;">
+                A central node for art content creation, curation, archiving, and distribution—bridging artists, collectors, institutions, and the public through digital presence and visual archives.
+              </p>
+              <div class="pill-row">
+                <span class="pill">Cultural Partnerships</span>
+                <span class="pill">Digital Presence</span>
+                <span class="pill">Audience Engagement</span>
+                <span class="pill">Narrative Building</span>
+              </div>
             </div>
           </div>
         </div>
@@ -876,159 +898,34 @@
 
     <!-- SERVICES -->
     <section id="sect-services" class="app-section">
-      <h1 class="sec-title">Services</h1>
-      <p class="sec-sub">A full-stack cultural offering—from planning and production to installation and long-term stewardship.</p>
-
-      <div class="services-shell">
-        <div class="services-grid" id="servicesGrid">
-          <!-- 8 cards to match the reference layout -->
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12c.6.5 1 1.3 1 2h6c0-.7.4-1.5 1-2A7 7 0 0 0 12 2Z"/></svg>
-            </div>
-            <h3 class="svc-title">Creative Planning</h3>
-            <p class="svc-desc">Sculptural and contemporary art planning from a professional perspective—translating culture into form.</p>
+      <div class="section-scroll">
+        <div class="services-wrap">
+          <div class="services-head">
+            <h1 class="sec-title">Services</h1>
+            <p class="sec-sub">
+              A complete set of production, curatorial, and delivery services—built for contemporary art and premium presentation.
+            </p>
           </div>
 
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h6"/><path d="M15 3l6 6"/><path d="M8 20l10-10"/><path d="M7 21l-4-4"/></svg>
-            </div>
-            <h3 class="svc-title">Original Design</h3>
-            <p class="svc-desc">Inspired by renowned artists—featuring original designs by a professional sculpture and art design team.</p>
-          </div>
+          <div class="services-grid" id="servicesGrid"></div>
 
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
-            </div>
-            <h3 class="svc-title">Excellent Structure</h3>
-            <p class="svc-desc">Qualification-led structural analysis for large-scale works—ensuring stability, safety, and longevity.</p>
-          </div>
-
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/><path d="M7 7l10 10"/><path d="M17 7 7 17"/></svg>
-            </div>
-            <h3 class="svc-title">Crafted with Ingenuity</h3>
-            <p class="svc-desc">Dedicated craftsmanship and refined execution—where detail, patience, and intent define the final work.</p>
-          </div>
-
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M6 7v14h12V7"/></svg>
-            </div>
-            <h3 class="svc-title">Professional Installation</h3>
-            <p class="svc-desc">Integrated workflows—safe, precise, and reliable delivery on site for permanent and temporary works.</p>
-          </div>
-
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 19h12"/><path d="M8 17l8-10"/><path d="M9 7h6"/><path d="M10 5h4"/></svg>
-            </div>
-            <h3 class="svc-title">Refurbishment &amp; Restoration</h3>
-            <p class="svc-desc">Renovation and restoration—bringing works back to life through professional teams and equipment.</p>
-          </div>
-
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21h16"/><path d="M7 21V7h10v14"/><path d="M9 10h6"/></svg>
-            </div>
-            <h3 class="svc-title">Art Rental</h3>
-            <p class="svc-desc">Rental services for sculptures and artworks—supporting projects, institutions, and elevated programs.</p>
-          </div>
-
-          <div class="svc-card">
-            <div class="svc-ico">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.4 7-11a7 7 0 0 0-14 0c0 6.6 7 11 7 11Z"/><path d="M12 10a2 2 0 1 0 0 .01"/></svg>
-            </div>
-            <h3 class="svc-title">Site Survey</h3>
-            <p class="svc-desc">On-site inspection, survey reporting, and coordination—aligning implementation with the artistic vision.</p>
-          </div>
-        </div>
-
-        <!-- Our Process (animated) -->
-        <div class="process" id="processSection">
-          <div class="process-head">
-            <div>
+          <!-- Our process (white theme, single animated dot that moves) -->
+          <div class="process-wrap">
+            <div class="process-top">
               <h2>Our process</h2>
               <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
             </div>
-          </div>
 
-          <div class="timeline" id="timeline">
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 1</div>
-                <h3 class="t-title">Discovery &amp; Direction</h3>
-                <p class="t-desc">Define goals, context, constraints, and the cultural story you want the work to carry.</p>
+            <div class="process-grid" id="processGrid">
+              <div class="proc-rail">
+                <div class="proc-line"></div>
+                <div class="proc-dot pulse" id="procDot" style="--dotY: 0px;"></div>
               </div>
-            </div>
 
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 2</div>
-                <h3 class="t-title">Concept &amp; References</h3>
-                <p class="t-desc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 3</div>
-                <h3 class="t-title">Design Development</h3>
-                <p class="t-desc">Refine form, materials, scale, and presentation details with clear approvals.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 4</div>
-                <h3 class="t-title">Engineering Review</h3>
-                <p class="t-desc">Structural checks, safety planning, and feasibility for production &amp; installation.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 5</div>
-                <h3 class="t-title">Production &amp; Craft</h3>
-                <p class="t-desc">Fabrication with quality checkpoints—finishes, color accuracy, and durability.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 6</div>
-                <h3 class="t-title">Logistics Planning</h3>
-                <p class="t-desc">Packaging, transport, site access, and installation sequencing aligned with stakeholders.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 7</div>
-                <h3 class="t-title">Installation &amp; Handover</h3>
-                <p class="t-desc">On-site setup, final adjustments, and handover documentation for long-term care.</p>
-              </div>
-            </div>
-
-            <div class="t-item">
-              <div class="t-dot"></div>
-              <div class="t-card">
-                <div class="t-step">Step 8</div>
-                <h3 class="t-title">Maintenance &amp; Updates</h3>
-                <p class="t-desc">Restoration, refurbishments, or seasonal updates—keeping the work pristine over time.</p>
-              </div>
+              <div class="proc-items" id="procItems"></div>
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -1048,23 +945,25 @@
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
-          <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
+          <div class="solo-top">
+            <div>
+              <button class="btn-back" id="btnBack">← Back to Collection</button>
+              <h2 class="solo-product-title" id="soloTitleDisplay">PRODUCT</h2>
+            </div>
 
-          <!-- Title ABOVE frame + tabs OUTSIDE frame -->
-          <div class="solo-title-row">
-            <h2 class="solo-product-title" id="soloTitleTop">PRODUCT</h2>
-
+            <!-- tabs OUT of frame -->
             <div class="media-tabs" id="mediaTabs">
-              <button class="tab-btn active" data-tab="images">IMAGES</button>
-              <button class="tab-btn" data-tab="v360">360</button>
-              <button class="tab-btn" data-tab="video">VIDEO</button>
-              <button class="tab-btn" data-tab="3d">3D</button>
+              <button class="mtab active" data-tab="images">Images</button>
+              <button class="mtab" data-tab="p360">360</button>
+              <button class="mtab" data-tab="video">Video</button>
+              <button class="mtab" data-tab="model">3D</button>
             </div>
           </div>
 
-          <!-- 16:9 Frame -->
-          <div class="media-frame">
-            <div class="media-frame-inner" id="soloMedia"></div>
+          <div class="solo-media-container" id="soloMedia"></div>
+          <div class="vid-controls" id="vidControls" style="display:none;">
+            <button class="vbtn" id="vidPlay">▶</button>
+            <input class="vslider" id="vidSeek" type="range" min="0" max="1000" value="0" />
           </div>
 
           <div class="solo-info-block">
@@ -1095,54 +994,37 @@
 
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
-      <h1 class="sec-title">Get in Touch</h1>
-      <p class="sec-sub">Interested in a piece? Let us know.</p>
+      <div class="section-scroll">
+        <h1 class="sec-title">Get in Touch</h1>
+        <p class="sec-sub">Interested in a piece? Let us know.</p>
 
-      <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_template" value="table">
+        <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_template" value="table">
+          <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
+          <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
+          <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
+          <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
+          <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
+        </form>
 
-        <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
-        <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-        <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
-        <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-        <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
-      </form>
-      <div id="formSuccess">Thank you! Your inquiry has been received.</div>
+        <div id="formSuccess">Thank you! Your inquiry has been received.</div>
+      </div>
     </section>
 
   </aside>
 </div>
 
-<!-- ARTIST & CONTACT MODALS -->
+<!-- ARTIST MODAL -->
 <div class="modal-overlay" id="modalArtistOverlay">
   <div class="modal-box">
     <button class="close-modal" id="closeArtistModal">×</button>
     <div class="artist-modal-header">
       <div class="artist-modal-avatar"><img id="modalArtistImg" src="" alt=""></div>
       <h3 id="modalArtistName" style="margin:0 0 4px;"></h3>
-      <span style="font-size:12px; color:#999; text-transform:uppercase;" id="modalArtistRole"></span>
+      <span style="font-size:12px; color:#999; text-transform:uppercase; letter-spacing:.12em; font-weight:900;" id="modalArtistRole"></span>
     </div>
     <p class="artist-modal-bio" id="modalArtistBio"></p>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modalContactOverlay">
-  <div class="modal-box">
-    <button class="close-modal" id="closeContactModal">×</button>
-    <h3 class="form-title">Inquire about this piece</h3>
-
-    <form id="ajaxFormModal" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-
-      <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
-      <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-      <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubjectModal"></div>
-      <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-      <button type="submit" class="btn-submit" id="formSubmitBtnModal">Send Inquiry</button>
-    </form>
-    <div id="formSuccessModal">Thank you! Your inquiry has been received.</div>
   </div>
 </div>
 
@@ -1152,16 +1034,17 @@
 <script>
   /* ===== MAP CONFIG ===== */
   const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbWM0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
-  const USER_STYLE  = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
-
+  const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
   mapboxgl.accessToken = MAPBOX_TOKEN;
+
   const isMobile = () => window.innerWidth < 900;
+  const startZoom = isMobile() ? 0 : 0.8;
 
   const map = new mapboxgl.Map({
     container: "map",
     style: USER_STYLE,
     center: [0, 20],
-    zoom: isMobile() ? 0 : 0.8,
+    zoom: startZoom,
     pitch: 0,
     projection: "globe"
   });
@@ -1169,52 +1052,72 @@
   map.on("style.load", () => {
     try {
       map.setFog({
-        "color":"rgb(255,255,255)",
-        "high-color":"rgb(200,200,200)",
-        "space-color":"rgb(0,0,0)",
-        "star-intensity":0.6
+        "color": "rgb(255, 255, 255)",
+        "high-color": "rgb(200, 200, 200)",
+        "space-color": "rgb(0, 0, 0)",
+        "star-intensity": 0.6
       });
     } catch(e){}
+
+    const layers = map.getStyle().layers || [];
+    let labelLayerId;
+    for (const layer of layers) {
+      if (layer.type === "symbol" && layer.layout && layer.layout["text-field"]) { labelLayerId = layer.id; break; }
+    }
+
+    if (!map.getLayer("3d-buildings-custom")) {
+      try{
+        map.addLayer({
+          "id": "3d-buildings-custom",
+          "source": "composite",
+          "source-layer": "building",
+          "filter": ["==", "extrude", "true"],
+          "type": "fill-extrusion",
+          "minzoom": 15,
+          "paint": {
+            "fill-extrusion-color": "#aaa",
+            "fill-extrusion-height": ["get", "height"],
+            "fill-extrusion-base": ["get", "min_height"],
+            "fill-extrusion-opacity": 0.6
+          }
+        }, labelLayerId);
+      }catch(e){}
+    }
   });
 
   /* ===== NAVIGATION ===== */
   window.switchSection = function(id){
     document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active-section"));
     const target = document.getElementById(id);
-    if(target) target.classList.add("active-section");
+    if (target) target.classList.add("active-section");
 
-    // desktop active
-    document.querySelectorAll(".side-nav .nav-item").forEach(n => n.classList.remove("active"));
-    // mobile active
-    document.querySelectorAll(".mobile-nav .nav-item").forEach(n => n.classList.remove("active"));
-
-    const navIdMap = {
+    // desktop
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    const mapDesk = {
       "sect-home":"navHome",
       "sect-about":"navAbout",
       "sect-services":"navServices",
       "sect-gallery":"navGallery",
       "sect-contact":"navContact"
     };
-    const mNavIdMap = {
+    const deskEl = document.getElementById(mapDesk[id]);
+    if(deskEl) deskEl.classList.add("active");
+
+    // mobile
+    document.querySelectorAll(".mnav-item").forEach(n => n.classList.remove("active"));
+    const mapMob = {
       "sect-home":"mNavHome",
       "sect-about":"mNavAbout",
       "sect-services":"mNavServices",
       "sect-gallery":"mNavGallery",
       "sect-contact":"mNavContact"
     };
+    const mobEl = document.getElementById(mapMob[id]);
+    if(mobEl) mobEl.classList.add("active");
 
-    const navEl = document.getElementById(navIdMap[id]);
-    if(navEl) navEl.classList.add("active");
-    const mNavEl = document.getElementById(mNavIdMap[id]);
-    if(mNavEl) mNavEl.classList.add("active");
-
-    // resize map after layout changes
-    setTimeout(() => { try{ map.resize(); } catch(e){} }, 250);
-
+    // map camera
     if(id === "sect-home"){
-      try{
-        map.flyTo({ center:[0,20], zoom:isMobile()?0:0.8, pitch:0, bearing:0, duration:1600 });
-      }catch(e){}
+      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
     }
   };
 
@@ -1237,51 +1140,196 @@
   safeAdd("mNavGallery","click",()=>switchSection("sect-gallery"));
   safeAdd("mNavContact","click",()=>switchSection("sect-contact"));
 
-  /* ===== FORM LOGIC ===== */
-  function wireAjaxForm(formId, btnId, successId){
-    const form = document.getElementById(formId);
-    const btn = document.getElementById(btnId);
-    const success = document.getElementById(successId);
-    if(!form) return;
+  /* ===== ABOUT CONTENT (replace first paragraph; remove image) ===== */
+  const ABOUT_TEXT = `FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
 
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      if(btn){ btn.textContent = "Sending..."; btn.style.opacity = "0.75"; }
-      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ "Accept":"application/json" } })
-        .then(r => {
-          if(r.ok){
-            form.style.display = "none";
-            if(success) success.style.display = "block";
-          }else{
-            alert("Oops! Problem submitting.");
-            if(btn){ btn.textContent = "Try Again"; btn.style.opacity = "1"; }
-          }
-        })
-        .catch(() => {
-          alert("Oops! Problem submitting.");
-          if(btn){ btn.textContent = "Try Again"; btn.style.opacity = "1"; }
-        });
+On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.`;
+  const ABOUT_LISTS = {
+    "In Arts & Culture":[
+      "Curated Art Platforms: original works by selected local and international artists—contemporary practices, conceptual art, and emerging voices.",
+      "Art Objects & Installations: commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects.",
+      "Exhibitions & Programs: gallery-style presentations, pop-ups, collaborations, and thematic programs exploring identity, place, and modern culture.",
+      "Publications & Art Content: documentation, essays, catalogs, and digital content supporting contemporary art discourse."
+    ],
+    "In Creative Infrastructure":[
+      "Art Content Center (NDCC): curation, archiving, creation, and distribution—bridging artists, collectors, institutions, and the public.",
+      "Cultural Partnerships: collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces.",
+      "Digital Presence: online exhibitions, artist profiles, and visual archives extending the physical experience into digital."
+    ],
+    "In Media & Cultural Impact":[
+      "Cultural Narrative Building: shaping Saudi Arabia’s contemporary art narrative—art as a living cultural identity.",
+      "Audience Engagement: accessible yet elevated experiences connecting diverse audiences with contemporary expression."
+    ]
+  };
+
+  (function renderAbout(){
+    const wrap = document.getElementById("aboutBody");
+    if(!wrap) return;
+
+    const parts = ABOUT_TEXT.split("\n\n").map(s => s.trim()).filter(Boolean);
+    wrap.innerHTML = parts.map(p => `<p>${p}</p>`).join("");
+
+    const frag = document.createElement("div");
+    frag.style.marginTop = "10px";
+
+    Object.entries(ABOUT_LISTS).forEach(([title, items]) => {
+      const block = document.createElement("div");
+      block.style.marginTop = "14px";
+      block.innerHTML = `<div style="font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:12px; color:#999; margin-bottom:8px;">${title}</div>
+      <ul class="bullet">${items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+      frag.appendChild(block);
+    });
+
+    wrap.appendChild(frag);
+  })();
+
+  /* ===== SERVICES GRID (12 cards + hover; white background) ===== */
+  const SERVICES = [
+    { t:"Creative Planning", d:"Sculptural and contemporary art planning from a professional perspective—translating culture into form." },
+    { t:"Original Design", d:"Renowned-artist references and bespoke concepts—crafted with a dedicated design team." },
+    { t:"Excellent Structure", d:"Qualification-led structural planning—ensuring stability, safety, and longevity." },
+    { t:"Crafted with Ingenuity", d:"Precision execution where detail, patience, and intent define the final work." },
+    { t:"Professional Installation", d:"Integrated construction + installation workflows—safe, precise delivery on site." },
+    { t:"Refurbishment & Restoration", d:"Renovation and restoration using professional teams and equipment—bringing works back to life." },
+    { t:"Art Rental", d:"Rental services for sculptures and works—supporting institutions and elevated temporary programs." },
+    { t:"Site Survey", d:"On-site inspection, survey reporting, and coordination—aligned with the artistic vision." },
+    { t:"Curatorial Services", d:"Research, classification, and exhibition planning—keeping narrative and quality consistent." },
+    { t:"Art Consultant", d:"Concept proposals and professional art guidance—tailored to projects and collections." },
+    { t:"Art Broker", d:"Market access and platforms—connecting artists, institutions, and collectors with clarity." },
+    { t:"Artistic Supervisor", d:"Design-to-install oversight—ensuring standards, materials, and results stay aligned." }
+  ];
+
+  function iconSVG(){
+    return `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3a7 7 0 0 0-4 12v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2a7 7 0 0 0-4-12Z" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 21h6" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    `;
+  }
+
+  (function renderServices(){
+    const grid = document.getElementById("servicesGrid");
+    if(!grid) return;
+    grid.innerHTML = SERVICES.map(s => `
+      <div class="svc-card">
+        <div class="svc-ic">${iconSVG()}</div>
+        <h3>${s.t}</h3>
+        <p>${s.d}</p>
+      </div>
+    `).join("");
+  })();
+
+  /* ===== OUR PROCESS (8 steps, animated moving dot) ===== */
+  const PROCESS = [
+    { t:"Discovery & Direction", d:"Define goals, context, constraints, and the cultural story you want the work to carry." },
+    { t:"Concept & References", d:"Moodboards, precedents, and initial concepts aligned with the site and audience." },
+    { t:"Design Development", d:"Refine form, materials, scale, and presentation details with clear approvals." },
+    { t:"Engineering Review", d:"Structural checks, safety planning, and feasibility for production & installation." },
+    { t:"Production Planning", d:"Timelines, specs, fabrication routes, and quality controls—locked before build." },
+    { t:"Fabrication", d:"Crafting, finishing, and detailing—executed with consistent QA checkpoints." },
+    { t:"Installation", d:"Site coordination, logistics, and professional installation—delivered safely on time." },
+    { t:"Documentation & Aftercare", d:"Content capture, archiving, and ongoing support to preserve value and impact." }
+  ];
+
+  function procVisualSVG(i){
+    const icons = [
+      "M12 3v6m0 12v-6M4.9 4.9l4.2 4.2m5.8 5.8 4.2 4.2M3 12h6m12 0h-6M4.9 19.1l4.2-4.2m5.8-5.8 4.2-4.2",
+      "M4 6h16M4 12h10M4 18h16",
+      "M6 19V5m6 14V9m6 10V7",
+      "M6 8h12M6 12h12M6 16h12",
+      "M7 7h10v10H7z",
+      "M12 6l6 6-6 6-6-6 6-6z",
+      "M6 18l12-12M8 6h10v10H8z",
+      "M7 12h10M12 7v10"
+    ];
+    const path = icons[i % icons.length];
+    return `
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="${path}" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+  }
+
+  (function renderProcess(){
+    const items = document.getElementById("procItems");
+    if(!items) return;
+    items.innerHTML = PROCESS.map((p, idx) => `
+      <div class="proc-step" data-step="${idx}">
+        <div>
+          <div class="proc-meta">STEP ${idx+1}</div>
+          <h3 class="proc-title">${p.t}</h3>
+          <p class="proc-desc">${p.d}</p>
+        </div>
+        <div class="proc-visual">${procVisualSVG(idx)}</div>
+      </div>
+    `).join("");
+  })();
+
+  function setupProcessAnimation(){
+    const dot = document.getElementById("procDot");
+    const itemsWrap = document.getElementById("procItems");
+    const grid = document.getElementById("processGrid");
+    if(!dot || !itemsWrap || !grid) return;
+
+    const steps = Array.from(itemsWrap.querySelectorAll(".proc-step"));
+    if(!steps.length) return;
+
+    const moveDotToStep = (el) => {
+      const rail = grid.querySelector(".proc-rail");
+      if(!rail) return;
+      const railRect = rail.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const centerY = (elRect.top + elRect.bottom)/2;
+      const y = centerY - railRect.top - 8; // dot radius offset
+      dot.style.setProperty("--dotY", `${Math.max(0, y)}px`);
+      dot.style.transform = `translate(-50%, ${Math.max(0, y)}px)`;
+    };
+
+    // initial
+    moveDotToStep(steps[0]);
+    steps[0].classList.add("is-active");
+
+    const io = new IntersectionObserver((entries) => {
+      // pick the most visible entry
+      const visibles = entries.filter(e => e.isIntersecting);
+      if(!visibles.length) return;
+      visibles.sort((a,b) => b.intersectionRatio - a.intersectionRatio);
+      const best = visibles[0].target;
+
+      steps.forEach(s => s.classList.remove("is-active"));
+      best.classList.add("is-active");
+      moveDotToStep(best);
+    }, {
+      root: document.querySelector("#sect-services .section-scroll"),
+      threshold: [0.35, 0.5, 0.65, 0.8]
+    });
+
+    steps.forEach(s => io.observe(s));
+
+    // keep dot positioned on resize
+    window.addEventListener("resize", () => {
+      const active = steps.find(s => s.classList.contains("is-active")) || steps[0];
+      moveDotToStep(active);
     });
   }
-  wireAjaxForm("ajaxForm","formSubmitBtn","formSuccess");
-  wireAjaxForm("ajaxFormModal","formSubmitBtnModal","formSuccessModal");
+  setTimeout(setupProcessAnimation, 120);
 
-  /* ===== MAP ANIMATION (store focus) ===== */
+  /* ===== MAP ANIMATION ===== */
   let currentMarker = null;
   let rotationFrame = null;
 
   function gotoStore(store){
     if(!store) return;
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame = null; }
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     if(currentMarker) currentMarker.remove();
 
     const el = document.createElement("div");
-    el.style.backgroundColor = "#111";
-    el.style.width = "18px";
-    el.style.height = "18px";
-    el.style.borderRadius = "50%";
-    el.style.border = "2px solid white";
-
+    el.style.backgroundColor="#111";
+    el.style.width="20px";
+    el.style.height="20px";
+    el.style.borderRadius="50%";
+    el.style.border="2px solid white";
     currentMarker = new mapboxgl.Marker(el).setLngLat(store.coords).addTo(map);
 
     map.flyTo({
@@ -1297,66 +1345,137 @@
 
     map.once("moveend", () => {
       function rotate(){
-        map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
+        map.rotateTo((map.getBearing()+0.05)%360, { duration: 0 });
         rotationFrame = requestAnimationFrame(rotate);
       }
       rotate();
     });
   }
 
-  /* ===== Media Helpers ===== */
-  function toRawGithub(url){
-    // converts github.com/.../blob/... to raw.githubusercontent.com/.../...
-    if(!url) return url;
-    if(url.includes("raw.githubusercontent.com")) return url;
-    if(url.includes("github.com") && url.includes("/blob/")){
-      return url
-        .replace("https://github.com/", "https://raw.githubusercontent.com/")
-        .replace("/blob/", "/");
-    }
-    return url;
-  }
-
-  /* ===== DATA ===== */
-  const SHARED_MEDIA = {
-    images: [
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9ff7c4713583ae7b5_Gemini_Generated_Image_im37uhim37uhim37.png",
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c4a4dc0af86da352_Gemini_Generated_Image_rn5h5urn5h5urn5h.png",
-      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c641d77b3de17010_Gemini_Generated_Image_mhci8mmhci8mmhci.png"
-    ],
-    video360: toRawGithub("https://github.com/lwiise/3d-models/blob/main/Product_Video_Generation_With_Rotation.mp4"),
-    video: toRawGithub("https://github.com/lwiise/3d-models/blob/main/Artistic_Video_Generation_Request.mp4")
-  };
-
-  const PRODUCTS = [
-    { id:"item-1",  name:"Arch Cabinet",     category:"cabinet",  img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb",  specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.19,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." }, media: SHARED_MEDIA },
-    { id:"item-2",  name:"Geometric Side",   category:"sideboard",img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." }, media: SHARED_MEDIA },
-    { id:"item-3",  name:"Art Deco Tall",    category:"cabinet",  img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb",  specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." }, media: SHARED_MEDIA },
-    { id:"item-4",  name:"Striped Console",  category:"decor",    img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." }, media: SHARED_MEDIA },
-    { id:"item-5",  name:"Radiance Credenza",category:"sideboard",img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb", specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] }, artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work fuses traditional patterns with ultra-modern luxury." }, media: SHARED_MEDIA },
-    { id:"item-6",  name:"Modular Unit",     category:"decor",    img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb", specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] }, artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." }, media: SHARED_MEDIA },
-    { id:"item-7",  name:"Lunar Chest",      category:"cabinet",  img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb", specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] }, artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." }, media: SHARED_MEDIA },
-    { id:"item-8",  name:"Obsidian Block",   category:"sideboard",img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb", specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.52] }, artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." }, media: SHARED_MEDIA },
-    { id:"item-9",  name:"Azure Tower",      category:"cabinet",  img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb", specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] }, artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." }, media: SHARED_MEDIA },
-    { id:"item-10", name:"Solar Credenza",   category:"sideboard",img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb", specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] }, artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." }, media: SHARED_MEDIA },
-    { id:"item-11", name:"Nordic Wave",      category:"decor",    img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb", specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] }, artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." }, media: SHARED_MEDIA },
-    { id:"item-12", name:"Crimson Vanity",   category:"cabinet",  img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." }, media: SHARED_MEDIA }
+  /* ===== MEDIA URLS (use RAW github links so videos actually load) ===== */
+  const DEFAULT_IMAGES = [
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9ff7c4713583ae7b5_Gemini_Generated_Image_im37uhim37uhim37.png",
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c4a4dc0af86da352_Gemini_Generated_Image_rn5h5urn5h5urn5h.png",
+    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c641d77b3de17010_Gemini_Generated_Image_mhci8mmhci8mmhci.png"
   ];
 
-  /* ===== Gallery Render (12 products) ===== */
-  const grid = document.getElementById("grid");
+  const VIDEO_360 = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
+  const VIDEO_MAIN = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
+
+  /* ===== DATA (12 products) ===== */
+  const PRODUCTS = [
+    { id:"item-1", name:"Arch Cabinet", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Velvet & Wood", dim:"120x60x90" },
+      store:{ name:"Milan Design District", coords:[9.1900,45.4642] },
+      artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." }
+    },
+    { id:"item-2", name:"Geometric Side", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Lacquered Wood", dim:"180x50x200" },
+      store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] },
+      artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80", bio:"Claire challenges the perception of stability with organic, tree-like structures." }
+    },
+    { id:"item-3", name:"Art Deco Tall", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Marble & Brass", dim:"220x80x95" },
+      store:{ name:"New York SoHo", coords:[-74.006,40.7128] },
+      artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for modern lofts." }
+    },
+    { id:"item-4", name:"Striped Console", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Resin & Paint", dim:"100x60x140" },
+      store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] },
+      artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80", bio:"Kenji blurs the line between collectible toys and functional high-end furniture." }
+    },
+    { id:"item-5", name:"Radiance Credenza", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Ebony & Gold", dim:"200x55x85" },
+      store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] },
+      artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80", bio:"Zara fuses Middle Eastern patterns with ultra-modern luxury." }
+    },
+    { id:"item-6", name:"Modular Unit", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Ceramic Composite", dim:"120x120x120" },
+      store:{ name:"Copenhagen", coords:[12.5683,55.6761] },
+      artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80", bio:"Erik believes modular systems should grow with the user." }
+    },
+    { id:"item-7", name:"Lunar Chest", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Oak & Silver", dim:"110x55x130" },
+      store:{ name:"London Tate Modern", coords:[-0.099,51.507] },
+      artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&q=80", bio:"Oliver explores celestial themes using industrial materials." }
+    },
+    { id:"item-8", name:"Obsidian Block", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Blackened Steel", dim:"200x60x80" },
+      store:{ name:"Berlin Mitte", coords:[13.405,52.520] },
+      artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=120&q=80", bio:"Klaus brings brutalist architecture principles into interior design." }
+    },
+    { id:"item-9", name:"Azure Tower", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Blue Lacquer", dim:"80x80x180" },
+      store:{ name:"Barcelona Eixample", coords:[2.168,41.387] },
+      artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80", bio:"Sofia creates vibrant homages to the Mediterranean spirit." }
+    },
+    { id:"item-10", name:"Solar Credenza", category:"sideboard",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Teak & Brass", dim:"220x50x75" },
+      store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] },
+      artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." }
+    },
+    { id:"item-11", name:"Nordic Wave", category:"decor",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Ash Wood", dim:"140x40x90" },
+      store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] },
+      artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=120&q=80", bio:"Elina captures the fluidity of water in solid wood forms." }
+    },
+    { id:"item-12", name:"Crimson Vanity", category:"cabinet",
+      img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png",
+      model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb",
+      images: DEFAULT_IMAGES, v360: VIDEO_360, video: VIDEO_MAIN,
+      specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" },
+      store:{ name:"Seoul Gangnam", coords:[127.027,37.497] },
+      artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80", bio:"Min-Jun treats furniture like haute couture—texture and drama first." }
+    }
+  ];
+
+  /* ===== GALLERY RENDER ===== */
+  const gridEl = document.getElementById("grid");
   const soloMedia = document.getElementById("soloMedia");
+  const vidControls = document.getElementById("vidControls");
+  const vidPlay = document.getElementById("vidPlay");
+  const vidSeek = document.getElementById("vidSeek");
   let currentProduct = null;
-  let currentTab = "images";
-  let imgIndex = 0;
-  let rafSync = null;
 
   function render(list){
-    if(!grid) return;
-    grid.innerHTML = "";
+    if(!gridEl) return;
+    gridEl.innerHTML = "";
     list.forEach(p => {
       const el = document.createElement("article");
       el.className = "card";
@@ -1365,256 +1484,263 @@
         <div class="card-name">${p.name}</div>
         <div class="card-sub">Edition 2024</div>
       `;
-      el.addEventListener("click", () => openSolo(p));
-      grid.appendChild(el);
+      el.addEventListener("click", ()=> openSolo(p));
+      gridEl.appendChild(el);
     });
   }
 
   const filtersEl = document.getElementById("filters");
   if(filtersEl){
-    filtersEl.addEventListener("click", e => {
+    filtersEl.addEventListener("click", (e)=>{
       const btn = e.target.closest(".chip");
       if(!btn) return;
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
       btn.classList.add("active");
       const f = btn.dataset.filter;
-      render(f === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === f));
+      render(f==="all" ? PRODUCTS : PRODUCTS.filter(p=>p.category===f));
     });
   }
 
-  /* ===== Product media tabs ===== */
-  function setActiveTab(tab){
-    currentTab = tab;
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
-    paintMedia();
+  /* ===== PRODUCT MEDIA TABS ===== */
+  let imgIndex = 0;
+  let activeTab = "images";
+  let activeVideoEl = null;
+
+  function clearVideoState(){
+    if(activeVideoEl){
+      try{ activeVideoEl.pause(); }catch(e){}
+      activeVideoEl = null;
+    }
+    if(vidControls) vidControls.style.display = "none";
   }
 
-  function stopRaf(){
-    if(rafSync){ cancelAnimationFrame(rafSync); rafSync = null; }
+  function mountImages(p){
+    clearVideoState();
+    const imgs = (p.images && p.images.length) ? p.images : [p.img];
+    imgIndex = 0;
+
+    const html = `
+      <button class="media-arrow left" id="imgPrev">‹</button>
+      <button class="media-arrow right" id="imgNext">›</button>
+      <img id="imgStage" src="${imgs[0]}" alt="${p.name}">
+    `;
+    soloMedia.innerHTML = html;
+
+    const stage = document.getElementById("imgStage");
+    const prev = document.getElementById("imgPrev");
+    const next = document.getElementById("imgNext");
+
+    const setImg = () => { if(stage) stage.src = imgs[imgIndex]; };
+
+    if(prev) prev.onclick = () => { imgIndex = (imgIndex - 1 + imgs.length) % imgs.length; setImg(); };
+    if(next) next.onclick = () => { imgIndex = (imgIndex + 1) % imgs.length; setImg(); };
   }
 
-  function paintMedia(){
-    if(!currentProduct) return;
-    stopRaf();
+  function mount360(p){
+    clearVideoState();
+    const src = p.v360 || VIDEO_360;
 
-    const media = currentProduct.media || {};
-    const images = media.images || [currentProduct.img];
+    soloMedia.innerHTML = `
+      <video id="v360" src="${src}" playsinline muted></video>
+    `;
 
-    if(currentTab === "images"){
-      imgIndex = Math.max(0, Math.min(imgIndex, images.length-1));
-      const src = images[imgIndex];
+    const v = document.getElementById("v360");
+    activeVideoEl = v;
 
-      soloMedia.innerHTML = `
-        <img src="${src}" alt="Image ${imgIndex+1}" />
-        <button class="slider-arrow left" id="imgPrev">‹</button>
-        <button class="slider-arrow right" id="imgNext">›</button>
-      `;
+    if(vidControls) vidControls.style.display = "flex";
+    if(vidPlay) vidPlay.textContent = "▶";
+    if(vidSeek) vidSeek.value = 0;
 
-      safeAdd("imgPrev","click", () => { imgIndex = (imgIndex - 1 + images.length) % images.length; paintMedia(); });
-      safeAdd("imgNext","click", () => { imgIndex = (imgIndex + 1) % images.length; paintMedia(); });
-      return;
+    const updateSliderBg = (val01) => {
+      const pct = Math.max(0, Math.min(100, val01 * 100));
+      vidSeek.style.background = `linear-gradient(90deg, #111 0%, #111 ${pct}%, #e7e7e7 ${pct}%, #e7e7e7 100%)`;
+    };
+
+    const safePlay = async () => {
+      if(!v) return;
+      try{
+        await v.play();
+        if(vidPlay) vidPlay.textContent = "❚❚";
+      }catch(e){}
+    };
+
+    if(v){
+      v.addEventListener("loadedmetadata", () => {
+        updateSliderBg(0);
+      });
+
+      v.addEventListener("timeupdate", () => {
+        if(!v.duration || !vidSeek) return;
+        const t = v.currentTime / v.duration;
+        vidSeek.value = Math.round(t * 1000);
+        updateSliderBg(t);
+      });
+
+      // start paused (like scrubber feel)
+      v.pause();
     }
 
-    if(currentTab === "v360"){
-      const vsrc = toRawGithub(media.video360);
-      soloMedia.innerHTML = `
-        <video id="vid360" playsinline muted preload="metadata">
-          <source src="${vsrc}" type="video/mp4" />
-        </video>
-
-        <div class="vid-ui" id="vidUI">
-          <button id="vPlay">▶</button>
-          <input id="vRange" type="range" min="0" max="1000" value="0" />
-        </div>
-      `;
-
-      const vid = document.getElementById("vid360");
-      const playBtn = document.getElementById("vPlay");
-      const range = document.getElementById("vRange");
-
-      const sync = () => {
-        if(vid && range && vid.duration){
-          range.value = Math.floor((vid.currentTime / vid.duration) * 1000);
+    if(vidPlay){
+      vidPlay.onclick = () => {
+        if(!v) return;
+        if(v.paused){
+          safePlay();
+        }else{
+          v.pause();
+          vidPlay.textContent = "▶";
         }
-        rafSync = requestAnimationFrame(sync);
       };
-
-      if(vid){
-        vid.addEventListener("loadedmetadata", () => {
-          try{ vid.currentTime = 0; }catch(e){}
-          sync();
-        });
-      }
-
-      if(playBtn && vid){
-        playBtn.addEventListener("click", () => {
-          if(vid.paused){
-            vid.play();
-            playBtn.textContent = "❚❚";
-          }else{
-            vid.pause();
-            playBtn.textContent = "▶";
-          }
-        });
-      }
-
-      if(range && vid){
-        range.addEventListener("input", () => {
-          if(!vid.duration) return;
-          const t = (range.value/1000) * vid.duration;
-          vid.currentTime = t;
-        });
-      }
-      return;
     }
 
-    if(currentTab === "video"){
-      const vsrc = toRawGithub(media.video);
-      soloMedia.innerHTML = `
-        <video controls playsinline preload="metadata">
-          <source src="${vsrc}" type="video/mp4" />
-        </video>
-      `;
-      return;
-    }
-
-    if(currentTab === "3d"){
-      if(currentProduct.model){
-        const safeUrl = currentProduct.model
-          .replace(/\(/g, "%28")
-          .replace(/\)/g, "%29")
-          .replace(/ /g, "%20");
-
-        soloMedia.innerHTML = `
-          <model-viewer
-            src="${safeUrl}"
-            camera-controls
-            auto-rotate
-            shadow-intensity="1"
-            camera-orbit="45deg 75deg 3m"
-            environment-image="neutral"
-            alt="3D">
-          </model-viewer>
-        `;
-      }else{
-        soloMedia.innerHTML = `<img src="${currentProduct.img}" alt="${currentProduct.name}" />`;
-      }
-      return;
+    if(vidSeek){
+      vidSeek.oninput = () => {
+        if(!v || !v.duration) return;
+        const t = (Number(vidSeek.value) / 1000) * v.duration;
+        v.currentTime = t;
+        updateSliderBg(Number(vidSeek.value)/1000);
+      };
     }
   }
 
-  const tabsEl = document.getElementById("mediaTabs");
-  if(tabsEl){
-    tabsEl.addEventListener("click", (e) => {
-      const btn = e.target.closest(".tab-btn");
+  function mountVideo(p){
+    clearVideoState();
+    const src = p.video || VIDEO_MAIN;
+    soloMedia.innerHTML = `
+      <video src="${src}" controls playsinline style="object-fit:cover;"></video>
+    `;
+  }
+
+  function mountModel(p){
+    clearVideoState();
+    if(!p.model){
+      soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
+      return;
+    }
+    const safeUrl = p.model.replace(/\(/g,"%28").replace(/\)/g,"%29").replace(/ /g,"%20");
+    soloMedia.innerHTML = `
+      <model-viewer
+        id="viewer3d"
+        src="${safeUrl}"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        camera-orbit="45deg 75deg 3m"
+        environment-image="neutral"
+        alt="3D"
+        style="width:100%; height:100%; background:transparent;">
+      </model-viewer>
+    `;
+    const viewer = document.getElementById("viewer3d");
+    if(viewer){
+      viewer.addEventListener("error", () => {
+        soloMedia.innerHTML = `<img src="${p.img}" alt="${p.name}">`;
+      });
+    }
+  }
+
+  function setActiveTab(tab){
+    activeTab = tab;
+    document.querySelectorAll(".mtab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    if(!currentProduct) return;
+
+    if(tab==="images") mountImages(currentProduct);
+    if(tab==="p360") mount360(currentProduct);
+    if(tab==="video") mountVideo(currentProduct);
+    if(tab==="model") mountModel(currentProduct);
+  }
+
+  const tabs = document.getElementById("mediaTabs");
+  if(tabs){
+    tabs.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".mtab");
       if(!btn) return;
       setActiveTab(btn.dataset.tab);
     });
   }
 
-  /* ===== Solo open/close ===== */
+  /* ===== SOLO OPEN/CLOSE ===== */
   function openSolo(p){
     currentProduct = p;
-    imgIndex = 0;
 
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
 
-    document.getElementById("soloTitleTop").textContent = p.name;
+    // title above frame + in description
+    document.getElementById("soloTitleDisplay").textContent = p.name;
     document.getElementById("soloTitle").textContent = p.name.toUpperCase();
-    document.getElementById("soloStore").textContent = p.store?.name || "--";
-    document.getElementById("spMat").textContent = p.specs?.mat || "--";
-    document.getElementById("spDim").textContent = p.specs?.dim || "--";
 
-    document.getElementById("artistName").textContent = p.artist?.name || "--";
-    document.getElementById("artistRole").textContent = p.artist?.role || "--";
-    document.getElementById("artistImg").src = p.artist?.img || "";
-    document.getElementById("modalArtistName").textContent = p.artist?.name || "";
-    document.getElementById("modalArtistRole").textContent = p.artist?.role || "";
-    document.getElementById("modalArtistImg").src = p.artist?.img || "";
-    document.getElementById("modalArtistBio").textContent = p.artist?.bio || "";
+    document.getElementById("soloStore").textContent = p.store.name;
+    document.getElementById("spMat").textContent = p.specs.mat;
+    document.getElementById("spDim").textContent = p.specs.dim;
+
+    document.getElementById("artistName").textContent = p.artist.name;
+    document.getElementById("artistRole").textContent = p.artist.role;
+    document.getElementById("artistImg").src = p.artist.img;
+
+    document.getElementById("modalArtistName").textContent = p.artist.name;
+    document.getElementById("modalArtistRole").textContent = p.artist.role;
+    document.getElementById("modalArtistImg").src = p.artist.img;
+    document.getElementById("modalArtistBio").textContent = p.artist.bio;
 
     const fs = document.getElementById("formSubject");
     if(fs) fs.value = "Inquiry: " + p.name;
-    const fsM = document.getElementById("formSubjectModal");
-    if(fsM) fsM.value = "Inquiry: " + p.name;
 
-    // default tab to images
     setActiveTab("images");
-
-    // focus map
     gotoStore(p.store);
-
-    // ensure scroll starts at top
-    const body = document.querySelector("#sect-gallery .shop-body");
-    if(body) body.scrollTop = 0;
   }
 
   function closeSolo(){
-    stopRaf();
-    currentProduct = null;
+    document.getElementById("shop").classList.remove("solo");
+    document.getElementById("sect-gallery").classList.remove("solo");
+    clearVideoState();
 
-    const shopEl = document.getElementById("shop");
-    const galleryEl = document.getElementById("sect-gallery");
-    if(shopEl) shopEl.classList.remove("solo");
-    if(galleryEl) galleryEl.classList.remove("solo");
-
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame = null; }
-
-    try{
-      map.flyTo({ center:[0,20], zoom:isMobile()?0:0.8, pitch:0, bearing:0, duration:1800 });
-    }catch(e){}
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
+    map.flyTo({ center:[0,20], zoom:isMobile()?0:0.8, pitch:0, bearing:0, duration:1800 });
   }
 
   safeAdd("btnBack","click",closeSolo);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",()=>switchSection("sect-contact"));
 
-  /* ===== Modals ===== */
+  /* ===== ARTIST MODAL ===== */
   const modalArtist = document.getElementById("modalArtistOverlay");
-  const modalContact = document.getElementById("modalContactOverlay");
-
-  const artistBtnEl = document.getElementById("artistBtn");
-  if(artistBtnEl) artistBtnEl.addEventListener("click", () => modalArtist?.classList.add("open"));
-
-  safeAdd("closeArtistModal","click",()=>modalArtist?.classList.remove("open"));
-  safeAdd("closeContactModal","click",()=>modalContact?.classList.remove("open"));
-
-  window.addEventListener("click", e => {
+  safeAdd("artistBtn","click",()=> modalArtist && modalArtist.classList.add("open"));
+  safeAdd("closeArtistModal","click",()=> modalArtist && modalArtist.classList.remove("open"));
+  window.addEventListener("click",(e)=>{
     if(e.target === modalArtist) modalArtist.classList.remove("open");
-    if(e.target === modalContact) modalContact.classList.remove("open");
   });
 
-  /* ===== Init gallery render (shows all 12) ===== */
+  /* ===== CONTACT FORM (keep styling) ===== */
+  const form = document.getElementById("ajaxForm");
+  const submitBtn = document.getElementById("formSubmitBtn");
+  const successMsg = document.getElementById("formSuccess");
+
+  if(form){
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      if(submitBtn){ submitBtn.textContent="Sending..."; submitBtn.style.opacity="0.7"; }
+      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ "Accept":"application/json" } })
+        .then(r=>{
+          if(r.ok){
+            form.style.display="none";
+            if(successMsg) successMsg.style.display="block";
+          }else{
+            alert("Oops! Problem submitting.");
+            if(submitBtn) submitBtn.textContent="Try Again";
+          }
+        })
+        .catch(()=>{
+          alert("Oops! Problem submitting.");
+          if(submitBtn) submitBtn.textContent="Try Again";
+        });
+    });
+  }
+
+  /* ===== INIT (renders all 12 products) ===== */
   (function init(){
-    function run(){
-      render(PRODUCTS);
-      // default section on load: HOME (already active)
-      switchSection("sect-home");
-    }
-    if(document.readyState === "complete" || document.readyState === "interactive") setTimeout(run, 20);
-    else document.addEventListener("DOMContentLoaded", () => setTimeout(run, 20));
-  })();
-
-  /* ===== Our Process animation (IntersectionObserver) ===== */
-  (function processAnim(){
-    const proc = document.getElementById("processSection");
-    const items = Array.from(document.querySelectorAll(".t-item"));
-    if(!proc || items.length === 0) return;
-
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(ent => {
-        if(ent.isIntersecting){
-          proc.classList.add("is-in");
-          items.forEach((it, idx) => {
-            setTimeout(() => it.classList.add("in"), 90 + idx*90);
-          });
-          io.disconnect();
-        }
-      });
-    }, { threshold: 0.2 });
-
-    io.observe(proc);
+    render(PRODUCTS);
+    // set HOME as active nav
+    switchSection("sect-home");
   })();
 </script>
 </body>
