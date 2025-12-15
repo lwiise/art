@@ -145,23 +145,39 @@
   p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
   /* ===== HOME ===== */
+  .home-scroll{ padding:0; }
   .home-hero{
     width:100%;
-    height:420px;
-    border-radius:28px;
-    background:#fff; /* ✅ remove grey */
+    background:#fff;
     display:flex;
     align-items:center;
     justify-content:center;
     overflow:hidden;
     box-shadow:0 18px 40px rgba(0,0,0,0.06);
-    margin-bottom:26px;
   }
   .home-hero img{
     width:100%;
     height:100%;
-    object-fit:cover; /* ✅ fill the frame (no grey showing) */
+    object-fit:cover;
+    display:block;
   }
+  .home-hero--full{
+    height:100vh;              /* ✅ full screen */
+    border-radius:0;           /* ✅ true full-bleed */
+    box-shadow:none;           /* ✅ clean, no "frame" feeling */
+  }
+  .home-content{
+    padding:40px;
+  }
+  .home-end{
+    padding:0 40px 40px;
+  }
+  .home-hero--end{
+    height:420px;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  }
+
   .btn-hero{
     display:inline-block;
     width:auto !important;
@@ -176,6 +192,52 @@
     box-shadow:0 10px 24px rgba(0,0,0,0.15);
   }
   .btn-hero:hover{ transform:translateY(-2px); background:#000; }
+
+  /* ===== ABOUT VISUAL (same content, better layout) ===== */
+  .about-wrap{ max-width:1000px; }
+  .about-lead{
+    font-size:16px;
+    line-height:1.85;
+    color:#444;
+    margin:0 0 18px;
+  }
+  .about-sublead{
+    font-size:15px;
+    line-height:1.85;
+    color:#555;
+    margin:0 0 26px;
+  }
+  .about-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:16px;
+  }
+  .about-card{
+    background:#fff;
+    border:1px solid #efefef;
+    border-radius:22px;
+    padding:18px 18px 16px;
+    box-shadow:0 12px 28px rgba(0,0,0,0.06);
+  }
+  .about-card h3{
+    margin:0 0 10px;
+    font-size:14px;
+    font-weight:950;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#111;
+  }
+  .about-card ul{
+    margin:0;
+    padding-left:18px;
+    color:#555;
+  }
+  .about-card li{
+    margin:0 0 10px;
+    line-height:1.75;
+    font-size:13px;
+  }
+  .about-card li:last-child{ margin-bottom:0; }
 
   /* ===== GALLERY ===== */
   #sect-gallery{ padding:0; }
@@ -586,6 +648,9 @@
     .side-nav{ display:none; }
     .mobile-nav{ display:flex; }
     .section-scroll{ padding:22px; }
+    .home-scroll{ padding:0; }
+    .home-content{ padding:22px; }
+    .home-end{ padding:0 22px 22px; }
     .shop-head{ padding:18px 18px; }
     .shop-body{ padding:18px 18px 70px; }
     .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
@@ -597,6 +662,7 @@
     .process-grid{ grid-template-columns:54px 1fr; }
     .proc-line, .proc-dot{ left:26px; }
     .solo-tabs-bar{ margin:6px 0 10px; }
+    .about-grid{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -625,48 +691,81 @@
 
     <!-- HOME -->
     <section id="sect-home" class="app-section">
-      <div class="section-scroll">
-        <div class="home-hero">
+      <div class="section-scroll home-scroll">
+
+        <!-- ✅ TOP IMAGE (FULL SCREEN) -->
+        <div class="home-hero home-hero--full">
           <img
-            src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69401b0fa9be7e7fed2b1c21_Gemini_Generated_Image_9jhkjr9jhkjr9jhk%20(1).png"
-            alt="FNN ART"
+            src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
+            alt="FNN ART Logo"
           />
         </div>
 
-        <h1 class="sec-title">Welcome to FNN</h1>
-        <p class="sec-sub">
-          A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
-        </p>
+        <div class="home-content">
+          <h1 class="sec-title">Welcome to FNN</h1>
+          <p class="sec-sub">
+            A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
+          </p>
+          <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
+        </div>
 
-        <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
+        <!-- ✅ END IMAGE (your previous home image) -->
+        <div class="home-end">
+          <div class="home-hero home-hero--end">
+            <img
+              src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69401b0fa9be7e7fed2b1c21_Gemini_Generated_Image_9jhkjr9jhkjr9jhk%20(1).png"
+              alt="FNN Visual"
+            />
+          </div>
+        </div>
+
       </div>
     </section>
 
     <!-- ABOUT -->
     <section id="sect-about" class="app-section">
       <div class="section-scroll">
-        <h1 class="sec-title">About FNN</h1>
+        <div class="about-wrap">
+          <h1 class="sec-title">About FNN</h1>
 
-        <p class="sec-sub" style="white-space:pre-line">
-FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
+          <!-- ✅ EXACT SAME CONTENT — just presented visually -->
+          <p class="about-lead">
+            FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
+          </p>
 
-On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+          <p class="about-sublead">
+            On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+          </p>
 
-In Arts & Culture:
-• Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.
-• Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.
-• Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.
-• Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.
+          <div class="about-grid">
+            <div class="about-card">
+              <h3>In Arts & Culture:</h3>
+              <ul>
+                <li>Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.</li>
+                <li>Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.</li>
+                <li>Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.</li>
+                <li>Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.</li>
+              </ul>
+            </div>
 
-In Creative Infrastructure:
-• Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.
-• Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.
-• Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.
+            <div class="about-card">
+              <h3>In Creative Infrastructure:</h3>
+              <ul>
+                <li>Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.</li>
+                <li>Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.</li>
+                <li>Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.</li>
+              </ul>
+            </div>
 
-In Media & Cultural Impact:
-• Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.
-• Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.
-        </p>
+            <div class="about-card">
+              <h3>In Media & Cultural Impact:</h3>
+              <ul>
+                <li>Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.</li>
+                <li>Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -899,9 +998,7 @@ In Media & Cultural Impact:
     }
 
     if(id === 'sect-services'){
-      requestAnimationFrame(() => {
-        setupProcessAnimation();
-      });
+      requestAnimationFrame(() => { setupProcessAnimation(); });
     }
   };
 
@@ -1235,7 +1332,6 @@ In Media & Cultural Impact:
   safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
   window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
 
-  /* ✅ Our process: force it to end exactly at Step 8 when scrolling ends */
   function setupProcessAnimation(){
     const dot = document.getElementById("procDot");
     const itemsWrap = document.getElementById("procItems");
@@ -1282,7 +1378,6 @@ In Media & Cultural Impact:
       const minY = topY;
       const maxY = topY + totalH;
 
-      // ✅ if we reached the end of the scroll, FORCE dot to Step 8
       const atBottom = (scroller.scrollTop + scroller.clientHeight) >= (scroller.scrollHeight - 2);
       const y = atBottom ? maxY : Math.min(maxY, Math.max(minY, relY));
 
