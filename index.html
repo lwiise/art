@@ -170,7 +170,7 @@
   .home-hero img{
     width:100%;
     height:100%;
-    object-fit:contain;     /* ✅ logo fills the whole hero space (no extra empty block) */
+    object-fit:contain;     /* ✅ logo fills the whole hero space */
   }
   .btn-hero{
     display:inline-block;
@@ -276,6 +276,14 @@
     color:#111;
   }
 
+  /* ✅ product tabs OUTSIDE the frame */
+  .solo-tabs-bar{
+    width:100%;
+    display:flex;
+    justify-content:flex-end;
+    margin:8px 0 12px;
+  }
+
   /* ✅ product frame 16:9 */
   .solo-media-container{
     width:100%;
@@ -295,10 +303,8 @@
   }
   model-viewer{ width:100%; height:100%; }
 
-  /* Media tabs */
+  /* Media tabs (now outside) */
   .media-tabs{
-    position:absolute;
-    top:14px; right:14px;
     display:flex; gap:8px;
     padding:10px;
     border-radius:999px;
@@ -438,11 +444,11 @@
     margin-top:18px;
   }
   .svc-card{
-    background:#fff;                 /* ✅ no lines bg */
+    background:#fff;
     border:1px solid #f0f0f0;
     border-radius:22px;
     padding:18px 18px 16px;
-    box-shadow:0 10px 24px rgba(0,0,0,0.06); /* ✅ shadow */
+    box-shadow:0 10px 24px rgba(0,0,0,0.06);
     transition:transform .22s ease, box-shadow .22s ease;
     min-height:160px;
   }
@@ -502,7 +508,7 @@
     border-radius:50%;
     background:#111;
     transform:translate(-50%, 0);
-    transition:transform .35s cubic-bezier(.2,.8,.2,1); /* ✅ smooth move */
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
     box-shadow:0 10px 18px rgba(0,0,0,0.12);
   }
 
@@ -516,7 +522,7 @@
     display:grid;
     grid-template-columns:1fr 220px;
     gap:18px;
-    min-height:160px; /* ✅ more height */
+    min-height:160px;
     align-items:center;
   }
   .proc-kicker{
@@ -594,7 +600,7 @@
     .layout{ flex-direction:column; }
     #map{
       width:100%;
-      height:45vh;           /* ✅ map takes less space */
+      height:45vh;
       flex:none;
     }
     .shop{
@@ -602,7 +608,7 @@
       height:60vh;
       flex:none;
       border-radius:26px 26px 0 0;
-      margin-top:-30px;      /* ✅ content goes over map */
+      margin-top:-30px;
       z-index:40;
     }
     .side-nav{ display:none; }
@@ -621,6 +627,7 @@
     .proc-illus{ height:100px; }
     .process-grid{ grid-template-columns:54px 1fr; }
     .proc-line, .proc-dot{ left:26px; }
+    .solo-tabs-bar{ margin:6px 0 10px; }
   }
 </style>
 </head>
@@ -636,7 +643,6 @@
       <div class="nav-item" id="navContact">Contacts</div>
     </nav>
 
-    <!-- Mobile nav -->
     <nav class="mobile-nav" id="mobileNav">
       <div class="nav-item" id="mNavHome">Home</div>
       <div class="nav-item" id="mNavAbout">About</div>
@@ -692,8 +698,6 @@ In Media & Cultural Impact:
 • Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.
 • Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.
         </p>
-
-        <!-- ✅ image deleted as requested -->
       </div>
     </section>
 
@@ -705,7 +709,6 @@ In Media & Cultural Impact:
 
         <div class="services-wrap">
           <div class="services-grid" id="servicesGrid">
-            <!-- 12 service cards -->
             <div class="svc-card"><div class="svc-ico">◎</div><h3 class="svc-title">Creative Planning</h3><p class="svc-desc">Sculptural and contemporary art planning—translating culture into form.</p></div>
             <div class="svc-card"><div class="svc-ico">✎</div><h3 class="svc-title">Original design</h3><p class="svc-desc">Original concepts inspired by renowned artists and professional teams.</p></div>
             <div class="svc-card"><div class="svc-ico">▤</div><h3 class="svc-title">Excellent structure</h3><p class="svc-desc">Qualification-led analysis—ensuring stability, safety, and longevity.</p></div>
@@ -722,7 +725,6 @@ In Media & Cultural Impact:
             <div class="svc-card"><div class="svc-ico">⧉</div><h3 class="svc-title">Artistic Supervisor</h3><p class="svc-desc">Quality monitoring, materials review, and execution supervision end-to-end.</p></div>
           </div>
 
-          <!-- OUR PROCESS (white theme + single moving dot + full 1->8 line) -->
           <div class="process" id="processBlock">
             <div class="process-head">
               <h2>Our process</h2>
@@ -736,77 +738,14 @@ In Media & Cultural Impact:
               </div>
 
               <div class="proc-items" id="procItems">
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 1</div>
-                    <h3 class="proc-title">Discovery & Direction</h3>
-                    <p class="proc-desc">Define goals, context, constraints, and the cultural story you want the work to carry.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 2</div>
-                    <h3 class="proc-title">Concept & References</h3>
-                    <p class="proc-desc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 3</div>
-                    <h3 class="proc-title">Design Development</h3>
-                    <p class="proc-desc">Refine form, materials, scale, and presentation details with clear approvals.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 4</div>
-                    <h3 class="proc-title">Engineering Review</h3>
-                    <p class="proc-desc">Structural checks, safety planning, and feasibility for production & installation.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 5</div>
-                    <h3 class="proc-title">Production Planning</h3>
-                    <p class="proc-desc">Scheduling, sourcing, and documentation to keep quality consistent.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 6</div>
-                    <h3 class="proc-title">Fabrication & Build</h3>
-                    <p class="proc-desc">Craft, finishing, and quality checks—executed with high attention to detail.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 7</div>
-                    <h3 class="proc-title">Installation & On-site</h3>
-                    <p class="proc-desc">Professional installation, safety protocol, and site coordination.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
-
-                <div class="proc-step">
-                  <div>
-                    <div class="proc-kicker">Step 8</div>
-                    <h3 class="proc-title">Handover & Care</h3>
-                    <p class="proc-desc">Final delivery, documentation, and care recommendations for longevity.</p>
-                  </div>
-                  <div class="proc-illus">Illustration</div>
-                </div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 1</div><h3 class="proc-title">Discovery & Direction</h3><p class="proc-desc">Define goals, context, constraints, and the cultural story you want the work to carry.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 2</div><h3 class="proc-title">Concept & References</h3><p class="proc-desc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 3</div><h3 class="proc-title">Design Development</h3><p class="proc-desc">Refine form, materials, scale, and presentation details with clear approvals.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 4</div><h3 class="proc-title">Engineering Review</h3><p class="proc-desc">Structural checks, safety planning, and feasibility for production & installation.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 5</div><h3 class="proc-title">Production Planning</h3><p class="proc-desc">Scheduling, sourcing, and documentation to keep quality consistent.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 6</div><h3 class="proc-title">Fabrication & Build</h3><p class="proc-desc">Craft, finishing, and quality checks—executed with high attention to detail.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 7</div><h3 class="proc-title">Installation & On-site</h3><p class="proc-desc">Professional installation, safety protocol, and site coordination.</p></div><div class="proc-illus">Illustration</div></div>
+                <div class="proc-step"><div><div class="proc-kicker">Step 8</div><h3 class="proc-title">Handover & Care</h3><p class="proc-desc">Final delivery, documentation, and care recommendations for longevity.</p></div><div class="proc-illus">Illustration</div></div>
               </div>
             </div>
           </div>
@@ -831,10 +770,11 @@ In Media & Cultural Impact:
         <div class="solo-wrap" id="soloWrap">
           <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
 
-          <!-- ✅ Product name above frame -->
           <div class="solo-name" id="soloName">PRODUCT</div>
 
-          <!-- ✅ 16:9 frame -->
+          <!-- ✅ tabs outside frame -->
+          <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
+
           <div class="solo-media-container" id="soloMedia"></div>
 
           <div class="solo-info-block">
@@ -994,7 +934,6 @@ In Media & Cultural Impact:
       map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
     }
 
-    // recompute process geometry whenever we open services
     if(id === 'sect-services'){
       requestAnimationFrame(() => {
         setupProcessAnimation();
@@ -1007,14 +946,12 @@ In Media & Cultural Impact:
     if(el) el.addEventListener(ev, handler);
   };
 
-  // desktop nav
   safeAdd('navHome','click',() => switchSection('sect-home'));
   safeAdd('navAbout','click',() => switchSection('sect-about'));
   safeAdd('navServices','click',() => switchSection('sect-services'));
   safeAdd('navGallery','click',() => switchSection('sect-gallery'));
   safeAdd('navContact','click',() => switchSection('sect-contact'));
 
-  // mobile nav
   safeAdd('mNavHome','click',() => switchSection('sect-home'));
   safeAdd('mNavAbout','click',() => switchSection('sect-about'));
   safeAdd('mNavServices','click',() => switchSection('sect-services'));
@@ -1085,7 +1022,7 @@ In Media & Cultural Impact:
     });
   }
 
-  /* ===== PRODUCT MEDIA (Images / 360 / Video / 3D) ===== */
+  /* ===== PRODUCT MEDIA ===== */
   const DEFAULT_IMAGES = [
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
     "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
@@ -1117,7 +1054,6 @@ In Media & Cultural Impact:
   function renderImages(images){
     let idx = 0;
     const html = `
-      ${buildMediaTabs('images')}
       <img id="imgSlide" src="${images[0]}" alt="Image" />
       <button class="img-arrow left" id="imgPrev">‹</button>
       <button class="img-arrow right" id="imgNext">›</button>
@@ -1135,7 +1071,6 @@ In Media & Cultural Impact:
 
   function render360(){
     const html = `
-      ${buildMediaTabs('v360')}
       <video id="v360" src="${VIDEO_360}" playsinline preload="metadata"></video>
       <div class="v360-ui">
         <button class="v360-btn" id="v360Toggle">II</button>
@@ -1149,7 +1084,7 @@ In Media & Cultural Impact:
 
       if(!v || !btn || !range) return;
 
-      v.controls = false;          // ✅ no native player UI
+      v.controls = false;
       v.loop = true;
       v.muted = true;
       v.play().catch(()=>{});
@@ -1180,17 +1115,13 @@ In Media & Cultural Impact:
   }
 
   function renderVideo(){
-    const html = `
-      ${buildMediaTabs('video')}
-      <video src="${VIDEO_NORMAL}" controls playsinline preload="metadata"></video>
-    `;
+    const html = `<video src="${VIDEO_NORMAL}" controls playsinline preload="metadata"></video>`;
     return { html, mount: ()=>{} };
   }
 
   function render3D(modelUrl, fallbackImg, productName){
     const safeUrl = (modelUrl || "").replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
     const html = `
-      ${buildMediaTabs('d3')}
       <model-viewer
         id="viewer3d"
         src="${safeUrl}"
@@ -1207,35 +1138,47 @@ In Media & Cultural Impact:
       const viewer = container.querySelector('#viewer3d');
       if(viewer){
         viewer.addEventListener('error', () => {
-          container.innerHTML = buildMediaTabs('images') + `<img src="${fallbackImg}" alt="Fallback" />`;
+          container.innerHTML = `<img src="${fallbackImg}" alt="Fallback" />`;
         });
       }
     }};
   }
 
-  function attachTabHandlers(p){
+  function renderActiveMedia(p, tabKey){
     const soloMedia = document.getElementById("soloMedia");
-    if(!soloMedia) return;
+    const soloTabs = document.getElementById("soloTabs");
+    if(!soloMedia || !soloTabs) return;
 
-    const tabs = soloMedia.querySelector('#mediaTabs');
+    soloTabs.innerHTML = buildMediaTabs(tabKey);
+
+    let pack;
+    if(tabKey === 'images') pack = renderImages(p.images || DEFAULT_IMAGES);
+    if(tabKey === 'v360') pack = render360();
+    if(tabKey === 'video') pack = renderVideo();
+    if(tabKey === 'd3') pack = render3D(p.model, (p.images && p.images[0]) ? p.images[0] : p.img, p.name);
+
+    soloMedia.innerHTML = pack.html;
+    pack.mount(soloMedia);
+
+    attachTabHandlers(p);
+  }
+
+  function attachTabHandlers(p){
+    const soloTabs = document.getElementById("soloTabs");
+    if(!soloTabs) return;
+
+    const tabs = soloTabs.querySelector('#mediaTabs');
     if(!tabs) return;
+
+    // prevent duplicate binding
+    if(tabs.dataset.bound === "1") return;
+    tabs.dataset.bound = "1";
 
     tabs.addEventListener('click', (e) => {
       const btn = e.target.closest('.media-tab');
       if(!btn) return;
       const tab = btn.dataset.tab;
-      let pack;
-
-      if(tab === 'images') pack = renderImages(p.images || DEFAULT_IMAGES);
-      if(tab === 'v360') pack = render360();
-      if(tab === 'video') pack = renderVideo();
-      if(tab === 'd3') pack = render3D(p.model, (p.images && p.images[0]) ? p.images[0] : p.img, p.name);
-
-      if(!pack) return;
-
-      soloMedia.innerHTML = pack.html;
-      pack.mount(soloMedia);
-      attachTabHandlers(p);
+      renderActiveMedia(p, tab);
     });
   }
 
@@ -1290,7 +1233,6 @@ In Media & Cultural Impact:
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
 
-    // product name above frame
     const soloName = document.getElementById("soloName");
     if(soloName) soloName.textContent = p.name;
 
@@ -1311,15 +1253,11 @@ In Media & Cultural Impact:
     const fs = document.getElementById("formSubject");
     if(fs) fs.value = "Inquiry: " + p.name;
 
-    // focus nav bg
     const sideNav = document.querySelector('.side-nav');
     if(sideNav) sideNav.classList.add('focused');
 
     // default: images
-    const pack = renderImages(p.images || DEFAULT_IMAGES);
-    soloMedia.innerHTML = pack.html;
-    pack.mount(soloMedia);
-    attachTabHandlers(p);
+    renderActiveMedia(p, 'images');
 
     gotoStore(p.store);
   }
@@ -1349,7 +1287,7 @@ In Media & Cultural Impact:
   safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
   window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
 
-  /* ===== OUR PROCESS ANIMATION (FIXED TO STEP 8) ===== */
+  /* ===== OUR PROCESS ANIMATION (FIX: ALWAYS ENDS AT STEP 8) ===== */
   function setupProcessAnimation(){
     const dot = document.getElementById("procDot");
     const itemsWrap = document.getElementById("procItems");
@@ -1361,55 +1299,35 @@ In Media & Cultural Impact:
     const line = rail ? rail.querySelector(".proc-line") : null;
     if(!steps.length || !rail || !line) return;
 
-    // scroller is the SERVICES scroll container
     const scroller = document.querySelector("#sect-services .section-scroll");
     if(!scroller) return;
 
-    let centers = [];
+    let topY = 0;
+    let totalH = 0;
 
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
 
       const railRect = rail.getBoundingClientRect();
-      centers = steps.map(step => {
+      const centers = steps.map(step => {
         const r = step.getBoundingClientRect();
-        const c = (r.top + r.bottom) / 2;
-        return c - railRect.top;
+        return ((r.top + r.bottom) / 2) - railRect.top;
       });
 
       if(centers.length < 2) return;
 
-      // line from step 1 to step 8
-      const top = centers[0];
-      const height = centers[centers.length - 1] - centers[0];
-      line.style.top = `${top}px`;
-      line.style.height = `${Math.max(0, height)}px`;
-      line.style.bottom = "auto";
+      topY = centers[0];
+      totalH = centers[centers.length - 1] - centers[0];
 
-      // dot initial
-      dot.style.transform = `translate(-50%, ${top - 9}px)`;
+      line.style.top = `${topY}px`;
+      line.style.height = `${Math.max(0, totalH)}px`;
+      line.style.bottom = "auto";
     };
 
-    const moveDotToClosestStep = () => {
-      if(!centers.length) return;
-
-      const scRect = scroller.getBoundingClientRect();
-      const targetY = scRect.top + scRect.height * 0.45;
-
-      let bestIndex = 0;
-      let bestDist = Infinity;
-
-      for(let i=0;i<steps.length;i++){
-        const r = steps[i].getBoundingClientRect();
-        const c = (r.top + r.bottom) / 2;
-        const d = Math.abs(c - targetY);
-        if(d < bestDist){
-          bestDist = d;
-          bestIndex = i;
-        }
-      }
-
-      const y = centers[bestIndex];
+    const moveDotByScrollProgress = () => {
+      const maxScroll = Math.max(1, scroller.scrollHeight - scroller.clientHeight);
+      const t = Math.min(1, Math.max(0, scroller.scrollTop / maxScroll));  // ✅ clamps to 0..1
+      const y = topY + (totalH * t);                                       // ✅ ends at step 8 when t=1
       dot.style.transform = `translate(-50%, ${y - 9}px)`;
     };
 
@@ -1419,35 +1337,32 @@ In Media & Cultural Impact:
       raf = requestAnimationFrame(() => {
         raf = null;
         computeGeometry();
-        moveDotToClosestStep();
+        moveDotByScrollProgress();
       });
     };
 
     requestAnimationFrame(() => {
       computeGeometry();
-      moveDotToClosestStep();
+      moveDotByScrollProgress();
     });
 
     scroller.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("resize", () => {
       computeGeometry();
-      moveDotToClosestStep();
+      moveDotByScrollProgress();
     });
   }
 
   /* ===== INIT ===== */
   (function init(){
-    // default section: gallery
     render(PRODUCTS);
 
-    // ensure nav active
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const navGallery = document.getElementById('navGallery');
     if(navGallery) navGallery.classList.add('active');
     const mNavGallery = document.getElementById('mNavGallery');
     if(mNavGallery) mNavGallery.classList.add('active');
 
-    // init process animation
     setupProcessAnimation();
   })();
 </script>
