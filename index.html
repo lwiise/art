@@ -3,1420 +3,1278 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Finna Art — Gallery</title>
+<title>FNN Art — Gallery</title>
+
+<!-- Mapbox -->
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+
 <style>
   :root{
-    --bg:#fff;
-    --text-main:#222;
-    --accent:#111;
-    --muted:#666;
-    --card-radius:32px;
-    --btn-radius:30px;
+    --bg:#ffffff;
+    --text:#151515;
+    --muted:#6b6b6b;
+    --card:#ffffff;
+    --stroke:rgba(0,0,0,.08);
+    --shadow:0 18px 45px rgba(0,0,0,.08);
+    --shadow-soft:0 10px 25px rgba(0,0,0,.08);
+    --radius:28px;
+    --radius-lg:40px;
+    --btn-radius:999px;
+
+    --mapW:31vw;
+    --panelW:69vw;
   }
 
-  *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
   body{
-    margin:0; height:100vh; width:100vw;
-    background:var(--bg); color:var(--text-main);
-    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    overflow:hidden;
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    overflow:hidden; /* main scroll happens inside the panel */
   }
 
-  .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
-
-  #map{
-    flex:0 0 31vw;
+  /* ===== Layout ===== */
+  .mapWrap{
+    position:fixed;
+    inset:0 auto 0 0;
+    width:var(--mapW);
     height:100vh;
-    background:#000;
-    position:relative;
-    overflow:hidden;
+    background:#eaeaea;
   }
+  #map{width:100%;height:100%}
 
-  .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
-
-  .side-nav{
-    position:absolute; top:50%; right:0; transform:translateY(-50%);
-    display:flex; flex-direction:column; z-index:20;
-    background:rgba(0,0,0,0.45);
-    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border-radius:22px 0 0 22px;
-    border-left:1px solid rgba(255,255,255,0.12);
-    border-top:1px solid rgba(255,255,255,0.08);
-    border-bottom:1px solid rgba(255,255,255,0.08);
-    box-shadow:-10px 0 30px rgba(0,0,0,0.35);
-  }
-  .side-nav.focused{
-    background:rgba(0,0,0,0.70);
-    border-color:rgba(255,255,255,0.10);
-  }
-  .nav-item{
-    padding:28px 36px;
-    color:rgba(255,255,255,0.85);
-    font-weight:700; font-size:13px;
-    text-transform:uppercase; letter-spacing:0.08em;
-    border-bottom:1px solid rgba(255,255,255,0.10);
-    cursor:pointer; text-align:center;
-    text-shadow:0 2px 10px rgba(0,0,0,0.55);
-    transition:all .25s ease;
-    user-select:none;
-  }
-  .nav-item:last-child{ border-bottom:none; }
-  .nav-item:hover,
-  .nav-item.active{
-    background:rgba(255,255,255,0.12);
-    color:#fff;
-    padding-right:46px;
-  }
-
-  .mobile-nav{
-    display:none;
-    position:absolute;
-    left:50%; transform:translateX(-50%);
-    bottom:14px;
-    z-index:30;
-    background:rgba(0,0,0,0.55);
-    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border:1px solid rgba(255,255,255,0.10);
-    box-shadow:0 14px 30px rgba(0,0,0,0.35);
-    border-radius:18px;
-    padding:8px;
-    gap:8px;
-  }
-  .mobile-nav .nav-item{
-    border:none;
-    padding:12px 14px;
-    border-radius:14px;
-    font-size:11px;
-    letter-spacing:0.07em;
-    white-space:nowrap;
-    background:transparent;
-  }
-  .mobile-nav .nav-item:hover,
-  .mobile-nav .nav-item.active{
-    padding:12px 14px;
-    background:rgba(255,255,255,0.14);
-  }
-
-  .shop{
-    flex:1;
-    display:flex;
-    flex-direction:column;
+  .panel{
+    position:fixed;
+    inset:0 0 0 auto;
+    width:var(--panelW);
     height:100vh;
-    background:#fff;
-    position:relative;
-    z-index:5;
-    box-shadow:-10px 0 40px rgba(0,0,0,0.05);
-    overflow:hidden;
-  }
-
-  .app-section{
-    position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    background:#fff;
-    opacity:0; visibility:hidden; pointer-events:none;
-    transform:translateY(18px);
-    transition:opacity .35s ease, transform .35s ease;
-    z-index:1;
-  }
-  .app-section.active-section{
-    opacity:1; visibility:visible; pointer-events:auto;
-    transform:translateY(0); z-index:10;
-  }
-
-  .section-scroll{
-    height:100%;
     overflow-y:auto;
-    padding:40px;
+    overflow-x:hidden;
+    background:transparent;
+    padding:22px 22px 40px;
+    scrollbar-gutter: stable;
   }
 
-  .section-scroll, .shop-body{
-    -ms-overflow-style:auto;
-    scrollbar-width:auto;
-  }
-  .section-scroll::-webkit-scrollbar, .shop-body::-webkit-scrollbar{ width:10px; height:10px; }
-  .section-scroll::-webkit-scrollbar-thumb, .shop-body::-webkit-scrollbar-thumb{
+  /* Visible scrollbar (top-right by default) */
+  .panel::-webkit-scrollbar{width:10px}
+  .panel::-webkit-scrollbar-track{background:transparent}
+  .panel::-webkit-scrollbar-thumb{
     background:rgba(0,0,0,.22);
     border-radius:999px;
+    border:2px solid rgba(255,255,255,.7);
   }
-  .section-scroll::-webkit-scrollbar-track, .shop-body::-webkit-scrollbar-track{ background:transparent; }
+  .panel{scrollbar-width:thin; scrollbar-color: rgba(0,0,0,.22) transparent;}
 
-  h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 12px; letter-spacing:-0.02em; color:#111; }
-  p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
-
-  /* ===== HOME ===== */
-  .home-scroll{ padding:0; }
-  .home-hero{
-    width:100%;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  /* ===== Floating nav on map ===== */
+  .floatingNav{
+    position:fixed;
+    left:calc(var(--mapW) * 0.52);
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:min(260px, calc(var(--mapW) - 40px));
+    background:rgba(35,35,35,.88); /* darker bg as requested */
+    backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:26px;
+    padding:14px;
+    box-shadow:0 25px 60px rgba(0,0,0,.25);
+    z-index:50;
   }
-  .home-hero img{
+  .floatingNav .navBtn{
     width:100%;
-    height:100%;
-    object-fit:cover;
     display:block;
-  }
-  .home-hero--full{
-    height:100vh;              /* ✅ full screen */
-    border-radius:0;           /* ✅ true full-bleed */
-    box-shadow:none;           /* ✅ clean, no "frame" feeling */
-  }
-  .home-content{
-    padding:40px;
-  }
-  .home-end{
-    padding:0 40px 40px;
-  }
-  .home-hero--end{
-    height:420px;
-    border-radius:28px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
-  }
-
-  .btn-hero{
-    display:inline-block;
-    width:auto !important;
-    padding:14px 36px;
-    background:#111;
-    color:#fff;
-    border:none;
-    border-radius:999px;
-    font-size:14px;
+    padding:14px 14px;
+    margin:8px 0;
+    text-align:center;
     font-weight:800;
-    cursor:pointer;
-    box-shadow:0 10px 24px rgba(0,0,0,0.15);
-  }
-  .btn-hero:hover{ transform:translateY(-2px); background:#000; }
-
-  /* ===== ABOUT VISUAL (same content, better layout) ===== */
-  .about-wrap{ max-width:1000px; }
-  .about-lead{
-    font-size:16px;
-    line-height:1.85;
-    color:#444;
-    margin:0 0 18px;
-  }
-  .about-sublead{
-    font-size:15px;
-    line-height:1.85;
-    color:#555;
-    margin:0 0 26px;
-  }
-  .about-grid{
-    display:grid;
-    grid-template-columns:repeat(3, minmax(0, 1fr));
-    gap:16px;
-  }
-  .about-card{
-    background:#fff;
-    border:1px solid #efefef;
-    border-radius:22px;
-    padding:18px 18px 16px;
-    box-shadow:0 12px 28px rgba(0,0,0,0.06);
-  }
-  .about-card h3{
-    margin:0 0 10px;
+    letter-spacing:.12em;
     font-size:14px;
-    font-weight:950;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    color:#111;
+    color:rgba(255,255,255,.92);
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:18px;
+    cursor:pointer;
+    user-select:none;
+    transition:transform .15s ease, background .15s ease, border-color .15s ease;
   }
-  .about-card ul{
+  .floatingNav .navBtn:hover{transform:translateY(-1px); background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.16)}
+  .floatingNav .navBtn.active{background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.22)}
+
+  /* ===== Sections ===== */
+  .section{
+    background:rgba(255,255,255,.92);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .sectionInner{padding:26px}
+  .sectionTitle{
+    margin:0 0 10px;
+    font-size:42px;
+    line-height:1.05;
+    letter-spacing:-.02em;
+  }
+  .sectionLead{
     margin:0;
-    padding-left:18px;
-    color:#555;
-  }
-  .about-card li{
-    margin:0 0 10px;
-    line-height:1.75;
-    font-size:13px;
-  }
-  .about-card li:last-child{ margin-bottom:0; }
-
-  /* ===== GALLERY ===== */
-  #sect-gallery{ padding:0; }
-  .shop-head{
-    flex-shrink:0;
-    position:sticky; top:0;
-    background:rgba(255,255,255,0.96);
-    backdrop-filter:blur(10px);
-    z-index:12;
-    padding:22px 30px;
-    border-bottom:1px solid #f0f0f0;
+    color:var(--muted);
+    font-size:18px;
+    line-height:1.7;
+    max-width:100%;
   }
 
-  .nav-group{
-    display:flex; gap:10px; align-items:center;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    scrollbar-width:none;
-  }
-  .nav-group::-webkit-scrollbar{ display:none; }
-  .chip{
-    border:none;
-    background:transparent;
-    font-size:14px;
-    color:#999;
-    cursor:pointer;
-    padding:8px 12px;
-    transition:all .2s;
-    font-weight:600;
-    white-space:nowrap;
-    border-radius:999px;
-  }
-  .chip:hover{ color:#333; }
-  .chip.active{
-    background:var(--accent);
-    color:#fff;
-    padding:8px 22px;
-  }
-
-  .shop-body{
-    padding:22px 30px 70px;
-    flex-grow:1;
-    overflow-y:auto;
-    min-height:0;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-    gap:26px;
-    width:100%;
-  }
-  .card{
-    background:#fff;
-    border:1px solid #f3f3f3;
-    border-radius:28px;
-    padding:26px 18px;
-    cursor:pointer;
-    transition:transform .25s ease, box-shadow .25s ease;
+  /* ===== Home ===== */
+  .hero{
+    height:calc(100vh - 44px);
+    min-height:560px;
     display:flex;
     flex-direction:column;
-    align-items:center;
-    text-align:center;
   }
-  .card:hover{ transform:translateY(-6px); box-shadow:0 18px 42px rgba(0,0,0,0.07); }
-  .card-media{ width:100%; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
-  .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 12px 18px rgba(0,0,0,0.10)); }
-  .card-name{ font-size:12px; font-weight:900; letter-spacing:0.10em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
-  .card-sub{ font-size:10px; color:#d0d0d0; text-transform:uppercase; letter-spacing:0.06em; }
-
-  .solo-wrap{ display:none; }
-  #sect-gallery.solo .grid{ display:none; }
-  #sect-gallery.solo .solo-wrap{ display:block; }
-
-  .back-nav{ margin:10px 0 16px; }
-  .btn-back{
-    background:none; border:none; padding:0;
-    color:#999; font-size:13px; font-weight:700;
-    cursor:pointer; display:inline-flex; align-items:center; gap:8px;
-  }
-
-  .solo-name{
-    margin:10px 0 12px;
-    font-size:22px;
-    font-weight:900;
-    letter-spacing:-0.02em;
-    color:#111;
-  }
-
-  .solo-tabs-bar{
-    width:100%;
-    display:flex;
-    justify-content:flex-end;
-    margin:8px 0 12px;
-  }
-
-  .solo-media-container{
-    width:100%;
-    aspect-ratio:16 / 9;
-    background:#f3f3f3;
-    border-radius:28px;
+  .heroMedia{
+    flex:1;
+    border-radius:34px;
     overflow:hidden;
-    position:relative;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    background:#fff;
+    box-shadow:0 20px 50px rgba(0,0,0,.10);
   }
-  .solo-media-container img,
-  .solo-media-container video{
+  .heroMedia img{
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:cover; /* full width but cover */
+    display:block;
   }
-  model-viewer{ width:100%; height:100%; }
-
-  .media-tabs{
-    display:flex; gap:8px;
-    padding:10px;
-    border-radius:999px;
-    background:rgba(0,0,0,0.30);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  .heroBody{
+    padding-top:18px;
   }
-  .media-tab{
-    border:none;
-    cursor:pointer;
-    padding:10px 16px;
-    border-radius:999px;
-    font-weight:900;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    font-size:12px;
-    color:rgba(255,255,255,0.85);
-    background:rgba(255,255,255,0.16);
-    transition:all .2s ease;
-    white-space:nowrap;
-  }
-  .media-tab.active{
-    background:#fff;
-    color:#111;
-  }
-
-  .img-arrow{
-    position:absolute;
-    top:50%; transform:translateY(-50%);
-    width:44px; height:44px;
-    border:none; border-radius:999px;
-    background:rgba(0,0,0,0.35);
-    color:#fff;
-    cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    font-size:18px;
-    backdrop-filter:blur(10px);
-  }
-  .img-arrow.left{ left:14px; }
-  .img-arrow.right{ right:14px; }
-
-  .v360-ui{
-    position:absolute;
-    left:50%; transform:translateX(-50%);
-    bottom:16px;
-    width:min(740px, 86%);
-    background:rgba(0,0,0,0.35);
-    backdrop-filter:blur(12px);
-    border-radius:999px;
-    padding:10px 14px;
-    display:flex; gap:12px; align-items:center;
-  }
-  .v360-btn{
-    width:44px; height:36px;
-    border:none; border-radius:12px;
-    background:rgba(255,255,255,0.18);
-    color:#fff;
-    cursor:pointer;
-    font-weight:900;
-  }
-  .v360-range{
-    flex:1;
-    -webkit-appearance:none;
-    appearance:none;
-    height:10px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.22);
-    outline:none;
-  }
-  .v360-range::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:54px; height:22px;
-    border-radius:999px;
-    background:#fff;
-    cursor:pointer;
-    box-shadow:0 10px 18px rgba(0,0,0,0.18);
-  }
-
-  .solo-info-block{ padding:18px 4px 0; }
-  .solo-desc{
-    text-align:left;
-    color:#666;
-    font-size:14px;
-    line-height:1.7;
-    border-top:1px solid #eee;
-    padding-top:20px;
-    margin-bottom:22px;
-  }
-  .data-row{ display:flex; flex-wrap:wrap; gap:26px; margin-top:14px; }
-  .data-item span:first-child{
-    display:block; font-size:10px; color:#999; text-transform:uppercase;
-    font-weight:900; margin-bottom:4px; letter-spacing:0.08em;
-  }
-  .data-item span:last-child{ font-size:15px; font-weight:900; color:#222; }
-
-  .artist-profile{
-    display:flex; align-items:center; gap:14px;
-    margin-top:18px;
-    padding:16px;
-    background:#fafafa;
-    border-radius:20px;
-    cursor:pointer;
-    transition:all .2s ease;
-    border:1px solid transparent;
-  }
-  .artist-profile:hover{
-    background:#fff;
-    border-color:#eee;
-    box-shadow:0 10px 24px rgba(0,0,0,0.06);
-    transform:translateY(-2px);
-  }
-  .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
-  .avatar img{ width:100%; height:100%; object-fit:cover; }
-  .artist-info{ flex:1; }
-  .artist-info h4{ margin:0; font-size:13px; color:#222; font-weight:900; }
-  .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
-  .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.06em; }
-
-  .actions{ display:flex; gap:12px; margin-top:18px; }
+  .ctaRow{margin-top:14px; display:flex; gap:12px; flex-wrap:wrap}
   .btn{
-    padding:14px 20px; border-radius:16px;
-    border:none; font-size:13px; font-weight:800;
+    border:0;
+    border-radius:var(--btn-radius);
+    padding:14px 18px;
+    font-weight:800;
     cursor:pointer;
+    background:#111;
+    color:#fff;
+    box-shadow:0 14px 28px rgba(0,0,0,.18);
   }
-  .btn-primary{ background:#111; color:#fff; flex:1; }
-  .btn-ghost{ background:#f0f0f0; color:#666; }
+  .btn:active{transform:translateY(1px)}
+  .homeEndMedia{
+    height:420px;
+    border-radius:34px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 20px 50px rgba(0,0,0,.10);
+    margin-top:18px;
+  }
+  .homeEndMedia img{width:100%; height:100%; object-fit:cover; display:block;}
 
-  .services-wrap{ margin-top:10px; }
-  .services-grid{
+  /* ===== About (visual but same content) ===== */
+  .aboutGrid{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:16px;
+    margin-top:18px;
+  }
+  .aboutCard{
+    background:var(--card);
+    border:1px solid var(--stroke);
+    border-radius:26px;
+    padding:18px;
+    box-shadow:var(--shadow-soft);
+  }
+  .aboutCard h3{
+    margin:0 0 8px;
+    font-size:14px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(0,0,0,.55);
+  }
+  .aboutCard p{margin:0; color:var(--muted); line-height:1.7}
+  .aboutPills{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+  .pill{
+    border:1px solid var(--stroke);
+    background:#fff;
+    border-radius:999px;
+    padding:10px 12px;
+    font-weight:700;
+    color:#111;
+    box-shadow:0 10px 22px rgba(0,0,0,.06);
+    font-size:13px;
+  }
+  ul.clean{
+    margin:10px 0 0;
+    padding-left:18px;
+    color:var(--muted);
+    line-height:1.7;
+  }
+
+  /* ===== Services ===== */
+  .servicesGrid{
     display:grid;
     grid-template-columns:repeat(4, minmax(0, 1fr));
     gap:16px;
     margin-top:18px;
   }
-  .svc-card{
+  .serviceCard{
     background:#fff;
-    border:1px solid #f0f0f0;
-    border-radius:22px;
-    padding:18px 18px 16px;
-    box-shadow:0 10px 24px rgba(0,0,0,0.06);
-    transition:transform .22s ease, box-shadow .22s ease;
-    min-height:160px;
+    border:1px solid var(--stroke);
+    border-radius:26px;
+    padding:18px;
+    box-shadow:0 14px 30px rgba(0,0,0,.08); /* shadow so cards are clear */
+    transition:transform .18s ease, box-shadow .18s ease;
+    min-height:180px;
   }
-  .svc-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 18px 44px rgba(0,0,0,0.10);
+  .serviceCard:hover{
+    transform:translateY(-4px);
+    box-shadow:0 22px 45px rgba(0,0,0,.12);
   }
-  .svc-ico{
-    width:36px; height:36px; border-radius:14px;
-    background:#f4f4f4;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:900;
-    margin-bottom:12px;
-  }
-  .svc-title{ font-size:18px; font-weight:950; margin:0 0 8px; color:#111; }
-  .svc-desc{ margin:0; color:#666; line-height:1.6; font-size:13px; }
-
-  .process{
-    margin-top:26px;
-    border-radius:28px;
-    border:1px solid #efefef;
+  .svcIcon{
+    width:42px;height:42px;border-radius:14px;
+    border:1px solid var(--stroke);
+    display:grid;place-items:center;
     background:#fff;
-    padding:26px 22px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    margin-bottom:10px;
   }
-  .process-head h2{
-    margin:0 0 6px;
-    font-size:28px;
-    font-weight:950;
-    color:#111;
-    letter-spacing:-0.02em;
+  .serviceCard h4{
+    margin:0 0 8px;
+    font-size:22px;
+    color:#3b3b3b; /* dark grey title as requested */
+    letter-spacing:-.01em;
   }
-  .process-head p{ margin:0 0 18px; color:#666; line-height:1.6; }
+  .serviceCard p{margin:0;color:var(--muted);line-height:1.6}
 
-  .process-grid{
+  /* ===== Our Process (white theme + single moving circle + line) ===== */
+  .processWrap{
+    margin-top:18px;
+    border-radius:30px;
+    border:1px solid var(--stroke);
+    background:#fff;
+    box-shadow:var(--shadow-soft);
+    overflow:hidden;
+  }
+  .processHead{
+    padding:22px 22px 0;
+  }
+  .processHead h3{
+    margin:0;
+    font-size:34px;
+    letter-spacing:-.02em;
+  }
+  .processHead p{
+    margin:6px 0 18px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+
+  .processBody{
     position:relative;
     display:grid;
-    grid-template-columns:70px 1fr;
-    gap:16px;
-    padding:6px 0 2px;
-  }
-  .proc-rail{ position:relative; }
-  .proc-line{
-    position:absolute;
-    left:34px;
-    width:2px;
-    background:#ddd;
-    border-radius:999px;
-  }
-  .proc-dot{
-    position:absolute;
-    left:34px;
-    width:18px; height:18px;
-    border-radius:50%;
-    background:#111;
-    transform:translate(-50%, 0);
-    transition:transform .35s cubic-bezier(.2,.8,.2,1);
-    box-shadow:0 10px 18px rgba(0,0,0,0.12);
+    grid-template-columns:54px 1fr;
+    gap:0;
+    padding:0 18px 20px 18px;
   }
 
-  .proc-items{ display:flex; flex-direction:column; gap:18px; }
-  .proc-step{
+  /* line + moving circle */
+  .processRail{
+    position:relative;
+    padding:0 0 0 0;
+  }
+  .railLine{
+    position:absolute;
+    left:26px;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:rgba(0,0,0,.12);
+    border-radius:99px;
+  }
+  .railDot{
+    position:absolute;
+    left:26px;
+    width:14px;height:14px;
+    background:#111;
+    border-radius:999px;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 0 6px rgba(0,0,0,.08);
+    will-change:top;
+  }
+
+  .steps{
+    padding-bottom:6px;
+  }
+  .step{
+    display:grid;
+    grid-template-columns:1.3fr .7fr;
+    gap:16px;
+    align-items:center;
+    border:1px solid var(--stroke);
     border-radius:26px;
-    border:1px solid #efefef;
     background:#fff;
     padding:22px;
-    box-shadow:0 14px 30px rgba(0,0,0,0.06);
-    display:grid;
-    grid-template-columns:1fr 220px;
-    gap:18px;
-    min-height:160px;
-    align-items:center;
+    margin:0 0 18px;
+    box-shadow:0 14px 30px rgba(0,0,0,.06);
+    min-height:150px; /* more height as requested */
   }
-  .proc-kicker{
+  .stepLabel{
+    font-weight:900;
     font-size:12px;
-    font-weight:950;
-    letter-spacing:0.10em;
-    text-transform:uppercase;
-    color:#999;
-    margin:0 0 8px;
+    letter-spacing:.18em;
+    color:rgba(0,0,0,.42);
   }
-  .proc-title{ margin:0 0 8px; font-size:20px; font-weight:950; color:#111; }
-  .proc-desc{ margin:0; color:#666; line-height:1.65; }
-  .proc-illus{
-    height:120px;
-    border-radius:20px;
-    border:1px solid #f0f0f0;
-    background:linear-gradient(180deg,#f8f8f8,#f2f2f2);
-    display:flex; align-items:center; justify-content:center;
-    font-weight:900; color:#bbb; letter-spacing:0.08em;
+  .stepTitle{margin:6px 0 6px; font-size:24px; letter-spacing:-.01em}
+  .stepDesc{margin:0; color:var(--muted); line-height:1.65}
+  .stepArt{
+    border:1px solid var(--stroke);
+    border-radius:18px;
+    height:110px;
+    background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.04));
+    display:grid;
+    place-items:center;
+    color:rgba(0,0,0,.35);
+    font-weight:800;
+    letter-spacing:.12em;
     text-transform:uppercase;
     font-size:12px;
   }
 
-  .form-title{ font-size:18px; font-weight:950; margin:0 0 18px; text-align:left; }
-  .form-group{ margin-bottom:12px; }
-  .form-input{
-    display:block; width:100%;
-    padding:14px;
-    border:1px solid #eee;
-    border-radius:14px;
-    background:#fafafa;
-    font-size:14px;
+  /* ===== Gallery ===== */
+  .filterRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:nowrap;         /* one line */
+    overflow-x:auto;
+    padding:2px 0 14px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .filterRow::-webkit-scrollbar{height:8px}
+  .filterRow::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18); border-radius:999px}
+
+  .chip{
+    flex:0 0 auto;
+    border:1px solid var(--stroke);
+    background:#fff;
+    padding:10px 14px;
+    border-radius:999px;
+    font-weight:800;
+    color:#111;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .chip.active{background:#111; color:#fff; border-color:#111}
+
+  .productsGrid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:16px;
+    padding-bottom:10px;
+  }
+  .prodCard{
+    border:1px solid var(--stroke);
+    border-radius:34px;
+    background:#fff;
+    box-shadow:0 18px 45px rgba(0,0,0,.06);
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease;
+    min-height:300px;
+    display:flex;
+    flex-direction:column;
+  }
+  .prodCard:hover{transform:translateY(-3px); box-shadow:0 26px 60px rgba(0,0,0,.10)}
+  .prodThumb{
+    height:190px;
+    background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.06));
+    display:grid; place-items:center;
+  }
+  .prodThumb img{max-width:82%; max-height:82%; object-fit:contain}
+  .prodMeta{padding:18px 18px 20px; text-align:center}
+  .prodName{margin:0; font-size:16px; letter-spacing:.16em; font-weight:900; color:rgba(0,0,0,.55)}
+  .prodSub{margin:6px 0 0; font-size:12px; letter-spacing:.18em; color:rgba(0,0,0,.30); font-weight:800; text-transform:uppercase}
+
+  /* ===== Product overlay ===== */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.38);
+    display:none;
+    z-index:120;
+  }
+  .overlay.show{display:block}
+  .productSheet{
+    position:absolute;
+    inset:22px;
+    margin-left:calc(var(--mapW) + 22px);
+    background:#fff;
+    border-radius:34px;
+    border:1px solid rgba(255,255,255,.25);
+    box-shadow:0 40px 100px rgba(0,0,0,.25);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .sheetTop{
+    padding:18px 18px 10px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    border-bottom:1px solid var(--stroke);
+  }
+  .sheetTitleWrap{min-width:0}
+  .sheetTitle{
+    margin:0;
+    font-size:26px;
+    letter-spacing:-.01em;
+  }
+  .sheetClose{
+    border:1px solid var(--stroke);
+    background:#fff;
+    border-radius:999px;
+    padding:10px 12px;
+    cursor:pointer;
+    font-weight:900;
+  }
+  .sheetBody{
+    padding:16px 18px 20px;
+    overflow:auto; /* product page scrollable */
+  }
+  .sheetBody::-webkit-scrollbar{width:10px}
+  .sheetBody::-webkit-scrollbar-thumb{background:rgba(0,0,0,.22); border-radius:999px; border:2px solid rgba(255,255,255,.8)}
+  .sheetBody{scrollbar-width:thin; scrollbar-color: rgba(0,0,0,.22) transparent;}
+
+  /* Product tabs OUTSIDE the frame */
+  .tabsRow{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    margin:0 0 10px;
+  }
+  .tabBtn{
+    border:0;
+    border-radius:999px;
+    padding:10px 14px;
+    font-weight:900;
+    cursor:pointer;
+    background:rgba(0,0,0,.10);
     color:#111;
   }
-  .form-input:focus{ outline:none; border-color:#111; background:#fff; }
-  .btn-submit{
+  .tabBtn.active{background:#111; color:#fff}
+
+  /* 16:9 frame */
+  .frame{
     width:100%;
-    background:#111; color:#fff;
-    padding:14px;
-    border-radius:14px;
-    border:none;
-    font-weight:950;
+    aspect-ratio:16/9;
+    border-radius:28px;
+    overflow:hidden;
+    border:1px solid var(--stroke);
+    background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.06));
+    position:relative;
+  }
+
+  /* Simple image slider */
+  .slider{
+    width:100%; height:100%;
+    position:relative;
+  }
+  .slideImg{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    display:none;
+  }
+  .slideImg.show{display:block}
+  .arrow{
+    position:absolute;
+    top:50%; transform:translateY(-50%);
+    width:44px;height:44px;border-radius:999px;
+    border:0;
+    background:rgba(0,0,0,.35);
+    color:#fff;
+    font-size:20px;
     cursor:pointer;
   }
-  #formSuccess{ display:none; border-radius:14px; margin-top:14px; background:#f0f0f0; color:#333; padding:18px; }
+  .arrow.left{left:16px}
+  .arrow.right{right:16px}
 
-  .modal-overlay{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,0.45);
-    backdrop-filter:blur(5px);
-    z-index:9999;
-    display:none; align-items:center; justify-content:center;
-    opacity:0; transition:opacity .25s ease;
+  /* Custom video controls (for 360) */
+  .vwrap{width:100%; height:100%; position:relative;}
+  .vwrap video{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    background:#000;
   }
-  .modal-overlay.open{ display:flex; opacity:1; }
-  .modal-box{
-    background:#fff;
-    width:90%;
-    max-width:420px;
-    padding:28px;
-    border-radius:26px;
-    box-shadow:0 24px 60px rgba(0,0,0,0.22);
-    transform:translateY(18px);
-    transition:transform .25s cubic-bezier(.2,.8,.2,1);
-    max-height:90vh;
-    overflow-y:auto;
+  .controls{
+    position:absolute;
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    width:min(760px, calc(100% - 44px));
+    height:44px;
+    background:rgba(0,0,0,.38);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:999px;
+    padding:8px 10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    backdrop-filter: blur(8px);
   }
-  .modal-overlay.open .modal-box{ transform:translateY(0); }
-  .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
+  .playBtn{
+    width:34px;height:34px;border-radius:999px;
+    border:0;
+    background:rgba(0,0,0,.35);
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+    display:grid;place-items:center;
+    flex:0 0 auto;
+  }
+  .range{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:10px;
+    border-radius:999px;
+    background:rgba(255,255,255,.25);
+    outline:none;
+    cursor:pointer;
+  }
+  .range::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:38px;height:18px;
+    border-radius:999px;
+    background:rgba(255,255,255,.90);
+    border:1px solid rgba(0,0,0,.25);
+    box-shadow:0 8px 18px rgba(0,0,0,.20);
+  }
+  .range::-moz-range-thumb{
+    width:38px;height:18px;border-radius:999px;
+    background:rgba(255,255,255,.90);
+    border:1px solid rgba(0,0,0,.25);
+  }
 
-  @media (max-width:900px){
-    .layout{ flex-direction:column; }
-    #map{ width:100%; height:45vh; flex:none; }
-    .shop{
-      width:100%;
-      height:60vh;
-      flex:none;
-      border-radius:26px 26px 0 0;
-      margin-top:-30px;
-      z-index:40;
+  /* ===== Contact + Footer ===== */
+  .formGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:14px;
+  }
+  .field{display:flex; flex-direction:column; gap:8px}
+  label{font-weight:800; font-size:13px; color:rgba(0,0,0,.65); letter-spacing:.10em; text-transform:uppercase}
+  input,textarea{
+    border:1px solid var(--stroke);
+    border-radius:14px;
+    padding:12px 12px;
+    font-size:15px;
+    outline:none;
+  }
+  textarea{min-height:120px; resize:vertical}
+
+  .footer{
+    margin-top:18px;
+    border-radius:34px;
+    overflow:hidden;
+    background:#0b0b0b;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .footerInner{
+    padding:24px;
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:18px;
+  }
+  .footTitle{
+    margin:0 0 10px;
+    font-size:14px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.70);
+  }
+  .footText{margin:0; color:rgba(255,255,255,.88); line-height:1.7}
+  .footLinks{margin:0; padding:0; list-style:none}
+  .footLinks li{margin:10px 0}
+  .footLinks a{
+    color:rgba(255,255,255,.92);
+    text-decoration:none;
+    font-weight:700;
+  }
+  .socialRow{display:grid; gap:12px; margin-top:8px}
+  .socialItem{display:flex; align-items:center; gap:12px}
+  .socialIcon{
+    width:40px;height:40px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.15);
+    display:grid;place-items:center;
+    background:rgba(255,255,255,.06);
+    font-weight:900;
+  }
+  .copyright{
+    padding:14px 24px 18px;
+    border-top:1px solid rgba(255,255,255,.10);
+    color:rgba(255,255,255,.70);
+    font-size:14px;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1100px){
+    :root{ --mapW:38vw; --panelW:62vw; }
+    .servicesGrid{grid-template-columns:repeat(2, minmax(0,1fr))}
+    .productsGrid{grid-template-columns:repeat(2, minmax(0,1fr))}
+  }
+  @media (max-width: 860px){
+    :root{ --mapW:100vw; --panelW:100vw; }
+    .mapWrap{width:100vw}
+    .panel{
+      width:100vw;
+      padding:14px;
+      background:transparent;
     }
-    .side-nav{ display:none; }
-    .mobile-nav{ display:flex; }
-    .section-scroll{ padding:22px; }
-    .home-scroll{ padding:0; }
-    .home-content{ padding:22px; }
-    .home-end{ padding:0 22px 22px; }
-    .shop-head{ padding:18px 18px; }
-    .shop-body{ padding:18px 18px 70px; }
-    .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
-    .card{ padding:16px 12px; border-radius:24px; }
-    .card-media{ height:118px; }
-    .services-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    .proc-step{ grid-template-columns:1fr; }
-    .proc-illus{ height:100px; }
-    .process-grid{ grid-template-columns:54px 1fr; }
-    .proc-line, .proc-dot{ left:26px; }
-    .solo-tabs-bar{ margin:6px 0 10px; }
-    .about-grid{ grid-template-columns:1fr; }
+    /* content overlays on top of the map */
+    .section{backdrop-filter: blur(2px)}
+    .floatingNav{
+      left:50%;
+      top:auto;
+      bottom:18px;
+      transform:translate(-50%,0);
+      width:min(92vw, 720px);
+      padding:10px;
+    }
+    .floatingNav .navBtn{
+      width:auto;
+      display:inline-flex;
+      justify-content:center;
+      margin:0;
+      padding:12px 14px;
+      border-radius:999px;
+      font-size:12px;
+    }
+    .floatingNav{display:flex; gap:10px; overflow-x:auto}
+    .floatingNav::-webkit-scrollbar{height:0}
+    .productSheet{
+      margin-left:14px;
+      inset:14px;
+    }
+    .hero{min-height:520px}
+    .aboutGrid{grid-template-columns:1fr}
+    .processBody{grid-template-columns:44px 1fr; padding:0 12px 18px 12px}
+    .step{grid-template-columns:1fr; min-height:auto}
+    .stepArt{height:130px}
+    .footerInner{grid-template-columns:1fr}
+    .formGrid{grid-template-columns:1fr}
   }
 </style>
 </head>
 
 <body>
-<div class="layout">
-  <div id="map">
-    <nav class="side-nav" id="sideNav">
-      <div class="nav-item" id="navHome">Home</div>
-      <div class="nav-item" id="navAbout">About Us</div>
-      <div class="nav-item" id="navServices">Services</div>
-      <div class="nav-item active" id="navGallery">Gallery</div>
-      <div class="nav-item" id="navContact">Contacts</div>
-    </nav>
-
-    <nav class="mobile-nav" id="mobileNav">
-      <div class="nav-item" id="mNavHome">Home</div>
-      <div class="nav-item" id="mNavAbout">About</div>
-      <div class="nav-item" id="mNavServices">Services</div>
-      <div class="nav-item active" id="mNavGallery">Gallery</div>
-      <div class="nav-item" id="mNavContact">Contacts</div>
-    </nav>
+  <div class="mapWrap">
+    <div id="map"></div>
   </div>
 
-  <aside class="shop" id="shop">
+  <!-- Floating navigation -->
+  <nav class="floatingNav" aria-label="Section navigation">
+    <button class="navBtn active" data-target="home">HOME</button>
+    <button class="navBtn" data-target="about">ABOUT US</button>
+    <button class="navBtn" data-target="services">SERVICES</button>
+    <button class="navBtn" data-target="gallery">GALLERY</button>
+    <button class="navBtn" data-target="contact">CONTACTS</button>
+  </nav>
 
+  <main class="panel" id="panel">
     <!-- HOME -->
-    <section id="sect-home" class="app-section">
-      <div class="section-scroll home-scroll">
-
-        <!-- ✅ TOP IMAGE (FULL SCREEN) -->
-        <div class="home-hero home-hero--full">
+    <section class="section" id="home">
+      <div class="sectionInner hero">
+        <div class="heroMedia" aria-label="Home hero image">
+          <!-- TOP HOME IMAGE (full screen cover) -->
           <img
             src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-            alt="FNN ART Logo"
+            alt="FNN Art"
           />
         </div>
 
-        <div class="home-content">
-          <h1 class="sec-title">Welcome to FNN</h1>
-          <p class="sec-sub">
+        <div class="heroBody">
+          <h2 class="sectionTitle" style="font-size:44px;margin:0 0 8px;">Welcome to FNN</h2>
+          <!-- Paragraph full width -->
+          <p class="sectionLead" style="max-width:100%;">
             A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
           </p>
-          <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
-        </div>
+          <div class="ctaRow">
+            <button class="btn" data-target="gallery">Explore Collection</button>
+          </div>
 
-        <!-- ✅ END IMAGE (your previous home image) -->
-        <div class="home-end">
-          <div class="home-hero home-hero--end">
+          <!-- END HOME IMAGE (full width cover, no grey background) -->
+          <div class="homeEndMedia" aria-label="Home end image">
             <img
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69401b0fa9be7e7fed2b1c21_Gemini_Generated_Image_9jhkjr9jhkjr9jhk%20(1).png"
-              alt="FNN Visual"
+              alt="FNN visual"
             />
           </div>
         </div>
-
       </div>
     </section>
 
     <!-- ABOUT -->
-    <section id="sect-about" class="app-section">
-      <div class="section-scroll">
-        <div class="about-wrap">
-          <h1 class="sec-title">About FNN</h1>
+    <section class="section" id="about">
+      <div class="sectionInner">
+        <h2 class="sectionTitle">About FNN</h2>
 
-          <!-- ✅ EXACT SAME CONTENT — just presented visually -->
-          <p class="about-lead">
-            FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
-          </p>
+        <!-- Same content, presented visually -->
+        <p class="sectionLead" style="white-space:pre-line">
+FNN is a modern art platform specializing in the presentation of original artworks by selected artists. Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the Kingdom of Saudi Arabia.
 
-          <p class="about-sublead">
-            On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
-          </p>
+On the other hand, FNN (2018–present) refers to a growing cultural and artistic initiative encompassing curated exhibitions, original art productions, experimental formats, and content-driven platforms that position art as both cultural capital and contemporary dialogue.
+        </p>
 
-          <div class="about-grid">
-            <div class="about-card">
-              <h3>In Arts & Culture:</h3>
-              <ul>
-                <li>Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.</li>
-                <li>Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.</li>
-                <li>Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.</li>
-                <li>Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.</li>
-              </ul>
+        <div class="aboutGrid">
+          <div class="aboutCard">
+            <h3>In Arts &amp; Culture</h3>
+            <ul class="clean">
+              <li><b>Curated Art Platforms:</b> FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.</li>
+              <li><b>Art Objects &amp; Installations:</b> Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.</li>
+              <li><b>Exhibitions &amp; Programs:</b> Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.</li>
+              <li><b>Publications &amp; Art Content:</b> Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.</li>
+            </ul>
+            <div class="aboutPills">
+              <span class="pill">Curated Platforms</span>
+              <span class="pill">Installations</span>
+              <span class="pill">Exhibitions</span>
+              <span class="pill">Publications</span>
             </div>
+          </div>
 
-            <div class="about-card">
-              <h3>In Creative Infrastructure:</h3>
-              <ul>
-                <li>Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.</li>
-                <li>Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.</li>
-                <li>Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.</li>
-              </ul>
-            </div>
+          <div class="aboutCard">
+            <h3>In Creative Infrastructure</h3>
+            <ul class="clean">
+              <li><b>Art Content Center (NDCC):</b> A central node for art content creation, curation, archiving, and distribution—bridging artists, collectors, institutions, and the public.</li>
+              <li><b>Cultural Partnerships:</b> Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.</li>
+              <li><b>Digital Presence:</b> Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.</li>
+            </ul>
 
-            <div class="about-card">
-              <h3>In Media & Cultural Impact:</h3>
-              <ul>
-                <li>Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.</li>
-                <li>Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.</li>
-              </ul>
-            </div>
+            <h3 style="margin-top:16px">In Media &amp; Cultural Impact</h3>
+            <ul class="clean">
+              <li><b>Cultural Narrative Building:</b> Positioning art as a living, evolving cultural identity.</li>
+              <li><b>Audience Engagement:</b> Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.</li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
 
     <!-- SERVICES -->
-    <section id="sect-services" class="app-section">
-      <div class="section-scroll">
-        <h1 class="sec-title">Services</h1>
-        <p class="sec-sub">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
+    <section class="section" id="services">
+      <div class="sectionInner">
+        <h2 class="sectionTitle">Services</h2>
+        <p class="sectionLead">A simple, clean layout—white background, clear cards, and subtle depth.</p>
 
-        <div class="services-wrap">
-          <div class="services-grid" id="servicesGrid">
-            <div class="svc-card"><div class="svc-ico">◎</div><h3 class="svc-title">Creative Planning</h3><p class="svc-desc">Sculptural and contemporary art planning—translating culture into form.</p></div>
-            <div class="svc-card"><div class="svc-ico">✎</div><h3 class="svc-title">Original design</h3><p class="svc-desc">Original concepts inspired by renowned artists and professional teams.</p></div>
-            <div class="svc-card"><div class="svc-ico">▤</div><h3 class="svc-title">Excellent structure</h3><p class="svc-desc">Qualification-led analysis—ensuring stability, safety, and longevity.</p></div>
-            <div class="svc-card"><div class="svc-ico">✶</div><h3 class="svc-title">Crafted with ingenuity</h3><p class="svc-desc">Refined execution where detail, patience, and intent define the final work.</p></div>
+        <div class="servicesGrid" id="servicesGrid">
+          <!-- 12 service cards -->
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Creative Planning</h4><p>Sculptural and contemporary art planning—translating culture into form.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Original Design</h4><p>Inspired by renowned artists—featuring original designs by a professional team.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Excellent Structure</h4><p>Qualification-led structural analysis—stability, safety, and longevity.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Crafted with Ingenuity</h4><p>Refined execution—where detail, patience, and intent define the final work.</p></div>
 
-            <div class="svc-card"><div class="svc-ico">⌂</div><h3 class="svc-title">Professional installation</h3><p class="svc-desc">Integrated workflows for safe, precise, and reliable delivery on site.</p></div>
-            <div class="svc-card"><div class="svc-ico">⌁</div><h3 class="svc-title">Refurbishment & Restoration</h3><p class="svc-desc">Renovation and care—bringing works back to life with expert teams.</p></div>
-            <div class="svc-card"><div class="svc-ico">▢</div><h3 class="svc-title">Art rental</h3><p class="svc-desc">Rental services for sculptures and artworks—supporting programs & projects.</p></div>
-            <div class="svc-card"><div class="svc-ico">⌖</div><h3 class="svc-title">Site survey</h3><p class="svc-desc">On-site inspection and coordination—aligning implementation to vision.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Professional Installation</h4><p>Integrated workflows—safe, precise, and reliable delivery on site.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Refurbishment &amp; Restoration</h4><p>Renovation and restoration using professional teams and equipment.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Art Rental</h4><p>Rental services for sculptures and works—supporting programs and institutions.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Site Survey</h4><p>On-site inspection and coordination—aligning implementation with vision.</p></div>
 
-            <div class="svc-card"><div class="svc-ico">◇</div><h3 class="svc-title">Curatorial services</h3><p class="svc-desc">Research, selection, and presentation strategy for exhibitions and collections.</p></div>
-            <div class="svc-card"><div class="svc-ico">🎧</div><h3 class="svc-title">Art Consultant</h3><p class="svc-desc">Concept proposals, guidance, and recommendations tailored to your space.</p></div>
-            <div class="svc-card"><div class="svc-ico">◔</div><h3 class="svc-title">Art broker</h3><p class="svc-desc">Market services connecting institutions, collectors, and artists—locally and globally.</p></div>
-            <div class="svc-card"><div class="svc-ico">⧉</div><h3 class="svc-title">Artistic Supervisor</h3><p class="svc-desc">Quality monitoring, materials review, and execution supervision end-to-end.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Curatorial Services</h4><p>Planning and organizing exhibitions—research, documentation, and narrative.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Art Consultant</h4><p>Concept proposals and recommendations—aligned with style, place, and audience.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Art Broker</h4><p>Market services and information—connecting institutions, artists, and collectors.</p></div>
+          <div class="serviceCard"><div class="svcIcon">◎</div><h4>Artistic Supervisor</h4><p>Quality monitoring and guidance—from creation to installation and care.</p></div>
+        </div>
+
+        <!-- Our Process (white theme) -->
+        <div class="processWrap" id="process">
+          <div class="processHead">
+            <h3>Our process</h3>
+            <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
           </div>
 
-          <div class="process" id="processBlock">
-            <div class="process-head">
-              <h2>Our process</h2>
-              <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
+          <div class="processBody" id="processBody">
+            <div class="processRail" aria-hidden="true">
+              <div class="railLine" id="railLine"></div>
+              <div class="railDot" id="railDot" style="top: 0px;"></div>
             </div>
 
-            <div class="process-grid" id="processGrid">
-              <div class="proc-rail">
-                <div class="proc-line"></div>
-                <div class="proc-dot" id="procDot"></div>
+            <div class="steps" id="steps">
+              <div class="step" data-step="1">
+                <div>
+                  <div class="stepLabel">STEP 1</div>
+                  <div class="stepTitle">Discovery &amp; Direction</div>
+                  <p class="stepDesc">Define goals, context, constraints, and the cultural story you want the work to carry.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
               </div>
 
-              <div class="proc-items" id="procItems">
-                <div class="proc-step"><div><div class="proc-kicker">Step 1</div><h3 class="proc-title">Discovery & Direction</h3><p class="proc-desc">Define goals, context, constraints, and the cultural story you want the work to carry.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 2</div><h3 class="proc-title">Concept & References</h3><p class="proc-desc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 3</div><h3 class="proc-title">Design Development</h3><p class="proc-desc">Refine form, materials, scale, and presentation details with clear approvals.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 4</div><h3 class="proc-title">Engineering Review</h3><p class="proc-desc">Structural checks, safety planning, and feasibility for production & installation.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 5</div><h3 class="proc-title">Production Planning</h3><p class="proc-desc">Scheduling, sourcing, and documentation to keep quality consistent.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 6</div><h3 class="proc-title">Fabrication & Build</h3><p class="proc-desc">Craft, finishing, and quality checks—executed with high attention to detail.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 7</div><h3 class="proc-title">Installation & On-site</h3><p class="proc-desc">Professional installation, safety protocol, and site coordination.</p></div><div class="proc-illus">Illustration</div></div>
-                <div class="proc-step"><div><div class="proc-kicker">Step 8</div><h3 class="proc-title">Handover & Care</h3><p class="proc-desc">Final delivery, documentation, and care recommendations for longevity.</p></div><div class="proc-illus">Illustration</div></div>
+              <div class="step" data-step="2">
+                <div>
+                  <div class="stepLabel">STEP 2</div>
+                  <div class="stepTitle">Concept &amp; References</div>
+                  <p class="stepDesc">Moodboards, precedents, and initial concepts aligned with the site and audience.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="3">
+                <div>
+                  <div class="stepLabel">STEP 3</div>
+                  <div class="stepTitle">Design Development</div>
+                  <p class="stepDesc">Refine form, materials, scale, and presentation details with clear approvals.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="4">
+                <div>
+                  <div class="stepLabel">STEP 4</div>
+                  <div class="stepTitle">Engineering Review</div>
+                  <p class="stepDesc">Structural checks, safety planning, and feasibility for production &amp; installation.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="5">
+                <div>
+                  <div class="stepLabel">STEP 5</div>
+                  <div class="stepTitle">Production Planning</div>
+                  <p class="stepDesc">Scheduling, sourcing, and documentation to keep quality consistent.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="6">
+                <div>
+                  <div class="stepLabel">STEP 6</div>
+                  <div class="stepTitle">Fabrication &amp; Build</div>
+                  <p class="stepDesc">Craft, finishing, and quality checks—executed with high attention to detail.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="7">
+                <div>
+                  <div class="stepLabel">STEP 7</div>
+                  <div class="stepTitle">Installation &amp; On-site</div>
+                  <p class="stepDesc">Professional installation, safety protocol, and site coordination.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
+              </div>
+
+              <div class="step" data-step="8">
+                <div>
+                  <div class="stepLabel">STEP 8</div>
+                  <div class="stepTitle">Handover &amp; Care</div>
+                  <p class="stepDesc">Final delivery, documentation, and care recommendations for longevity.</p>
+                </div>
+                <div class="stepArt">Illustration</div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </section>
 
     <!-- GALLERY -->
-    <section id="sect-gallery" class="app-section active-section">
-      <header class="shop-head">
-        <nav class="nav-group" id="filters">
-          <button class="chip active" data-filter="all" id="btnAll">ALL</button>
-          <button class="chip" data-filter="cabinet">Cabinets</button>
-          <button class="chip" data-filter="sideboard">Sideboards</button>
-          <button class="chip" data-filter="decor">Decor</button>
-        </nav>
-      </header>
+    <section class="section" id="gallery">
+      <div class="sectionInner">
+        <h2 class="sectionTitle">Gallery</h2>
 
-      <div class="shop-body">
-        <div class="grid" id="grid"></div>
-
-        <div class="solo-wrap" id="soloWrap">
-          <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
-
-          <div class="solo-name" id="soloName">PRODUCT</div>
-
-          <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
-          <div class="solo-media-container" id="soloMedia"></div>
-
-          <div class="solo-info-block">
-            <div class="solo-desc">
-              <strong id="soloTitle">PRODUCT</strong><br>
-              Contemporary design meeting functionality.
-              <div class="data-row">
-                <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
-                <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
-                <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
-              </div>
-            </div>
-
-            <div class="artist-profile" id="artistBtn">
-              <div class="avatar"><img id="artistImg" src="" alt="Designer"></div>
-              <div class="artist-info"><h4 id="artistName">--</h4><p id="artistRole">--</p></div>
-              <div class="artist-cta">View Bio →</div>
-            </div>
-
-            <div class="actions">
-              <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
-              <button class="btn btn-ghost" id="btnClose">Close</button>
-            </div>
-          </div>
+        <!-- one-line product category nav -->
+        <div class="filterRow" id="filterRow" aria-label="Product categories">
+          <button class="chip active" data-cat="All">ALL</button>
+          <button class="chip" data-cat="Cabinets">Cabinets</button>
+          <button class="chip" data-cat="Sideboards">Sideboards</button>
+          <button class="chip" data-cat="Decor">Decor</button>
         </div>
+
+        <!-- 12 products -->
+        <div class="productsGrid" id="productsGrid"></div>
       </div>
     </section>
 
     <!-- CONTACT -->
-    <section id="sect-contact" class="app-section">
-      <div class="section-scroll">
-        <h1 class="sec-title">Get in Touch</h1>
-        <p class="sec-sub">Interested in a piece? Let us know.</p>
+    <section class="section" id="contact">
+      <div class="sectionInner">
+        <h2 class="sectionTitle">Get in Touch</h2>
+        <p class="sectionLead">Interested in a piece? Let us know.</p>
 
-        <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_template" value="table">
-
-          <div class="form-group"><input type="text" class="form-input" name="name" placeholder="Your Name" required></div>
-          <div class="form-group"><input type="email" class="form-input" name="email" placeholder="Your Email" required></div>
-          <div class="form-group"><input type="text" class="form-input" name="subject" placeholder="Subject" id="formSubject"></div>
-          <div class="form-group"><textarea class="form-input" name="message" placeholder="Message..." rows="4"></textarea></div>
-
-          <button type="submit" class="btn-submit" id="formSubmitBtn">Send Inquiry</button>
+        <form onsubmit="event.preventDefault(); alert('Sent!');">
+          <div class="formGrid">
+            <div class="field">
+              <label>Your name</label>
+              <input type="text" placeholder="Your name" required />
+            </div>
+            <div class="field">
+              <label>Your email</label>
+              <input type="email" placeholder="Your email" required />
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Subject</label>
+            <input type="text" placeholder="Subject" />
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Message</label>
+            <textarea placeholder="Message..."></textarea>
+          </div>
+          <div style="margin-top:14px">
+            <button class="btn" type="submit">Send Inquiry</button>
+          </div>
         </form>
 
-        <div id="formSuccess">Thank you! Your inquiry has been received.</div>
+        <!-- FOOTER (black bg, no extra name/email inputs) -->
+        <footer class="footer" aria-label="Footer">
+          <div class="footerInner">
+            <div>
+              <div class="footTitle">Contact us</div>
+              <p class="footText" style="white-space:pre-line">
+contact@fnn.sa
++966 55 65 999 68
+
+Riyadh — Al Nakheel, Riyadh, Saudi Arabia
+              </p>
+            </div>
+
+            <div>
+              <div class="footTitle">Navigation</div>
+              <ul class="footLinks">
+                <li><a href="#home" data-scroll>Home</a></li>
+                <li><a href="#about" data-scroll>About Us</a></li>
+                <li><a href="#services" data-scroll>Services</a></li>
+                <li><a href="#gallery" data-scroll>Gallery</a></li>
+                <li><a href="#contact" data-scroll>Contacts</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="footTitle">Follow us</div>
+              <div class="socialRow">
+                <div class="socialItem"><div class="socialIcon">◎</div><div>@fnn</div></div>
+                <div class="socialItem"><div class="socialIcon">f</div><div>@fnn</div></div>
+                <div class="socialItem"><div class="socialIcon">in</div><div>@fnn</div></div>
+                <div class="socialItem"><div class="socialIcon">▶</div><div>@fnn</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="copyright">© 2025 FNN. All rights reserved.</div>
+        </footer>
       </div>
     </section>
+  </main>
 
-  </aside>
-</div>
-
-<div class="modal-overlay" id="modalArtistOverlay">
-  <div class="modal-box" style="position:relative">
-    <button class="close-modal" id="closeArtistModal">×</button>
-    <div style="text-align:center; margin-bottom:18px;">
-      <div style="width:82px;height:82px;border-radius:50%;overflow:hidden;margin:0 auto 14px;">
-        <img id="modalArtistImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+  <!-- Product overlay -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="productSheet" role="dialog" aria-modal="true" aria-label="Product details">
+      <div class="sheetTop">
+        <!-- Product name ABOVE frame -->
+        <div class="sheetTitleWrap">
+          <h3 class="sheetTitle" id="sheetTitle">Product</h3>
+        </div>
+        <button class="sheetClose" id="closeSheet">Close</button>
       </div>
-      <h3 id="modalArtistName" style="margin:0 0 6px; font-weight:950;"></h3>
-      <span id="modalArtistRole" style="font-size:12px; color:#999; text-transform:uppercase; letter-spacing:0.08em;"></span>
-    </div>
-    <p id="modalArtistBio" style="font-size:13px; line-height:1.7; color:#555; text-align:center; margin:0;"></p>
-  </div>
-</div>
 
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+      <div class="sheetBody">
+        <!-- Tabs OUTSIDE frame -->
+        <div class="tabsRow" id="tabsRow">
+          <button class="tabBtn active" data-tab="images">IMAGES</button>
+          <button class="tabBtn" data-tab="rot360">360</button>
+          <button class="tabBtn" data-tab="video">VIDEO</button>
+          <button class="tabBtn" data-tab="model3d">3D</button>
+        </div>
+
+        <div class="frame" id="frame">
+          <!-- IMAGES -->
+          <div class="slider" id="imagesTab">
+            <button class="arrow left" id="prevSlide" aria-label="Previous">‹</button>
+            <button class="arrow right" id="nextSlide" aria-label="Next">›</button>
+            <img class="slideImg show" id="slide0" alt="Product image 1" />
+            <img class="slideImg" id="slide1" alt="Product image 2" />
+            <img class="slideImg" id="slide2" alt="Product image 3" />
+          </div>
+
+          <!-- 360 (custom controls) -->
+          <div class="vwrap" id="rot360Tab" style="display:none;">
+            <video id="rot360Video" playsinline preload="metadata">
+              <source src="https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4" type="video/mp4" />
+            </video>
+            <div class="controls">
+              <button class="playBtn" id="rotPlay">❚❚</button>
+              <input class="range" id="rotRange" type="range" min="0" max="1000" value="0" />
+            </div>
+          </div>
+
+          <!-- VIDEO -->
+          <div class="vwrap" id="videoTab" style="display:none;">
+            <video id="videoVideo" controls playsinline preload="metadata">
+              <source src="https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4" type="video/mp4" />
+            </video>
+          </div>
+
+          <!-- 3D -->
+          <div id="model3dTab" style="display:none; width:100%; height:100%; display:grid; place-items:center; color:rgba(0,0,0,.55); font-weight:900; letter-spacing:.12em;">
+            3D VIEW (placeholder)
+          </div>
+        </div>
+
+        <div style="margin-top:14px; color:var(--muted); line-height:1.7">
+          <b>Note:</b> The frame is fixed at <b>16:9</b>. The tab navigation is outside the frame, and the product page is scrollable.
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
-  const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbWM0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
-  const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
+  /* ===== Map (monochrome) ===== */
+  try{
+    mapboxgl.accessToken = "YOUR_MAPBOX_TOKEN"; // <- put your token here
+    const map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/light-v11",
+      center: [9.19, 45.464], // Milan-ish (matches your screenshots vibe)
+      zoom: 12.5,
+      pitch: 55,
+      bearing: -15,
+      antialias: true
+    });
+    map.addControl(new mapboxgl.NavigationControl({showCompass:false}), "bottom-right");
+  }catch(e){
+    // if token missing, keep the grey background
+  }
 
-  mapboxgl.accessToken = MAPBOX_TOKEN;
-  const isMobile = window.innerWidth < 900;
-  const startZoom = isMobile ? 0 : 0.8;
+  /* ===== Section navigation ===== */
+  const panel = document.getElementById("panel");
+  const navButtons = Array.from(document.querySelectorAll(".navBtn"));
+  const sectionIds = ["home","about","services","gallery","contact"];
 
-  const map = new mapboxgl.Map({
-    container: "map",
-    style: USER_STYLE,
-    center: [0, 20],
-    zoom: startZoom,
-    pitch: 0,
-    projection: 'globe'
-  });
-
-  map.on('style.load', () => {
-    try {
-      map.setFog({
-        'color': 'rgb(255, 255, 255)',
-        'high-color': 'rgb(200, 200, 200)',
-        'space-color': 'rgb(0, 0, 0)',
-        'star-intensity': 0.6
-      });
-    } catch(e){}
-
-    const layers = map.getStyle().layers || [];
-    let labelLayerId;
-    for (const layer of layers) {
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
-        labelLayerId = layer.id;
-        break;
-      }
-    }
-
-    if (!map.getLayer('3d-buildings-custom')) {
-      try{
-        map.addLayer({
-          'id': '3d-buildings-custom',
-          'source': 'composite',
-          'source-layer': 'building',
-          'filter': ['==', 'extrude', 'true'],
-          'type': 'fill-extrusion',
-          'minzoom': 15,
-          'paint': {
-            'fill-extrusion-color': '#aaa',
-            'fill-extrusion-height': ['get', 'height'],
-            'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 0.6
-          }
-        }, labelLayerId);
-      } catch(e){}
-    }
-  });
-
-  window.switchSection = function(id){
-    document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active-section'));
-    const target = document.getElementById(id);
-    if(target) target.classList.add('active-section');
-
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navIdMap = {
-      'sect-home':'navHome',
-      'sect-about':'navAbout',
-      'sect-services':'navServices',
-      'sect-gallery':'navGallery',
-      'sect-contact':'navContact'
-    };
-    const mNavIdMap = {
-      'sect-home':'mNavHome',
-      'sect-about':'mNavAbout',
-      'sect-services':'mNavServices',
-      'sect-gallery':'mNavGallery',
-      'sect-contact':'mNavContact'
-    };
-
-    const navEl = document.getElementById(navIdMap[id]);
-    if(navEl) navEl.classList.add('active');
-    const mNavEl = document.getElementById(mNavIdMap[id]);
-    if(mNavEl) mNavEl.classList.add('active');
-
-    if(id === 'sect-home'){
-      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
-    }
-
-    if(id === 'sect-services'){
-      requestAnimationFrame(() => { setupProcessAnimation(); });
-    }
-  };
-
-  const safeAdd = (id, ev, handler) => {
+  function scrollToSection(id){
     const el = document.getElementById(id);
-    if(el) el.addEventListener(ev, handler);
-  };
-
-  safeAdd('navHome','click',() => switchSection('sect-home'));
-  safeAdd('navAbout','click',() => switchSection('sect-about'));
-  safeAdd('navServices','click',() => switchSection('sect-services'));
-  safeAdd('navGallery','click',() => switchSection('sect-gallery'));
-  safeAdd('navContact','click',() => switchSection('sect-contact'));
-
-  safeAdd('mNavHome','click',() => switchSection('sect-home'));
-  safeAdd('mNavAbout','click',() => switchSection('sect-about'));
-  safeAdd('mNavServices','click',() => switchSection('sect-services'));
-  safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
-  safeAdd('mNavContact','click',() => switchSection('sect-contact'));
-
-  const form = document.getElementById('ajaxForm');
-  const submitBtn = document.getElementById('formSubmitBtn');
-  const successMsg = document.getElementById('formSuccess');
-
-  if(form){
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      if(submitBtn){ submitBtn.textContent="Sending..."; submitBtn.style.opacity="0.7"; }
-      fetch(form.action, { method:"POST", body:new FormData(form), headers:{ 'Accept':'application/json' } })
-      .then(res => {
-        if(res.ok){
-          form.style.display="none";
-          if(successMsg) successMsg.style.display="block";
-        } else {
-          alert("Oops! Problem submitting.");
-          if(submitBtn) submitBtn.textContent="Try Again";
-        }
-      })
-      .catch(() => {
-        alert("Oops! Problem submitting.");
-        if(submitBtn) submitBtn.textContent="Try Again";
-      });
-    });
+    if(!el) return;
+    const top = el.offsetTop - 10;
+    panel.scrollTo({ top, behavior:"smooth" });
   }
 
-  let currentMarker = null;
-  let rotationFrame = null;
-
-  function gotoStore(store){
-    if(!store) return;
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
-    if(currentMarker) currentMarker.remove();
-
-    const el = document.createElement('div');
-    el.style.backgroundColor='#111';
-    el.style.width='20px';
-    el.style.height='20px';
-    el.style.borderRadius='50%';
-    el.style.border='2px solid white';
-
-    currentMarker = new mapboxgl.Marker(el).setLngLat(store.coords).addTo(map);
-
-    map.flyTo({
-      center: store.coords,
-      zoom: 16.5,
-      pitch: 65,
-      bearing: Math.random()*90,
-      speed: 0.3,
-      curve: 1.2,
-      essential: true,
-      duration: 9000
-    });
-
-    map.once('moveend', () => {
-      function rotate(){
-        map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
-        rotationFrame = requestAnimationFrame(rotate);
-      }
-      rotate();
-    });
-  }
-
-  const DEFAULT_IMAGES = [
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9c47857d958372698_Gemini_Generated_Image_yiit8eyiit8eyiit.png",
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9fd2fa99da51c575a_Gemini_Generated_Image_qrrx4iqrrx4iqrrx.png",
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9978004d5fa2a3d3a_Gemini_Generated_Image_6hnali6hnali6hna.png",
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca9ff7c4713583ae7b5_Gemini_Generated_Image_im37uhim37uhim37.png",
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c4a4dc0af86da352_Gemini_Generated_Image_rn5h5urn5h5urn5h.png",
-    "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693c1ca8c641d77b3de17010_Gemini_Generated_Image_mhci8mmhci8mmhci.png"
-  ];
-
-  const VIDEO_360 = "https://raw.githubusercontent.com/lwiise/3d-models/main/Product_Video_Generation_With_Rotation.mp4";
-  const VIDEO_NORMAL = "https://raw.githubusercontent.com/lwiise/3d-models/main/Artistic_Video_Generation_Request.mp4";
-
-  function buildMediaTabs(active){
-    const tabs = [
-      { key:'images', label:'Images' },
-      { key:'v360', label:'360' },
-      { key:'video', label:'Video' },
-      { key:'d3', label:'3D' }
-    ];
-    return `
-      <div class="media-tabs" id="mediaTabs">
-        ${tabs.map(t => `
-          <button class="media-tab ${t.key===active?'active':''}" data-tab="${t.key}">${t.label}</button>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  function renderImages(images){
-    let idx = 0;
-    const html = `
-      <img id="imgSlide" src="${images[0]}" alt="Image" />
-      <button class="img-arrow left" id="imgPrev">‹</button>
-      <button class="img-arrow right" id="imgNext">›</button>
-    `;
-    return { html, mount: (container) => {
-      const img = container.querySelector('#imgSlide');
-      const prev = container.querySelector('#imgPrev');
-      const next = container.querySelector('#imgNext');
-      const show = () => { if(img) img.src = images[idx]; };
-      if(prev) prev.onclick = () => { idx = (idx - 1 + images.length) % images.length; show(); };
-      if(next) next.onclick = () => { idx = (idx + 1) % images.length; show(); };
-    }};
-  }
-
-  function render360(){
-    const html = `
-      <video id="v360" src="${VIDEO_360}" playsinline preload="metadata"></video>
-      <div class="v360-ui">
-        <button class="v360-btn" id="v360Toggle">II</button>
-        <input class="v360-range" id="v360Range" type="range" min="0" max="1000" value="0" />
-      </div>
-    `;
-    return { html, mount: (container) => {
-      const v = container.querySelector('#v360');
-      const btn = container.querySelector('#v360Toggle');
-      const range = container.querySelector('#v360Range');
-      if(!v || !btn || !range) return;
-      v.controls = false;
-      v.loop = true;
-      v.muted = true;
-      v.play().catch(()=>{});
-      const syncRange = () => {
-        if(!v.duration || !isFinite(v.duration)) return;
-        range.value = Math.floor((v.currentTime / v.duration) * 1000);
-      };
-      v.addEventListener('timeupdate', syncRange);
-      range.addEventListener('input', () => {
-        if(!v.duration || !isFinite(v.duration)) return;
-        const t = (parseInt(range.value,10)/1000) * v.duration;
-        v.currentTime = t;
-      });
-      btn.addEventListener('click', () => {
-        if(v.paused){
-          v.play().catch(()=>{});
-          btn.textContent = "II";
-        }else{
-          v.pause();
-          btn.textContent = "▶";
-        }
-      });
-    }};
-  }
-
-  function renderVideo(){
-    const html = `<video src="${VIDEO_NORMAL}" controls playsinline preload="metadata"></video>`;
-    return { html, mount: ()=>{} };
-  }
-
-  function render3D(modelUrl, fallbackImg, productName){
-    const safeUrl = (modelUrl || "").replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
-    const html = `
-      <model-viewer
-        id="viewer3d"
-        src="${safeUrl}"
-        camera-controls
-        auto-rotate
-        shadow-intensity="1"
-        style="background:transparent; width:100%; height:100%;"
-        camera-orbit="45deg 75deg 3m"
-        environment-image="neutral"
-        alt="${productName || '3D'}">
-      </model-viewer>
-    `;
-    return { html, mount: (container) => {
-      const viewer = container.querySelector('#viewer3d');
-      if(viewer){
-        viewer.addEventListener('error', () => {
-          container.innerHTML = `<img src="${fallbackImg}" alt="Fallback" />`;
-        });
-      }
-    }};
-  }
-
-  function renderActiveMedia(p, tabKey){
-    const soloMedia = document.getElementById("soloMedia");
-    const soloTabs = document.getElementById("soloTabs");
-    if(!soloMedia || !soloTabs) return;
-
-    soloTabs.innerHTML = buildMediaTabs(tabKey);
-
-    let pack;
-    if(tabKey === 'images') pack = renderImages(p.images || DEFAULT_IMAGES);
-    if(tabKey === 'v360') pack = render360();
-    if(tabKey === 'video') pack = renderVideo();
-    if(tabKey === 'd3') pack = render3D(p.model, (p.images && p.images[0]) ? p.images[0] : p.img, p.name);
-
-    soloMedia.innerHTML = pack.html;
-    pack.mount(soloMedia);
-
-    attachTabHandlers(p);
-  }
-
-  function attachTabHandlers(p){
-    const soloTabs = document.getElementById("soloTabs");
-    if(!soloTabs) return;
-
-    const tabs = soloTabs.querySelector('#mediaTabs');
-    if(!tabs) return;
-
-    if(tabs.dataset.bound === "1") return;
-    tabs.dataset.bound = "1";
-
-    tabs.addEventListener('click', (e) => {
-      const btn = e.target.closest('.media-tab');
-      if(!btn) return;
-      const tab = btn.dataset.tab;
-      renderActiveMedia(p, tab);
-    });
-  }
-
-  const PRODUCTS = [
-    { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
-    { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
-    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
-    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } },
-    { id:"item-5", name:"Radiance Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb", specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] }, artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." } },
-    { id:"item-6", name:"Modular Unit", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb", specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] }, artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." } },
-    { id:"item-7", name:"Lunar Chest", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb", specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] }, artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." } },
-    { id:"item-8", name:"Obsidian Block", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb", specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.520] }, artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." } },
-    { id:"item-9", name:"Azure Tower", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb", specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] }, artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." } },
-    { id:"item-10", name:"Solar Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb", specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] }, artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." } },
-    { id:"item-11", name:"Nordic Wave", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb", specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] }, artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." } },
-    { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
-  ];
-
-  const grid = document.getElementById("grid");
-
-  function render(list){
-    if(!grid) return;
-    grid.innerHTML = "";
-    list.forEach(p => {
-      const el = document.createElement("article");
-      el.className = "card";
-      el.innerHTML = `
-        <div class="card-media"><img src="${p.img}" alt="${p.name}"/></div>
-        <div class="card-name">${p.name}</div>
-        <div class="card-sub">Edition 2024</div>
-      `;
-      el.addEventListener("click", () => openSolo(p));
-      grid.appendChild(el);
-    });
-  }
-
-  const filtersEl = document.getElementById("filters");
-  if(filtersEl){
-    filtersEl.addEventListener("click", e => {
-      const btn = e.target.closest(".chip");
-      if(!btn) return;
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  navButtons.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      navButtons.forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
-      const f = btn.dataset.filter;
-      render(f === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === f));
+      scrollToSection(btn.dataset.target);
+    });
+  });
+
+  document.querySelectorAll("[data-scroll]").forEach(a=>{
+    a.addEventListener("click",(e)=>{
+      e.preventDefault();
+      const id = a.getAttribute("href").replace("#","");
+      scrollToSection(id);
+    });
+  });
+
+  document.querySelectorAll(".btn[data-target]").forEach(b=>{
+    b.addEventListener("click", ()=> scrollToSection(b.dataset.target));
+  });
+
+  /* ===== Gallery data (12 products) ===== */
+  const PRODUCTS = [
+    { id:1, name:"ARCH CABINET", cat:"Cabinets", img:"https://images.unsplash.com/photo-1582582494700-4174bdf9c10f?auto=format&fit=crop&w=900&q=70" },
+    { id:2, name:"GEOMETRIC SIDE", cat:"Sideboards", img:"https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=900&q=70" },
+    { id:3, name:"ART DECO TALL", cat:"Cabinets", img:"https://images.unsplash.com/photo-1523413455889-7d67d1f1f75c?auto=format&fit=crop&w=900&q=70" },
+    { id:4, name:"STRIPED CONSOLE", cat:"Sideboards", img:"https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=900&q=70" },
+    { id:5, name:"SCULPTURE VASE", cat:"Decor", img:"https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=70" },
+    { id:6, name:"WALL RELIEF", cat:"Decor", img:"https://images.unsplash.com/photo-1523755231516-e43fd2e8dca5?auto=format&fit=crop&w=900&q=70" },
+    { id:7, name:"MONOLITH CABINET", cat:"Cabinets", img:"https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=900&q=70" },
+    { id:8, name:"SOFT EDGE SIDE", cat:"Sideboards", img:"https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=900&q=70" },
+    { id:9, name:"LIGHT OBJECT", cat:"Decor", img:"https://images.unsplash.com/photo-1519710887722-0d3c3a8b6f79?auto=format&fit=crop&w=900&q=70" },
+    { id:10, name:"EDITION STOOL", cat:"Decor", img:"https://images.unsplash.com/photo-1549187774-b4e9b0445b41?auto=format&fit=crop&w=900&q=70" },
+    { id:11, name:"RIDGE CABINET", cat:"Cabinets", img:"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=70" },
+    { id:12, name:"ARC SIDEBOARD", cat:"Sideboards", img:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=70" },
+  ];
+
+  const productsGrid = document.getElementById("productsGrid");
+  const filterRow = document.getElementById("filterRow");
+
+  function renderProducts(category="All"){
+    productsGrid.innerHTML = "";
+    const list = PRODUCTS.filter(p => category==="All" ? true : p.cat===category);
+    list.forEach(p=>{
+      const card = document.createElement("div");
+      card.className = "prodCard";
+      card.innerHTML = `
+        <div class="prodThumb"><img src="${p.img}" alt="${p.name}"/></div>
+        <div class="prodMeta">
+          <p class="prodName">${p.name}</p>
+          <p class="prodSub">EDITION 2024</p>
+        </div>
+      `;
+      card.addEventListener("click", ()=> openProduct(p));
+      productsGrid.appendChild(card);
     });
   }
 
-  function openSolo(p){
-    document.getElementById("shop").classList.add("solo");
-    document.getElementById("sect-gallery").classList.add("solo");
+  filterRow.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".chip");
+    if(!btn) return;
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    btn.classList.add("active");
+    renderProducts(btn.dataset.cat);
+  });
 
-    const soloName = document.getElementById("soloName");
-    if(soloName) soloName.textContent = p.name;
+  renderProducts("All");
 
-    document.getElementById("soloTitle").textContent = p.name.toUpperCase();
-    document.getElementById("soloStore").textContent = p.store.name;
-    document.getElementById("spMat").textContent = p.specs.mat;
-    document.getElementById("spDim").textContent = p.specs.dim;
+  /* ===== Product overlay logic ===== */
+  const overlay = document.getElementById("overlay");
+  const closeSheet = document.getElementById("closeSheet");
+  const sheetTitle = document.getElementById("sheetTitle");
 
-    document.getElementById("artistName").textContent = p.artist.name;
-    document.getElementById("artistRole").textContent = p.artist.role;
-    document.getElementById("artistImg").src = p.artist.img;
+  const tabsRow = document.getElementById("tabsRow");
+  const tabBtns = Array.from(tabsRow.querySelectorAll(".tabBtn"));
+  const imagesTab = document.getElementById("imagesTab");
+  const rot360Tab = document.getElementById("rot360Tab");
+  const videoTab = document.getElementById("videoTab");
+  const model3dTab = document.getElementById("model3dTab");
 
-    document.getElementById("modalArtistName").textContent = p.artist.name;
-    document.getElementById("modalArtistRole").textContent = p.artist.role;
-    document.getElementById("modalArtistImg").src = p.artist.img;
-    document.getElementById("modalArtistBio").textContent = p.artist.bio;
+  const slideEls = [document.getElementById("slide0"), document.getElementById("slide1"), document.getElementById("slide2")];
+  const prevSlide = document.getElementById("prevSlide");
+  const nextSlide = document.getElementById("nextSlide");
+  let slideIndex = 0;
 
-    const fs = document.getElementById("formSubject");
-    if(fs) fs.value = "Inquiry: " + p.name;
+  function showSlide(i){
+    slideEls.forEach(el=>el.classList.remove("show"));
+    slideEls[i].classList.add("show");
+  }
+  prevSlide.addEventListener("click", ()=>{ slideIndex = (slideIndex+2)%3; showSlide(slideIndex); });
+  nextSlide.addEventListener("click", ()=>{ slideIndex = (slideIndex+1)%3; showSlide(slideIndex); });
 
-    const sideNav = document.querySelector('.side-nav');
-    if(sideNav) sideNav.classList.add('focused');
+  function setTab(name){
+    tabBtns.forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+    imagesTab.style.display = (name==="images") ? "" : "none";
+    rot360Tab.style.display = (name==="rot360") ? "" : "none";
+    videoTab.style.display   = (name==="video") ? "" : "none";
+    model3dTab.style.display = (name==="model3d") ? "grid" : "none";
+  }
+  tabsRow.addEventListener("click",(e)=>{
+    const b = e.target.closest(".tabBtn");
+    if(!b) return;
+    setTab(b.dataset.tab);
+  });
 
-    renderActiveMedia(p, 'images');
-    gotoStore(p.store);
+  function openProduct(p){
+    sheetTitle.textContent = p.name;
+    // Populate images (reuse same img for demo)
+    slideEls[0].src = p.img;
+    slideEls[1].src = p.img;
+    slideEls[2].src = p.img;
+    slideIndex = 0;
+    showSlide(0);
+
+    setTab("images");
+    overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden","false");
   }
 
-  function closeSolo(){
-    const shopEl = document.getElementById("shop");
-    const galleryEl = document.getElementById("sect-gallery");
-    if(shopEl) shopEl.classList.remove("solo");
-    if(galleryEl) galleryEl.classList.remove("solo");
+  function closeProduct(){
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden","true");
+  }
+  closeSheet.addEventListener("click", closeProduct);
+  overlay.addEventListener("click", (e)=>{ if(e.target===overlay) closeProduct(); });
+  window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeProduct(); });
 
-    const sideNav = document.querySelector('.side-nav');
-    if(sideNav) sideNav.classList.remove('focused');
+  /* ===== 360 custom controls ===== */
+  const rotVideo = document.getElementById("rot360Video");
+  const rotPlay  = document.getElementById("rotPlay");
+  const rotRange = document.getElementById("rotRange");
 
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
-    const isMobileReset = window.innerWidth < 900;
-    map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
+  function setPlayIcon(){
+    rotPlay.textContent = rotVideo.paused ? "▶" : "❚❚";
   }
 
-  safeAdd("btnBack","click",closeSolo);
-  safeAdd("btnClose","click",closeSolo);
-  safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
+  rotPlay.addEventListener("click", ()=>{
+    if(rotVideo.paused) rotVideo.play();
+    else rotVideo.pause();
+    setPlayIcon();
+  });
 
-  const modalArtist = document.getElementById("modalArtistOverlay");
-  const artistBtnEl = document.getElementById("artistBtn");
-  if(artistBtnEl) artistBtnEl.addEventListener("click", () => modalArtist && modalArtist.classList.add("open"));
-  safeAdd("closeArtistModal","click", () => modalArtist && modalArtist.classList.remove("open"));
-  window.addEventListener("click", (e) => { if(e.target === modalArtist) modalArtist.classList.remove("open"); });
+  rotVideo.addEventListener("loadedmetadata", ()=>{
+    rotRange.value = 0;
+    setPlayIcon();
+  });
 
-  function setupProcessAnimation(){
-    const dot = document.getElementById("procDot");
-    const itemsWrap = document.getElementById("procItems");
-    const grid = document.getElementById("processGrid");
-    if(!dot || !itemsWrap || !grid) return;
+  rotVideo.addEventListener("timeupdate", ()=>{
+    if(!rotVideo.duration) return;
+    const v = Math.round((rotVideo.currentTime / rotVideo.duration) * 1000);
+    rotRange.value = v;
+  });
 
-    const steps = Array.from(itemsWrap.querySelectorAll(".proc-step"));
-    const rail = grid.querySelector(".proc-rail");
-    const line = rail ? rail.querySelector(".proc-line") : null;
-    if(!steps.length || !rail || !line) return;
+  rotRange.addEventListener("input", ()=>{
+    if(!rotVideo.duration) return;
+    rotVideo.currentTime = (rotRange.value/1000) * rotVideo.duration;
+  });
 
-    const scroller = document.querySelector("#sect-services .section-scroll");
-    if(!scroller) return;
+  /* ===== Our process: single circle moves smoothly from step 1 to step 8 ===== */
+  const railDot = document.getElementById("railDot");
+  const processBody = document.getElementById("processBody");
+  const steps = Array.from(document.querySelectorAll(".step"));
 
-    let topY = 0;
-    let totalH = 0;
+  let dotY = 0; // current dot position for smoothing
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
-    const computeGeometry = () => {
-      rail.style.height = itemsWrap.offsetHeight + "px";
+  function updateProcessDot(){
+    const bodyRect = processBody.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
 
-      const railRect = rail.getBoundingClientRect();
-      const centers = steps.map(step => {
-        const r = step.getBoundingClientRect();
-        return ((r.top + r.bottom) / 2) - railRect.top;
-      });
+    // Only run if process is near view
+    const visible = bodyRect.bottom > panelRect.top + 20 && bodyRect.top < panelRect.bottom - 20;
+    if(!visible) return;
 
-      if(centers.length < 2) return;
+    const viewportCenter = panelRect.top + panelRect.height/2;
 
-      topY = centers[0];
-      totalH = centers[centers.length - 1] - centers[0];
+    // Compute centers of step 1 and step 8 relative to processBody
+    const first = steps[0].getBoundingClientRect();
+    const last  = steps[steps.length-1].getBoundingClientRect();
 
-      line.style.top = `${topY}px`;
-      line.style.height = `${Math.max(0, totalH)}px`;
-      line.style.bottom = "auto";
-    };
+    const firstCenter = (first.top + first.bottom)/2 - bodyRect.top;
+    const lastCenter  = (last.top + last.bottom)/2 - bodyRect.top;
 
-    const moveDotLockedToViewportCenter = () => {
-      const railRect = rail.getBoundingClientRect();
-      const scrollerRect = scroller.getBoundingClientRect();
+    // Define scroll mapping so the dot starts aligned to step 1 when process enters,
+    // stays around center while scrolling, and ends exactly at step 8.
+    const startScroll = (first.top + first.bottom)/2 - viewportCenter;  // when dot should be at step1
+    const endScroll   = (last.top + last.bottom)/2 - viewportCenter;    // when dot should be at step8
 
-      const centerY = scrollerRect.top + (scroller.clientHeight / 2);
-      const relY = centerY - railRect.top;
+    const currentOffset = 0; // target "middle" is handled by start/end mapping above
+    const progress = clamp((currentOffset - startScroll) / (endScroll - startScroll || 1), 0, 1);
+    const targetY = firstCenter + (lastCenter - firstCenter) * progress;
 
-      const minY = topY;
-      const maxY = topY + totalH;
-
-      const atBottom = (scroller.scrollTop + scroller.clientHeight) >= (scroller.scrollHeight - 2);
-      const y = atBottom ? maxY : Math.min(maxY, Math.max(minY, relY));
-
-      dot.style.transform = `translate(-50%, ${y - 9}px)`;
-    };
-
-    let raf = null;
-    const onScroll = () => {
-      if(raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = null;
-        computeGeometry();
-        moveDotLockedToViewportCenter();
-      });
-    };
-
-    requestAnimationFrame(() => {
-      computeGeometry();
-      moveDotLockedToViewportCenter();
-    });
-
-    scroller.addEventListener("scroll", onScroll, { passive:true });
-    window.addEventListener("resize", () => {
-      computeGeometry();
-      moveDotLockedToViewportCenter();
-    });
+    // smooth motion (no pop)
+    dotY = dotY + (targetY - dotY) * 0.18;
+    railDot.style.top = dotY + "px";
   }
 
-  (function init(){
-    render(PRODUCTS);
+  function raf(){
+    updateProcessDot();
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
 
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navGallery = document.getElementById('navGallery');
-    if(navGallery) navGallery.classList.add('active');
-    const mNavGallery = document.getElementById('mNavGallery');
-    if(mNavGallery) mNavGallery.classList.add('active');
-
-    setupProcessAnimation();
-  })();
+  /* ===== Keep nav active based on scroll ===== */
+  const sections = sectionIds.map(id=>document.getElementById(id));
+  function updateActiveNav(){
+    const y = panel.scrollTop + 120;
+    let current = "home";
+    for(const s of sections){
+      if(s.offsetTop <= y) current = s.id;
+    }
+    navButtons.forEach(b=>b.classList.toggle("active", b.dataset.target===current));
+  }
+  panel.addEventListener("scroll", updateActiveNav, {passive:true});
+  updateActiveNav();
 </script>
 </body>
 </html>
