@@ -1275,9 +1275,10 @@
     // ✅ Box stays fixed; rotate ONLY the model (camera orbit) with map bearing
     const syncModelRotation = () => {
       const bearing = map.getBearing();
+      const flipped = (360 - (bearing % 360) + 360) % 360; // invert direction
       const v = inner.querySelector("#mapOverlayViewer");
       if(v){
-        v.setAttribute("camera-orbit", `${bearing}deg 75deg 2.8m`);
+        v.setAttribute("camera-orbit", `${flipped}deg 75deg 2.8m`);
       }
       mapOverlayRAF = requestAnimationFrame(syncModelRotation);
     };
