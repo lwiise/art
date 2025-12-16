@@ -16,15 +16,14 @@
   }
 
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
-  html, body{ width:100%; max-width:100%; overflow-x:hidden; } /* ✅ prevent right-side overflow */
   body{
-    margin:0; height:100vh; width:100%;
+    margin:0; height:100vh; width:100vw;
     background:var(--bg); color:var(--text-main);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     overflow:hidden;
   }
 
-  .layout{ display:flex; height:100%; width:100%; overflow:hidden; max-width:100%; }
+  .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
 
   #map{
     flex:0 0 31vw;
@@ -32,37 +31,44 @@
     background:#000;
     position:relative;
     overflow:hidden;
-    min-width:0; /* ✅ prevent flex overflow */
   }
 
   .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
 
-  /* ===== 3D overlay on the map ===== */
+  /* =========================
+     ✅ NEW: Map 3D overlay box
+     - fixed box
+     - 50% map width
+     - shifted left by 20% of its own width
+     ========================= */
   .map-model-overlay{
     position:absolute;
     left:50%;
     top:50%;
-    transform:translate(-50%, -50%);
-    width:50%;                 /* ✅ 50% of map width */
+    transform:translate(-70%, -50%); /* center minus 20% width */
+    width:50%;
     max-width:520px;
     aspect-ratio:1 / 1;
-    z-index:25;                /* above map, under mobile nav (30) */
+    z-index:25;
     pointer-events:none;
     display:none;
   }
   .map-model-overlay.show{ display:block; }
-  .map-model-overlay .mv-wrap{
+  .map-model-inner{
     width:100%;
     height:100%;
-    border-radius:26px;
+    border-radius:24px;
+    background:rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.12);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    box-shadow:0 18px 40px rgba(0,0,0,0.35);
     overflow:hidden;
-    background:rgba(255,255,255,0.06);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    border:1px solid rgba(255,255,255,0.10);
-    box-shadow:0 18px 44px rgba(0,0,0,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
-  .map-model-overlay model-viewer{
+  .map-model-inner model-viewer{
     width:100%;
     height:100%;
     background:transparent;
@@ -141,7 +147,6 @@
     z-index:5;
     box-shadow:-10px 0 40px rgba(0,0,0,0.05);
     overflow:hidden;
-    min-width:0; /* ✅ prevent flex overflow */
   }
 
   .app-section{
@@ -161,7 +166,7 @@
   .section-scroll{
     height:100%;
     overflow-y:auto;
-    overflow-x:hidden; /* ✅ */
+    overflow-x:hidden; /* ✅ no right-side overflow */
     padding:40px;
   }
 
@@ -180,7 +185,7 @@
   p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
   /* ===== HOME ===== */
-  .home-scroll{ padding:0; }
+  .home-scroll{ padding:0; overflow-x:hidden; }
   .home-hero{
     width:100%;
     background:#fff;
@@ -197,24 +202,19 @@
     display:block;
   }
 
-  /* ✅ EDIT: first hero presented like the second hero */
+  /* first hero presented like second hero */
   .home-hero--full{
     height:420px;
     border-radius:28px;
     box-shadow:0 18px 40px rgba(0,0,0,0.06);
     margin:0 40px 26px;
   }
-  /* ✅ requested */
   .home-hero--full img{
-    object-position:center center;
+    object-position:center center; /* ✅ requested */
   }
 
-  .home-content{
-    padding:40px;
-  }
-  .home-end{
-    padding:0 40px 40px;
-  }
+  .home-content{ padding:40px; }
+  .home-end{ padding:0 40px 40px; }
   .home-hero--end{
     height:420px;
     border-radius:28px;
@@ -236,7 +236,7 @@
   }
   .btn-hero:hover{ transform:translateY(-2px); background:#000; }
 
-  /* ===== ABOUT VISUAL (same content, better layout) ===== */
+  /* ===== ABOUT VISUAL ===== */
   .about-wrap{ max-width:1000px; }
   .about-lead{
     font-size:16px;
@@ -261,7 +261,6 @@
     border-radius:22px;
     padding:18px 18px 16px;
     box-shadow:0 12px 28px rgba(0,0,0,0.06);
-    min-width:0;
   }
   .about-card h3{
     margin:0 0 10px;
@@ -300,7 +299,6 @@
     flex-wrap:nowrap;
     overflow-x:auto;
     scrollbar-width:none;
-    max-width:100%;
   }
   .nav-group::-webkit-scrollbar{ display:none; }
   .chip{
@@ -326,7 +324,7 @@
     padding:22px 30px 70px;
     flex-grow:1;
     overflow-y:auto;
-    overflow-x:hidden; /* ✅ */
+    overflow-x:hidden; /* ✅ no right-side overflow */
     min-height:0;
   }
 
@@ -335,7 +333,6 @@
     grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
     gap:26px;
     width:100%;
-    max-width:100%;
   }
   .card{
     background:#fff;
@@ -348,7 +345,6 @@
     flex-direction:column;
     align-items:center;
     text-align:center;
-    min-width:0;
   }
   .card:hover{ transform:translateY(-6px); box-shadow:0 18px 42px rgba(0,0,0,0.07); }
   .card-media{ width:100%; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
@@ -514,12 +510,12 @@
   }
   .avatar{ width:44px; height:44px; border-radius:50%; background:#eee; overflow:hidden; }
   .avatar img{ width:100%; height:100%; object-fit:cover; }
-  .artist-info{ flex:1; min-width:0; }
+  .artist-info{ flex:1; }
   .artist-info h4{ margin:0; font-size:13px; color:#222; font-weight:900; }
   .artist-info p{ margin:2px 0 0; font-size:11px; color:#888; }
   .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.06em; }
 
-  .actions{ display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+  .actions{ display:flex; gap:12px; margin-top:18px; }
   .btn{
     padding:14px 20px; border-radius:16px;
     border:none; font-size:13px; font-weight:800;
@@ -543,7 +539,6 @@
     box-shadow:0 10px 24px rgba(0,0,0,0.06);
     transition:transform .22s ease, box-shadow .22s ease;
     min-height:160px;
-    min-width:0;
   }
   .svc-card:hover{
     transform:translateY(-5px);
@@ -615,7 +610,6 @@
     gap:18px;
     min-height:160px;
     align-items:center;
-    min-width:0;
   }
   .proc-kicker{
     font-size:12px;
@@ -685,6 +679,7 @@
   .modal-overlay.open .modal-box{ transform:translateY(0); }
   .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
 
+  /* Footer */
   .site-footer{
     margin-top:28px;
     background:#0b0b0b;
@@ -693,9 +688,7 @@
     overflow:hidden;
     box-shadow:0 18px 44px rgba(0,0,0,0.18);
   }
-  .site-footer .ft-top{
-    padding:26px 24px 16px;
-  }
+  .site-footer .ft-top{ padding:26px 24px 16px; }
   .site-footer .ft-brand{
     font-weight:950;
     letter-spacing:0.18em;
@@ -800,10 +793,14 @@
     .proc-line, .proc-dot{ left:26px; }
     .solo-tabs-bar{ margin:6px 0 10px; }
     .about-grid{ grid-template-columns:1fr; }
+
     .site-footer .ft-grid{ grid-template-columns:1fr; }
 
-    /* overlay sizing on mobile */
-    .map-model-overlay{ width:70%; }
+    /* ✅ On mobile keep overlay smaller & still left-shifted */
+    .map-model-overlay{
+      width:min(62vw, 320px);
+      max-width:none;
+    }
   }
 </style>
 </head>
@@ -827,9 +824,9 @@
       <div class="nav-item" id="mNavContact">Contacts</div>
     </nav>
 
-    <!-- ✅ 3D overlay that pops over the map -->
+    <!-- ✅ NEW: overlay container -->
     <div class="map-model-overlay" id="mapModelOverlay">
-      <div class="mv-wrap" id="mapModelInner"></div>
+      <div class="map-model-inner" id="mapModelInner"></div>
     </div>
   </div>
 
@@ -1173,6 +1170,9 @@
     const mNavEl = document.getElementById(mNavIdMap[id]);
     if(mNavEl) mNavEl.classList.add('active');
 
+    // hide overlay when leaving gallery / solo
+    hideMap3DOverlay();
+
     if(id === 'sect-home'){
       map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
     }
@@ -1227,57 +1227,68 @@
   let currentMarker = null;
   let rotationFrame = null;
 
-  /* ===== Map 3D overlay sync ===== */
+  /* =========================
+     ✅ NEW: overlay state & helpers
+     ========================= */
+  let activeProduct = null;
   let mapOverlayRAF = null;
+
+  function hideMap3DOverlay(){
+    const overlay = document.getElementById("mapModelOverlay");
+    const inner = document.getElementById("mapModelInner");
+    if(mapOverlayRAF){ cancelAnimationFrame(mapOverlayRAF); mapOverlayRAF = null; }
+    if(inner) inner.innerHTML = "";
+    if(overlay) overlay.classList.remove("show");
+  }
 
   function showMap3DOverlay(product){
     const overlay = document.getElementById("mapModelOverlay");
     const inner = document.getElementById("mapModelInner");
-    if(!overlay || !inner) return;
+    if(!overlay || !inner || !product) return;
 
-    const modelUrl = (product && product.model) ? product.model : "";
-    const safeUrl = (modelUrl || "")
-      .replace(/\(/g,'%28').replace(/\)/g,'%29')
-      .replace(/ /g,'%20');
+    if(mapOverlayRAF){ cancelAnimationFrame(mapOverlayRAF); mapOverlayRAF = null; }
+
+    const safeUrl = (product.model || "").replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
+    const fallbackImg = (product.images && product.images[0]) ? product.images[0] : product.img;
 
     inner.innerHTML = `
       <model-viewer
         id="mapOverlayViewer"
         src="${safeUrl}"
         camera-controls
-        auto-rotate
         shadow-intensity="1"
         environment-image="neutral"
-        camera-orbit="45deg 75deg 2.8m"
-        alt="Map 3D overlay">
+        camera-orbit="0deg 75deg 2.8m"
+        alt="${product.name || '3D'}">
       </model-viewer>
     `;
 
+    const viewer = inner.querySelector("#mapOverlayViewer");
+    if(viewer){
+      viewer.addEventListener('error', () => {
+        inner.innerHTML = `<img src="${fallbackImg}" alt="Fallback" style="width:100%;height:100%;object-fit:contain;" />`;
+      });
+    }
+
     overlay.classList.add("show");
 
-    const sync = () => {
-      const b = map.getBearing();
-      overlay.style.transform = `translate(-50%, -50%) rotate(${b}deg)`;
-      mapOverlayRAF = requestAnimationFrame(sync);
+    // ✅ Box stays fixed; rotate ONLY the model (camera orbit) with map bearing
+    const syncModelRotation = () => {
+      const bearing = map.getBearing();
+      const v = inner.querySelector("#mapOverlayViewer");
+      if(v){
+        v.setAttribute("camera-orbit", `${bearing}deg 75deg 2.8m`);
+      }
+      mapOverlayRAF = requestAnimationFrame(syncModelRotation);
     };
-
-    if(mapOverlayRAF) cancelAnimationFrame(mapOverlayRAF);
-    sync();
-  }
-
-  function hideMap3DOverlay(){
-    const overlay = document.getElementById("mapModelOverlay");
-    const inner = document.getElementById("mapModelInner");
-    if(mapOverlayRAF){ cancelAnimationFrame(mapOverlayRAF); mapOverlayRAF = null; }
-    if(overlay){
-      overlay.classList.remove("show");
-      overlay.style.transform = `translate(-50%, -50%)`;
-    }
-    if(inner) inner.innerHTML = "";
+    syncModelRotation();
   }
 
   function gotoStore(store){
     if(!store) return;
+
+    // reset any previous motion/overlay
+    hideMap3DOverlay();
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     if(currentMarker) currentMarker.remove();
 
@@ -1301,7 +1312,10 @@
       duration: 9000
     });
 
+    // ✅ show overlay ONLY after zoom finishes
     map.once('moveend', () => {
+      showMap3DOverlay(activeProduct);
+
       function rotate(){
         map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
         rotationFrame = requestAnimationFrame(rotate);
@@ -1507,6 +1521,8 @@
   }
 
   function openSolo(p){
+    activeProduct = p; // ✅ track for overlay after zoom
+
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
 
@@ -1534,16 +1550,12 @@
     if(sideNav) sideNav.classList.add('focused');
 
     renderActiveMedia(p, 'images');
-    gotoStore(p.store);
 
-    /* ✅ show 3D overlay over the map while map animates */
-    showMap3DOverlay(p);
+    // ✅ start fly animation; overlay will appear after moveend
+    gotoStore(p.store);
   }
 
   function closeSolo(){
-    /* ✅ hide map overlay */
-    hideMap3DOverlay();
-
     const shopEl = document.getElementById("shop");
     const galleryEl = document.getElementById("sect-gallery");
     if(shopEl) shopEl.classList.remove("solo");
@@ -1551,6 +1563,8 @@
 
     const sideNav = document.querySelector('.side-nav');
     if(sideNav) sideNav.classList.remove('focused');
+
+    hideMap3DOverlay();
 
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     const isMobileReset = window.innerWidth < 900;
