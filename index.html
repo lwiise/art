@@ -16,12 +16,11 @@
   }
 
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
-  html,body{ height:100%; width:100%; }
   body{
     margin:0; height:100vh; width:100vw;
     background:var(--bg); color:var(--text-main);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    overflow:hidden; /* no page overflow */
+    overflow:hidden; /* page itself doesn't scroll */
   }
 
   .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
@@ -35,6 +34,51 @@
   }
 
   .mapboxgl-canvas{ outline:none; filter:grayscale(100%) contrast(1.2) brightness(0.9); }
+
+  /* ===== 3D POPUP OVER MAP ===== */
+  .map-3d-popup{
+    position:absolute;
+    left:50%;
+    top:50%;
+    /* ✅ centered, shifted left by 20% of its own width, and moved up by 50% of its own height */
+    transform:translate(-70%, -100%);
+    width:50%;                 /* ✅ 50% of map width */
+    aspect-ratio:1/1;          /* ✅ fixed square */
+    max-width:560px;
+    min-width:260px;
+    border-radius:24px;
+    overflow:hidden;
+    z-index:50;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.16);
+    box-shadow:0 30px 80px rgba(0,0,0,0.35);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .map-3d-popup.show{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    transform:translate(-70%, -100%) scale(1);
+  }
+  .map-3d-popup-inner{
+    width:100%;
+    height:100%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+  }
+  .map-3d-popup model-viewer{
+    width:100%;
+    height:100%;
+    background:transparent;
+  }
 
   .side-nav{
     position:absolute; top:50%; right:0; transform:translateY(-50%);
@@ -108,7 +152,7 @@
     position:relative;
     z-index:5;
     box-shadow:-10px 0 40px rgba(0,0,0,0.05);
-    overflow:hidden;     /* ✅ no overflow */
+    overflow:hidden; /* ✅ prevent right side overflow */
   }
 
   .app-section{
@@ -119,7 +163,7 @@
     transform:translateY(18px);
     transition:opacity .35s ease, transform .35s ease;
     z-index:1;
-    overflow:hidden; /* ✅ */
+    overflow:hidden; /* ✅ prevent section overflow */
   }
   .app-section.active-section{
     opacity:1; visibility:visible; pointer-events:auto;
@@ -129,7 +173,6 @@
   .section-scroll{
     height:100%;
     overflow-y:auto;
-    overflow-x:hidden; /* ✅ no horizontal overflow */
     padding:40px;
   }
 
@@ -147,18 +190,23 @@
   h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 12px; letter-spacing:-0.02em; color:#111; }
   p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
-  /* ===== HOME (UPDATED LAYOUT) ===== */
-  .home-scroll{ padding:0; overflow-x:hidden; }
-
-  .home-wrap{
-    min-height:100%;
-    display:flex;
-    flex-direction:column;
-    padding:0 40px 40px;
-    gap:18px;
+  /* ===== HOME (FIT SCREEN, NO SCROLL, GLASS TEXT/BUTTON) ===== */
+  .home-scroll{
+    padding:0;
+    overflow:hidden;       /* ✅ no scrolling in home */
+    height:100%;
   }
 
-  /* first image */
+  .home-wrap{
+    height:100vh;          /* ✅ always full viewport */
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:0 40px 22px;
+    gap:14px;
+    overflow:hidden;
+  }
+
   .home-hero{
     width:100%;
     background:#fff;
@@ -174,77 +222,104 @@
     object-fit:cover;
     display:block;
   }
+
   .home-hero--full{
-    height:340px;
+    flex:0 0 34vh;
+    height:34vh;
     border-radius:28px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
     margin:0;
+    overflow:hidden;
   }
+  /* ✅ center the image and crop top/bottom naturally */
   .home-hero--full img{
-    object-position:center center; /* ✅ your requested edit */
+    object-position:center 55%;
   }
 
-  /* headline aligned with images */
+  /* ✅ headline aligned with image start (same left padding as the images container) */
   .home-title{
-    margin:4px 0 0;
-    padding-left:0;
+    flex:0 0 auto;
+    margin:0;
+    padding-left:0; /* starts with same left edge of image container */
     font-size:44px;
     font-weight:950;
     letter-spacing:-0.02em;
     color:#111;
   }
 
-  /* second image with overlay text+button */
   .home-hero--end{
     position:relative;
     flex:1;
-    min-height:calc(100vh - 340px - 44px - 120px); /* tries to keep both images visible */
-    height:420px;
+    min-height:0;
+    height:auto;
     border-radius:28px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
     overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    transform:none !important;
+  }
+  /* ✅ remove hover effect from second image */
+  .home-hero--end:hover{
+    transform:none !important;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06) !important;
   }
 
+  /* ✅ liquid glass overlay for text (text is black, no black bg) */
   .home-overlay{
     position:absolute;
-    top:22px;
-    left:22px;
-    right:22px;
-    max-width:680px;
+    top:18px;
+    left:18px;
+    right:18px;
+    max-width:720px;
     z-index:2;
 
-    /* ✅ no background */
-    background:transparent;
-  }
+    padding:16px 18px;
+    border-radius:22px;
 
+    background:linear-gradient(
+      135deg,
+      rgba(255,255,255,0.22),
+      rgba(255,255,255,0.10)
+    );
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.22);
+    box-shadow:0 16px 40px rgba(0,0,0,0.12);
+  }
   .home-overlay p{
-    margin:0 0 14px;
+    margin:0 0 12px;
     color:#111;            /* ✅ black text */
     font-size:16px;
     line-height:1.55;
     font-weight:650;
-
-    /* keep it 1–1.5 lines on most screens */
-    max-width:680px;
+    max-width:680px;       /* ✅ keep it 1–1.5 lines instead of 3 */
   }
 
+  /* ✅ liquid glass button */
   .btn-hero{
     display:inline-flex;
     align-items:center;
     justify-content:center;
     width:auto !important;
-    padding:14px 36px;
-    background:#111;      /* ✅ black button */
-    color:#fff;           /* ✅ white text */
+    padding:14px 30px;
     border:none;
     border-radius:999px;
     font-size:14px;
-    font-weight:900;
+    font-weight:950;
     cursor:pointer;
-    box-shadow:0 10px 24px rgba(0,0,0,0.15);
     text-decoration:none;
+    white-space:nowrap;
+
+    color:#111;
+    background:linear-gradient(
+      135deg,
+      rgba(255,255,255,0.30),
+      rgba(255,255,255,0.14)
+    );
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.28);
+    box-shadow:0 14px 30px rgba(0,0,0,0.14);
   }
-  .btn-hero:hover{ transform:translateY(-2px); background:#000; }
+  .btn-hero:hover{ transform:translateY(-2px); }
 
   /* ===== ABOUT VISUAL ===== */
   .about-wrap{ max-width:1000px; }
@@ -334,7 +409,6 @@
     padding:22px 30px 70px;
     flex-grow:1;
     overflow-y:auto;
-    overflow-x:hidden; /* ✅ */
     min-height:0;
   }
 
@@ -698,7 +772,9 @@
     overflow:hidden;
     box-shadow:0 18px 44px rgba(0,0,0,0.18);
   }
-  .site-footer .ft-top{ padding:26px 24px 16px; }
+  .site-footer .ft-top{
+    padding:26px 24px 16px;
+  }
   .site-footer .ft-brand{
     font-weight:950;
     letter-spacing:0.18em;
@@ -728,7 +804,11 @@
     opacity:.85;
     margin-bottom:12px;
   }
-  .ft-text{ color:rgba(255,255,255,0.82); font-size:13px; line-height:1.7; }
+  .ft-text{
+    color:rgba(255,255,255,0.82);
+    font-size:13px;
+    line-height:1.7;
+  }
   .ft-links a{
     display:block;
     padding:10px 0;
@@ -764,36 +844,6 @@
     font-weight:800;
   }
 
-  /* ===== Map 3D popup over map (BACK ON SCREEN) ===== */
-  #map3dOverlay{
-    position:absolute;
-    left:50%;
-    top:50%;
-    width:50%;
-    max-width:560px;
-    aspect-ratio:1 / 1;
-    z-index:35;              /* above map canvas + nav */
-    pointer-events:none;
-    display:none;
-
-    /* center (-50,-50) then: 20% left => -70%
-       and 50% up based on its size => -100% */
-    transform:translate(-70%, -100%);
-  }
-  #map3dOverlay.show{ display:block; }
-
-  #map3dOverlay .map3d-box{
-    width:100%;
-    height:100%;
-    border-radius:26px;
-    overflow:hidden;
-    background:rgba(255,255,255,0.18);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    border:1px solid rgba(255,255,255,0.14);
-    box-shadow:0 22px 55px rgba(0,0,0,0.25);
-  }
-
   @media (max-width:900px){
     .layout{ flex-direction:column; }
     #map{ width:100%; height:45vh; flex:none; }
@@ -808,11 +858,15 @@
     .side-nav{ display:none; }
     .mobile-nav{ display:flex; }
     .section-scroll{ padding:22px; }
-    .home-wrap{ padding:0 22px 22px; gap:14px; }
-    .home-hero--full{ height:240px; }
+    .home-scroll{ padding:0; }
+
+    /* ✅ mobile home fits the screen too */
+    .home-wrap{ padding:0 22px 18px; gap:12px; height:100vh; }
+    .home-hero--full{ height:30vh; flex:0 0 30vh; }
     .home-title{ font-size:34px; }
-    .home-hero--end{ height:320px; min-height:320px; }
-    .home-overlay{ top:16px; left:16px; right:16px; }
+    .home-hero--end{ flex:1; min-height:0; height:auto; }
+    .home-overlay{ top:14px; left:14px; right:14px; padding:14px 14px; }
+
     .shop-head{ padding:18px 18px; }
     .shop-body{ padding:18px 18px 70px; }
     .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
@@ -825,14 +879,11 @@
     .proc-line, .proc-dot{ left:26px; }
     .solo-tabs-bar{ margin:6px 0 10px; }
     .about-grid{ grid-template-columns:1fr; }
+
     .site-footer .ft-grid{ grid-template-columns:1fr; }
 
-    /* popup still works on mobile map */
-    #map3dOverlay{
-      width:66%;
-      max-width:none;
-      transform:translate(-70%, -100%);
-    }
+    /* 3D popup still works on mobile */
+    .map-3d-popup{ width:72%; min-width:220px; }
   }
 </style>
 </head>
@@ -840,6 +891,11 @@
 <body>
 <div class="layout">
   <div id="map">
+    <!-- ✅ 3D popup overlay -->
+    <div class="map-3d-popup" id="map3dPopup">
+      <div class="map-3d-popup-inner" id="map3dInner"></div>
+    </div>
+
     <nav class="side-nav" id="sideNav">
       <div class="nav-item" id="navHome">Home</div>
       <div class="nav-item" id="navAbout">About Us</div>
@@ -855,21 +911,6 @@
       <div class="nav-item active" id="mNavGallery">Gallery</div>
       <div class="nav-item" id="mNavContact">Contacts</div>
     </nav>
-
-    <!-- ✅ 3D popup over map -->
-    <div id="map3dOverlay" aria-hidden="true">
-      <div class="map3d-box">
-        <model-viewer
-          id="map3dViewer"
-          src=""
-          camera-controls
-          interaction-prompt="none"
-          shadow-intensity="1"
-          environment-image="neutral"
-          style="width:100%;height:100%;background:transparent;">
-        </model-viewer>
-      </div>
-    </div>
   </div>
 
   <aside class="shop" id="shop">
@@ -878,23 +919,24 @@
     <section id="sect-home" class="app-section">
       <div class="section-scroll home-scroll">
         <div class="home-wrap">
-          <!-- first image -->
+
           <div class="home-hero home-hero--full">
             <img
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
-              alt="FNN ART Logo"
+              alt="FNN ART Hero"
             />
           </div>
 
-          <!-- headline aligned with image start -->
+          <!-- ✅ headline aligned with images -->
           <h1 class="home-title">Welcome to FNN</h1>
 
-          <!-- second image with overlay text/button (TOP of image) -->
           <div class="home-hero home-hero--end">
             <img
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69416b180e44275100eb5de3_Gemini_Generated_Image_xkyrarxkyrarxkyr%20(1).png"
               alt="FNN Visual"
             />
+
+            <!-- ✅ text + button on top of the image -->
             <div class="home-overlay">
               <p>
                 A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
@@ -902,6 +944,7 @@
               <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -1016,7 +1059,6 @@
       </header>
 
       <div class="shop-body">
-        <!-- ✅ will render all 12 items again -->
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
@@ -1216,6 +1258,11 @@
 
     if(id === 'sect-home'){
       map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
+      hideMapPopup();
+    }
+
+    if(id !== 'sect-gallery'){
+      hideMapPopup();
     }
 
     if(id === 'sect-services'){
@@ -1268,45 +1315,67 @@
   let currentMarker = null;
   let rotationFrame = null;
 
-  /* ✅ Map 3D popup control */
-  const map3dOverlay = document.getElementById("map3dOverlay");
-  const map3dViewer  = document.getElementById("map3dViewer");
-  let map3dRAF = null;
-  let currentProduct = null;
+  /* ===== Map popup 3D logic ===== */
+  const popupEl = document.getElementById("map3dPopup");
+  const popupInner = document.getElementById("map3dInner");
+  let popupViewer = null;
+  let popupActive = false;
+  const POPUP_BASE_AZIMUTH = 45;   // starting angle
 
-  function showMap3DForProduct(p){
-    if(!map3dOverlay || !map3dViewer || !p) return;
+  function showMapPopupForProduct(p){
+    if(!popupEl || !popupInner) return;
+    const safeUrl = (p.model || "").replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
+    popupInner.innerHTML = `
+      <model-viewer
+        id="popupViewer3d"
+        src="${safeUrl}"
+        camera-controls="false"
+        auto-rotate="false"
+        shadow-intensity="0.9"
+        environment-image="neutral"
+        exposure="1"
+        alt="${p.name || '3D'}">
+      </model-viewer>
+    `;
+    popupViewer = popupInner.querySelector("#popupViewer3d");
+    popupActive = true;
 
-    const safeUrl = (p.model || "")
-      .replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
+    // show
+    popupEl.classList.add("show");
 
-    map3dViewer.src = safeUrl;
+    // keep orbit synced with map bearing (same direction as map)
+    syncPopupOrbit();
+  }
 
-    map3dOverlay.classList.add("show");
-    map3dOverlay.setAttribute("aria-hidden","false");
+  function hideMapPopup(){
+    popupActive = false;
+    if(popupEl) popupEl.classList.remove("show");
+    if(popupInner) popupInner.innerHTML = "";
+    popupViewer = null;
+  }
 
-    if(map3dRAF) cancelAnimationFrame(map3dRAF);
+  function syncPopupOrbit(){
+    if(!popupActive || !popupViewer) return;
+    const bearing = map.getBearing(); // increases as map rotates
+    const az = POPUP_BASE_AZIMUTH + bearing; // ✅ same direction
+    popupViewer.cameraOrbit = `${az}deg 75deg 3m`;
+  }
 
+  function startPopupSyncLoop(){
+    // runs while map is rotating
     const tick = () => {
-      const b = map.getBearing();
-      /* ✅ fixed direction: opposite was wrong, so we flipped sign */
-      map3dViewer.cameraOrbit = `${-b}deg 75deg 3m`;
-      map3dRAF = requestAnimationFrame(tick);
+      if(!popupActive) return;
+      syncPopupOrbit();
+      requestAnimationFrame(tick);
     };
-    tick();
+    requestAnimationFrame(tick);
   }
 
-  function hideMap3D(){
-    if(map3dRAF) cancelAnimationFrame(map3dRAF);
-    map3dRAF = null;
-    if(map3dOverlay){
-      map3dOverlay.classList.remove("show");
-      map3dOverlay.setAttribute("aria-hidden","true");
-    }
-  }
-
-  function gotoStore(store){
+  function gotoStore(store, productForPopup){
     if(!store) return;
+
+    hideMapPopup(); // ensure hidden until zoom finishes
+
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     if(currentMarker) currentMarker.remove();
 
@@ -1330,9 +1399,10 @@
       duration: 9000
     });
 
-    /* ✅ show 3D ONLY after zoom finishes */
+    // ✅ popup appears only AFTER zoom finishes
     map.once('moveend', () => {
-      showMap3DForProduct(currentProduct);
+      showMapPopupForProduct(productForPopup);
+      startPopupSyncLoop();
 
       function rotate(){
         map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
@@ -1542,8 +1612,6 @@
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
 
-    currentProduct = p; /* ✅ used by map 3D popup */
-
     const soloName = document.getElementById("soloName");
     if(soloName) soloName.textContent = p.name;
 
@@ -1568,7 +1636,9 @@
     if(sideNav) sideNav.classList.add('focused');
 
     renderActiveMedia(p, 'images');
-    gotoStore(p.store);
+
+    // ✅ zoom to location and show popup AFTER zoom finishes
+    gotoStore(p.store, p);
   }
 
   function closeSolo(){
@@ -1580,9 +1650,9 @@
     const sideNav = document.querySelector('.side-nav');
     if(sideNav) sideNav.classList.remove('focused');
 
-    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
-    hideMap3D(); /* ✅ hide popup */
+    hideMapPopup();
 
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
     const isMobileReset = window.innerWidth < 900;
     map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
   }
@@ -1662,7 +1732,7 @@
   }
 
   (function init(){
-    /* ✅ Ensure ALL 12 products render (fix “only 3 products”) */
+    // ✅ ensures you always render all 12 products initially
     render(PRODUCTS);
 
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
