@@ -13,19 +13,15 @@
     --muted:#666;
     --card-radius:32px;
     --btn-radius:30px;
-
-    /* ✅ HOME layout spacing */
-    --home-pad:40px;
-    --home-gap:22px;
   }
 
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  html,body{ height:100%; width:100%; }
   body{
     margin:0; height:100vh; width:100vw;
     background:var(--bg); color:var(--text-main);
     font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    overflow:hidden;
-    overflow-x:hidden; /* ✅ prevent right-side overflow */
+    overflow:hidden; /* no page overflow */
   }
 
   .layout{ display:flex; height:100%; width:100%; overflow:hidden; }
@@ -112,8 +108,7 @@
     position:relative;
     z-index:5;
     box-shadow:-10px 0 40px rgba(0,0,0,0.05);
-    overflow:hidden;
-    overflow-x:hidden; /* ✅ prevent right-side overflow */
+    overflow:hidden;     /* ✅ no overflow */
   }
 
   .app-section{
@@ -124,6 +119,7 @@
     transform:translateY(18px);
     transition:opacity .35s ease, transform .35s ease;
     z-index:1;
+    overflow:hidden; /* ✅ */
   }
   .app-section.active-section{
     opacity:1; visibility:visible; pointer-events:auto;
@@ -133,8 +129,8 @@
   .section-scroll{
     height:100%;
     overflow-y:auto;
+    overflow-x:hidden; /* ✅ no horizontal overflow */
     padding:40px;
-    overflow-x:hidden; /* ✅ prevent right-side overflow */
   }
 
   .section-scroll, .shop-body{
@@ -151,116 +147,106 @@
   h1.sec-title{ font-size:34px; font-weight:900; margin:0 0 12px; letter-spacing:-0.02em; color:#111; }
   p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
-  /* ===========================
-     ✅ HOME (new structure)
-     Full screen: Image1 + title + Image2 + overlay
-     =========================== */
-  .home-scroll{ padding:0; overflow:hidden; }
-  #sect-home .section-scroll{ padding:0; overflow:hidden; }
+  /* ===== HOME (UPDATED LAYOUT) ===== */
+  .home-scroll{ padding:0; overflow-x:hidden; }
 
-  .home-stage{
-    height:100%;
-    width:100%;
+  .home-wrap{
+    min-height:100%;
     display:flex;
     flex-direction:column;
-    padding:var(--home-pad);
-    gap:var(--home-gap);
+    padding:0 40px 40px;
+    gap:18px;
   }
 
-  /* First image */
-  .home-hero-top{
-    height:34vh;                 /* ✅ keeps room for title + second image */
-    min-height:220px;
-    border-radius:28px;
+  /* first image */
+  .home-hero{
+    width:100%;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     overflow:hidden;
     box-shadow:0 18px 40px rgba(0,0,0,0.06);
-    background:#fff;
   }
-  .home-hero-top img{
+  .home-hero img{
     width:100%;
     height:100%;
     object-fit:cover;
     display:block;
-    object-position:center center; /* ✅ as you requested */
+  }
+  .home-hero--full{
+    height:340px;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    margin:0;
+  }
+  .home-hero--full img{
+    object-position:center center; /* ✅ your requested edit */
   }
 
-  /* Title aligned with image edge */
+  /* headline aligned with images */
   .home-title{
-    margin:0;
-    padding-left:0; /* stage already padded */
-    padding-right:0;
-    font-size:42px;
+    margin:4px 0 0;
+    padding-left:0;
+    font-size:44px;
     font-weight:950;
     letter-spacing:-0.02em;
     color:#111;
-    line-height:1.05;
   }
 
-  /* Second image takes remaining height */
-  .home-hero-bottom{
-    flex:1;
-    min-height:240px;
-    border-radius:28px;
-    overflow:hidden;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  /* second image with overlay text+button */
+  .home-hero--end{
     position:relative;
-    background:#fff;
-  }
-  .home-hero-bottom img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    object-position:center center;
+    flex:1;
+    min-height:calc(100vh - 340px - 44px - 120px); /* tries to keep both images visible */
+    height:420px;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    overflow:hidden;
   }
 
-  /* Text directly over image (NO dark background) */
   .home-overlay{
     position:absolute;
-    left:var(--home-pad);
-    top:50%;
-    transform:translateY(-50%);
-    width:min(620px, 82%);
-    padding:0;
-    background:none;
-    border:none;
-    box-shadow:none;
-    backdrop-filter:none;
-    color:#111;
+    top:22px;
+    left:22px;
+    right:22px;
+    max-width:680px;
+    z-index:2;
+
+    /* ✅ no background */
+    background:transparent;
   }
 
-  /* Text: black, max 2 lines */
   .home-overlay p{
-    margin:0 0 16px;
-    font-size:15px;
-    line-height:1.45;
-    color:#111;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
+    margin:0 0 14px;
+    color:#111;            /* ✅ black text */
+    font-size:16px;
+    line-height:1.55;
+    font-weight:650;
+
+    /* keep it 1–1.5 lines on most screens */
+    max-width:680px;
   }
 
-  /* Button: black bg, white text */
   .btn-hero{
-    display:inline-block;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto !important;
     padding:14px 36px;
-    background:#111;
-    color:#fff;
+    background:#111;      /* ✅ black button */
+    color:#fff;           /* ✅ white text */
     border:none;
     border-radius:999px;
     font-size:14px;
     font-weight:900;
     cursor:pointer;
-    box-shadow:0 12px 26px rgba(0,0,0,0.25);
-    transition:transform .2s ease, background .2s ease;
+    box-shadow:0 10px 24px rgba(0,0,0,0.15);
+    text-decoration:none;
   }
-  .btn-hero:hover{
-    transform:translateY(-2px);
-    background:#000;
-  }
+  .btn-hero:hover{ transform:translateY(-2px); background:#000; }
 
-  /* ===== ABOUT VISUAL (same content, better layout) ===== */
+  /* ===== ABOUT VISUAL ===== */
   .about-wrap{ max-width:1000px; }
   .about-lead{
     font-size:16px;
@@ -348,6 +334,7 @@
     padding:22px 30px 70px;
     flex-grow:1;
     overflow-y:auto;
+    overflow-x:hidden; /* ✅ */
     min-height:0;
   }
 
@@ -702,6 +689,7 @@
   .modal-overlay.open .modal-box{ transform:translateY(0); }
   .close-modal{ position:absolute; top:16px; right:16px; background:none; border:none; font-size:22px; color:#999; cursor:pointer; }
 
+  /* Footer */
   .site-footer{
     margin-top:28px;
     background:#0b0b0b;
@@ -710,9 +698,7 @@
     overflow:hidden;
     box-shadow:0 18px 44px rgba(0,0,0,0.18);
   }
-  .site-footer .ft-top{
-    padding:26px 24px 16px;
-  }
+  .site-footer .ft-top{ padding:26px 24px 16px; }
   .site-footer .ft-brand{
     font-weight:950;
     letter-spacing:0.18em;
@@ -742,11 +728,7 @@
     opacity:.85;
     margin-bottom:12px;
   }
-  .ft-text{
-    color:rgba(255,255,255,0.82);
-    font-size:13px;
-    line-height:1.7;
-  }
+  .ft-text{ color:rgba(255,255,255,0.82); font-size:13px; line-height:1.7; }
   .ft-links a{
     display:block;
     padding:10px 0;
@@ -782,6 +764,36 @@
     font-weight:800;
   }
 
+  /* ===== Map 3D popup over map (BACK ON SCREEN) ===== */
+  #map3dOverlay{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:50%;
+    max-width:560px;
+    aspect-ratio:1 / 1;
+    z-index:35;              /* above map canvas + nav */
+    pointer-events:none;
+    display:none;
+
+    /* center (-50,-50) then: 20% left => -70%
+       and 50% up based on its size => -100% */
+    transform:translate(-70%, -100%);
+  }
+  #map3dOverlay.show{ display:block; }
+
+  #map3dOverlay .map3d-box{
+    width:100%;
+    height:100%;
+    border-radius:26px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.18);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.14);
+    box-shadow:0 22px 55px rgba(0,0,0,0.25);
+  }
+
   @media (max-width:900px){
     .layout{ flex-direction:column; }
     #map{ width:100%; height:45vh; flex:none; }
@@ -796,16 +808,31 @@
     .side-nav{ display:none; }
     .mobile-nav{ display:flex; }
     .section-scroll{ padding:22px; }
+    .home-wrap{ padding:0 22px 22px; gap:14px; }
+    .home-hero--full{ height:240px; }
+    .home-title{ font-size:34px; }
+    .home-hero--end{ height:320px; min-height:320px; }
+    .home-overlay{ top:16px; left:16px; right:16px; }
+    .shop-head{ padding:18px 18px; }
+    .shop-body{ padding:18px 18px 70px; }
+    .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
+    .card{ padding:16px 12px; border-radius:24px; }
+    .card-media{ height:118px; }
+    .services-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .proc-step{ grid-template-columns:1fr; }
+    .proc-illus{ height:100px; }
+    .process-grid{ grid-template-columns:54px 1fr; }
+    .proc-line, .proc-dot{ left:26px; }
+    .solo-tabs-bar{ margin:6px 0 10px; }
     .about-grid{ grid-template-columns:1fr; }
     .site-footer .ft-grid{ grid-template-columns:1fr; }
 
-    /* ✅ HOME mobile */
-    :root{ --home-pad:22px; }
-    .home-stage{ padding:var(--home-pad); gap:16px; }
-    .home-title{ font-size:30px; }
-    .home-hero-top{ height:26vh; min-height:170px; }
-    .home-overlay{ width:92%; left:var(--home-pad); }
-    .home-overlay p{ font-size:14px; }
+    /* popup still works on mobile map */
+    #map3dOverlay{
+      width:66%;
+      max-width:none;
+      transform:translate(-70%, -100%);
+    }
   }
 </style>
 </head>
@@ -828,33 +855,46 @@
       <div class="nav-item active" id="mNavGallery">Gallery</div>
       <div class="nav-item" id="mNavContact">Contacts</div>
     </nav>
+
+    <!-- ✅ 3D popup over map -->
+    <div id="map3dOverlay" aria-hidden="true">
+      <div class="map3d-box">
+        <model-viewer
+          id="map3dViewer"
+          src=""
+          camera-controls
+          interaction-prompt="none"
+          shadow-intensity="1"
+          environment-image="neutral"
+          style="width:100%;height:100%;background:transparent;">
+        </model-viewer>
+      </div>
+    </div>
   </div>
 
   <aside class="shop" id="shop">
 
-    <!-- ✅ HOME (UPDATED) -->
+    <!-- HOME -->
     <section id="sect-home" class="app-section">
       <div class="section-scroll home-scroll">
-        <div class="home-stage">
-
-          <!-- First image -->
-          <div class="home-hero-top">
+        <div class="home-wrap">
+          <!-- first image -->
+          <div class="home-hero home-hero--full">
             <img
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/693e9cd364bca27486a365c1_WhatsApp%20Image%202025-12-13%20at%2023.26.34_6e0cb159.jpg"
               alt="FNN ART Logo"
             />
           </div>
 
-          <!-- Headline aligned to image edge -->
+          <!-- headline aligned with image start -->
           <h1 class="home-title">Welcome to FNN</h1>
 
-          <!-- Second image full remaining height + overlay text/button -->
-          <div class="home-hero-bottom">
+          <!-- second image with overlay text/button (TOP of image) -->
+          <div class="home-hero home-hero--end">
             <img
-              src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69401b0fa9be7e7fed2b1c21_Gemini_Generated_Image_9jhkjr9jhkjr9jhk%20(1).png"
+              src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69416b180e44275100eb5de3_Gemini_Generated_Image_xkyrarxkyrarxkyr%20(1).png"
               alt="FNN Visual"
             />
-
             <div class="home-overlay">
               <p>
                 A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
@@ -862,7 +902,6 @@
               <button class="btn-hero" onclick="switchSection('sect-gallery')">Explore Collection</button>
             </div>
           </div>
-
         </div>
       </div>
     </section>
@@ -977,6 +1016,7 @@
       </header>
 
       <div class="shop-body">
+        <!-- ✅ will render all 12 items again -->
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
@@ -1228,6 +1268,43 @@
   let currentMarker = null;
   let rotationFrame = null;
 
+  /* ✅ Map 3D popup control */
+  const map3dOverlay = document.getElementById("map3dOverlay");
+  const map3dViewer  = document.getElementById("map3dViewer");
+  let map3dRAF = null;
+  let currentProduct = null;
+
+  function showMap3DForProduct(p){
+    if(!map3dOverlay || !map3dViewer || !p) return;
+
+    const safeUrl = (p.model || "")
+      .replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/ /g,'%20');
+
+    map3dViewer.src = safeUrl;
+
+    map3dOverlay.classList.add("show");
+    map3dOverlay.setAttribute("aria-hidden","false");
+
+    if(map3dRAF) cancelAnimationFrame(map3dRAF);
+
+    const tick = () => {
+      const b = map.getBearing();
+      /* ✅ fixed direction: opposite was wrong, so we flipped sign */
+      map3dViewer.cameraOrbit = `${-b}deg 75deg 3m`;
+      map3dRAF = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function hideMap3D(){
+    if(map3dRAF) cancelAnimationFrame(map3dRAF);
+    map3dRAF = null;
+    if(map3dOverlay){
+      map3dOverlay.classList.remove("show");
+      map3dOverlay.setAttribute("aria-hidden","true");
+    }
+  }
+
   function gotoStore(store){
     if(!store) return;
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
@@ -1253,7 +1330,10 @@
       duration: 9000
     });
 
+    /* ✅ show 3D ONLY after zoom finishes */
     map.once('moveend', () => {
+      showMap3DForProduct(currentProduct);
+
       function rotate(){
         map.rotateTo((map.getBearing()+0.05)%360, { duration:0 });
         rotationFrame = requestAnimationFrame(rotate);
@@ -1416,7 +1496,16 @@
   const PRODUCTS = [
     { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
     { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
-    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } }
+    { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
+    { id:"item-4", name:"Striped Console", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a8659147dcb3f38ed_Screenshot_2025-11-23_142604-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1763910785694_base%20(4).glb", specs:{ mat:"Resin & Paint", dim:"100x60x140" }, store:{ name:"Tokyo Harajuku", coords:[139.7034,35.6719] }, artist:{ name:"Kenji Sato", role:"Pop Artist, Tokyo", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Kenji blurs the lines between collectible toys and functional high-end furniture." } },
+    { id:"item-5", name:"Radiance Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(8).compressed.glb", specs:{ mat:"Ebony & Gold", dim:"200x55x85" }, store:{ name:"Dubai Design Dist", coords:[55.2962,25.2769] }, artist:{ name:"Zara Al-Fayed", role:"Luxury Artisan, Dubai", img:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80", bio:"Zara's work is a fusion of traditional Middle Eastern patterns and ultra-modern luxury." } },
+    { id:"item-6", name:"Modular Unit", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a36286c4236e924d2_Screenshot_2025-11-23_142346-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%286%29.glb", specs:{ mat:"Ceramic Composite", dim:"120x120x120" }, store:{ name:"Copenhagen", coords:[12.5683,55.6761] }, artist:{ name:"Erik Jensen", role:"Minimalist, Copenhagen", img:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80", bio:"Erik believes in infinite adaptability. His modular systems grow with the user." } },
+    { id:"item-7", name:"Lunar Chest", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620c47e4acac61094bf_Screenshot_2025-11-24_171517-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071266806_base%20(15).glb", specs:{ mat:"Oak & Silver", dim:"110x55x130" }, store:{ name:"London Tate Modern", coords:[-0.099,51.507] }, artist:{ name:"Oliver Sterling", role:"Modernist, London", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Oliver explores celestial themes using industrial materials." } },
+    { id:"item-8", name:"Obsidian Block", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620636bab60cf866e4e_Screenshot_2025-11-24_171459-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071270533_base%20(14).glb", specs:{ mat:"Blackened Steel", dim:"200x60x80" }, store:{ name:"Berlin Mitte", coords:[13.405,52.520] }, artist:{ name:"Klaus Weber", role:"Architect, Berlin", img:"https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80", bio:"Klaus brings brutalist architecture principles into interior design." } },
+    { id:"item-9", name:"Azure Tower", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620466eab1b5ac247c4_Screenshot_2025-11-24_171450-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071273205_base%20(13).glb", specs:{ mat:"Blue Lacquer", dim:"80x80x180" }, store:{ name:"Barcelona Eixample", coords:[2.168,41.387] }, artist:{ name:"Sofia Miró", role:"Colorist, Barcelona", img:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80", bio:"Sofia's work is a vibrant homage to the Mediterranean spirit." } },
+    { id:"item-10", name:"Solar Credenza", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/692486204f857514d1d4b590_Screenshot_2025-11-24_171432-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071348834_base%20(12).glb", specs:{ mat:"Teak & Brass", dim:"220x50x75" }, store:{ name:"Mexico City Polanco", coords:[-99.19,19.43] }, artist:{ name:"Diego Rivera", role:"Carpenter, CDMX", img:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80", bio:"Diego fuses Aztec geometry with mid-century modern lines." } },
+    { id:"item-11", name:"Nordic Wave", category:"decor", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620b770e284e36cee5d_Screenshot_2025-11-24_171419-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071190268_base%20(11).glb", specs:{ mat:"Ash Wood", dim:"140x40x90" }, store:{ name:"Stockholm Södermalm", coords:[18.068,59.329] }, artist:{ name:"Elina Vinter", role:"Designer, Stockholm", img:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80", bio:"Elina captures the fluidity of water in solid wood forms." } },
+    { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
   ];
 
   const grid = document.getElementById("grid");
@@ -1452,6 +1541,8 @@
   function openSolo(p){
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
+
+    currentProduct = p; /* ✅ used by map 3D popup */
 
     const soloName = document.getElementById("soloName");
     if(soloName) soloName.textContent = p.name;
@@ -1490,6 +1581,8 @@
     if(sideNav) sideNav.classList.remove('focused');
 
     if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
+    hideMap3D(); /* ✅ hide popup */
+
     const isMobileReset = window.innerWidth < 900;
     map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
   }
@@ -1523,10 +1616,13 @@
 
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
+
       const centers = steps.map(step => step.offsetTop + (step.offsetHeight / 2));
       if(centers.length < 2) return;
+
       minY = centers[0];
       maxY = centers[centers.length - 1];
+
       line.style.top = `${minY}px`;
       line.style.height = `${Math.max(0, (maxY - minY))}px`;
       line.style.bottom = "auto";
@@ -1535,8 +1631,10 @@
     const moveDot = () => {
       const railRect = rail.getBoundingClientRect();
       const scrollerRect = scroller.getBoundingClientRect();
+
       const viewportCenter = scrollerRect.top + (scroller.clientHeight / 2);
       const relY = viewportCenter - railRect.top;
+
       const y = Math.min(maxY, Math.max(minY, relY));
       dot.style.top = `${y}px`;
     };
@@ -1564,6 +1662,7 @@
   }
 
   (function init(){
+    /* ✅ Ensure ALL 12 products render (fix “only 3 products”) */
     render(PRODUCTS);
 
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
