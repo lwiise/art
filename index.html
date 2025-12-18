@@ -261,14 +261,14 @@
     grid-template-columns: 220px minmax(0, 1fr); /* text left, image right */
     gap:28px;
     align-items:end;
+    align-content:end;
   }
 
   /* ✅ glass liquid bg for text+button */
   .home-copy{
     align-self:end;
     justify-self:start;
-    margin-bottom:var(--side-nav-offset);
-    margin-top:0;
+    margin:0;
     width:100%;
     display:flex;
     align-items:stretch;
@@ -278,7 +278,7 @@
     height:var(--side-nav-height);
     min-height:var(--side-nav-height);
     max-height:var(--side-nav-height);
-    padding:18px 20px;
+    padding:10px 20px 18px;
     border-radius:18px;
     background:#e4e4e3;
     border:1px solid rgba(255,255,255,0.45);
@@ -287,11 +287,11 @@
     -webkit-backdrop-filter:blur(16px);
     display:flex;
     flex-direction:column;
-    justify-content:flex-end;
+    justify-content:flex-start;
   }
   .home-glass p{
-    margin:0 0 18px;
-    color:#6b6b6b;
+    margin:0 0 16px;
+    color:#111;
     font-size:15px;
     line-height:1.6;
     max-width:34ch;
