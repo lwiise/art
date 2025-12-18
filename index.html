@@ -260,14 +260,14 @@
     display:grid;
     grid-template-columns: 220px minmax(0, 1fr); /* text left, image right */
     gap:28px;
-    align-items:center;
+    align-items:end;
   }
 
   /* ✅ glass liquid bg for text+button */
   .home-copy{
-    align-self:start;
+    align-self:end;
     justify-self:start;
-    margin-bottom:0;
+    margin-bottom:var(--side-nav-offset);
     margin-top:0;
     width:100%;
     display:flex;
@@ -278,9 +278,9 @@
     height:var(--side-nav-height);
     padding:18px 20px;
     border-radius:18px;
-    background:rgba(255,255,255,0.22);
-    border:1px solid rgba(255,255,255,0.42);
-    box-shadow:0 18px 30px rgba(0,0,0,0.08);
+    background:rgba(240,240,240,0.35);
+    border:1px solid rgba(255,255,255,0.45);
+    box-shadow:0 16px 28px rgba(0,0,0,0.08);
     backdrop-filter:blur(16px);
     -webkit-backdrop-filter:blur(16px);
     display:flex;
