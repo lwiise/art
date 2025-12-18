@@ -213,10 +213,10 @@
 
   .home-screen{
     height:100%;
-    padding:36px 48px 42px;
+    padding:34px 44px 38px;
     display:flex;
     flex-direction:column;
-    gap:18px;
+    gap:16px;
     overflow:hidden;
     justify-content:space-between;
   }
@@ -230,14 +230,14 @@
   }
 
   .home-top small{
-    color:#9b9b9b;
+    color:#8f8f8f;
     font-weight:600;
     font-size:16px;
-    letter-spacing:0.02em;
+    letter-spacing:0.01em;
   }
 
   .home-logo{
-    width:min(720px, 92%);
+    width:min(780px, 92%);
     height:auto;
     display:block;
     object-fit:contain;
@@ -247,14 +247,15 @@
     flex:1;
     min-height:0;
     display:grid;
-    grid-template-columns: 320px 1fr; /* text left, image right */
-    gap:26px;
+    grid-template-columns: 270px 1fr; /* text left, image right */
+    gap:28px;
     align-items:end;
   }
 
   /* ✅ glass liquid bg for text+button */
   .home-copy{
-    align-self:center;
+    align-self:end;
+    margin-bottom:26px;
     width:100%;
   }
   .home-glass{
@@ -265,28 +266,28 @@
     box-shadow:none;
   }
   .home-glass p{
-    margin:0 0 18px;
-    color:#6f6f6f;
-    font-size:13px;
-    line-height:1.6;
-    max-width:28ch;
+    margin:0 0 16px;
+    color:#6a6a6a;
+    font-size:12px;
+    line-height:1.65;
+    max-width:30ch;
   }
 
   .btn-home{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:12px 26px;
+    padding:11px 24px;
     border-radius:999px;
-    border:1px solid #e0bab6;
+    border:1px solid #ddb6b1;
     cursor:pointer;
     font-weight:700;
-    font-size:12px;
-    color:#5f4442;
-    background:linear-gradient(180deg, #ead1cd, #dfb6b2);
-    box-shadow:0 12px 22px rgba(0,0,0,0.10);
+    font-size:11px;
+    color:#5c4a48;
+    background:linear-gradient(180deg, #e7c7c2, #dcb1ad);
+    box-shadow:0 10px 18px rgba(0,0,0,0.08);
   }
-  .btn-home:hover{ background:linear-gradient(180deg, #e4c3bf, #d8a9a5); }
+  .btn-home:hover{ background:linear-gradient(180deg, #e1bcb7, #d6a5a1); }
 
   .home-illustration-wrap{
     width:100%;
@@ -295,6 +296,8 @@
     align-items:flex-end;
     justify-content:flex-end;
     overflow:hidden;
+    padding-right:10px;
+    padding-bottom:4px;
   }
 
   /* ✅ no hover on second image + fit screen */
@@ -306,8 +309,8 @@
     display:block;
     transition:none !important;
     transform:none !important;
-    max-width:540px;
-    max-height:360px;
+    max-width:620px;
+    max-height:420px;
   }
 
   /* ===== ABOUT VISUAL (unchanged) ===== */
