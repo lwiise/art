@@ -70,6 +70,7 @@
     opacity:0;
     visibility:hidden;
     pointer-events:none;
+    touch-action:none;
     transition:opacity .25s ease;
   }
   .map-3d-popup.show{
@@ -89,6 +90,7 @@
     width:100%;
     height:100%;
     background:transparent;
+    touch-action:none;
   }
 
   .side-nav{
@@ -549,6 +551,115 @@
     color:#111;
   }
 
+  .solo-bottom-tabs{
+    position:absolute;
+    right:22px;
+    bottom:22px;
+    z-index:10;
+    pointer-events:auto;
+  }
+  .solo-bottom-tabs-inner{
+    display:flex;
+    gap:8px;
+    padding:8px;
+    border-radius:999px;
+    background:#bdbdbd;
+  }
+  .solo-bottom-tab{
+    border:none;
+    cursor:pointer;
+    padding:10px 18px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:rgba(255,255,255,0.90);
+    background:rgba(255,255,255,0.18);
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .solo-bottom-tab.active{
+    background:#fff;
+    color:#111;
+  }
+
+  .solo-info-card{
+    position:absolute;
+    left:22px;
+    top:50%;
+    transform:translateY(-50%) translateX(-12px);
+    width:260px;
+    max-width:calc(100% - 44px);
+    padding:16px 16px 14px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.70);
+    border:1px solid rgba(255,255,255,0.72);
+    box-shadow:0 22px 46px rgba(0,0,0,0.12);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .22s ease;
+    z-index:8;
+  }
+  #sect-gallery.solo .solo-frame.info-open .solo-info-card{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(-50%) translateX(0);
+  }
+  .solo-info-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:32px;
+    height:32px;
+    border:none;
+    border-radius:12px;
+    background:rgba(0,0,0,0.06);
+    color:#111;
+    cursor:pointer;
+    font-weight:950;
+    font-size:18px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .solo-info-title{
+    margin:2px 34px 10px 0;
+    font-size:14px;
+    font-weight:950;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#111;
+  }
+  .solo-info-text{
+    font-size:12px;
+    line-height:1.7;
+    color:rgba(0,0,0,0.70);
+    margin-bottom:12px;
+  }
+  .solo-info-meta{
+    display:grid;
+    gap:10px;
+  }
+  .solo-meta-item span{
+    display:block;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:rgba(0,0,0,0.45);
+    margin-bottom:4px;
+  }
+  .solo-meta-item strong{
+    display:block;
+    font-size:13px;
+    font-weight:950;
+    color:#111;
+  }
+
   .img-arrow{
     position:absolute;
     top:50%;
@@ -564,6 +675,7 @@
     justify-content:center;
     font-size:18px;
     backdrop-filter:none;
+    z-index:9;
   }
   .img-arrow.left{ left:16px; }
   .img-arrow.right{ right:16px; }
@@ -938,6 +1050,20 @@
     .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
     .card{ padding:16px 12px; border-radius:24px; }
     .card-media{ height:118px; }
+
+    /* SOLO frame mobile */
+    #sect-gallery.solo .solo-frame-head{ top:14px; left:16px; right:16px; }
+    .solo-bottom-tabs{ left:16px; right:16px; bottom:16px; }
+    .solo-bottom-tabs-inner{ width:100%; justify-content:space-between; }
+    .solo-bottom-tab{ flex:1; padding:10px 10px; font-size:10px; }
+    .solo-info-card{
+      left:16px; right:16px;
+      top:auto; bottom:76px;
+      width:auto; max-width:none;
+      transform:translateY(12px);
+    }
+    #sect-gallery.solo .solo-frame.info-open .solo-info-card{ transform:translateY(0); }
+
     .services-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
     .proc-step{ grid-template-columns:1fr; }
     .proc-illus{ height:100px; }
@@ -1132,6 +1258,26 @@
               <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
             </div>
             <div class="solo-media-container" id="soloMedia"></div>
+
+            <aside class="solo-info-card" id="soloInfoCard" aria-hidden="true">
+              <button class="solo-info-close" type="button" id="soloInfoClose" aria-label="Close info">&times;</button>
+              <div class="solo-info-title" id="soloInfoName">PRODUCT</div>
+              <div class="solo-info-text">Contemporary design meeting functionality.</div>
+              <div class="solo-info-meta">
+                <div class="solo-meta-item"><span>Material</span><strong id="soloInfoMat">--</strong></div>
+                <div class="solo-meta-item"><span>Dimensions</span><strong id="soloInfoDim">--</strong></div>
+                <div class="solo-meta-item"><span>Location</span><strong id="soloInfoLoc">--</strong></div>
+              </div>
+            </aside>
+
+            <div class="solo-bottom-tabs" aria-label="Product options">
+              <div class="solo-bottom-tabs-inner">
+                <button class="solo-bottom-tab" type="button" id="soloInfoBtn" aria-controls="soloInfoCard" aria-expanded="false">INFO</button>
+                <button class="solo-bottom-tab" type="button">RED</button>
+                <button class="solo-bottom-tab" type="button">BLUE</button>
+                <button class="solo-bottom-tab" type="button">CUSTOMS</button>
+              </div>
+            </div>
           </div>
 
           <div class="solo-info-block">
@@ -1399,7 +1545,7 @@
         <model-viewer
           id="popupViewer"
           src="${safeUrl}"
-          camera-controls="false"
+          camera-controls
           interaction-prompt="none"
           shadow-intensity="1"
           environment-image="neutral"
@@ -1413,12 +1559,42 @@
     const viewer = document.getElementById('popupViewer');
     if(!viewer) return;
 
+    let userIsInteracting = false;
+    let userThetaOffsetDeg = 0;
+    let userPhiDeg = 75;
+    let userRadius = '4.5m';
+    const baseHeadingDeg = 45;
+
+    const parseOrbit = (orbit) => {
+      if(!orbit || typeof orbit !== 'string') return null;
+      const m = orbit.trim().match(/^(-?\d*\.?\d+)(deg|rad)\s+(-?\d*\.?\d+)(deg|rad)\s+([^\s]+)$/);
+      if(!m) return null;
+      const toDeg = (v, unit) => unit === 'rad' ? (parseFloat(v) * (180 / Math.PI)) : parseFloat(v);
+      return { thetaDeg: toDeg(m[1], m[2]), phiDeg: toDeg(m[3], m[4]), radius: m[5] };
+    };
+
+    const captureUserOrbit = () => {
+      const o = parseOrbit(viewer.cameraOrbit);
+      if(!o) return;
+      userPhiDeg = o.phiDeg;
+      userRadius = o.radius;
+      userThetaOffsetDeg = o.thetaDeg - (map.getBearing() + baseHeadingDeg);
+    };
+
+    viewer.addEventListener('pointerdown', () => { userIsInteracting = true; }, { passive:true });
+    const endInteraction = () => { userIsInteracting = false; captureUserOrbit(); };
+    viewer.addEventListener('pointerup', endInteraction, { passive:true });
+    viewer.addEventListener('pointercancel', endInteraction, { passive:true });
+    viewer.addEventListener('lostpointercapture', endInteraction, { passive:true });
+
     // ✅ Keep BOX fixed, rotate MODEL inside based on map bearing (and fix “contrary direction” by inverting)
     const sync = () => {
       if(!activePopupProduct) return;
-      const b = map.getBearing(); // Mapbox bearing increases clockwise
-      const az = (-b + 45);       // invert to fix opposite rotation
-      viewer.cameraOrbit = `${az}deg 75deg 4.5m`;
+      if(!userIsInteracting){
+        const b = map.getBearing(); // Mapbox bearing increases clockwise
+        const az = (b + baseHeadingDeg + userThetaOffsetDeg);
+        viewer.cameraOrbit = `${az}deg ${userPhiDeg}deg ${userRadius}`;
+      }
       modelSyncFrame = requestAnimationFrame(sync);
     };
     if(modelSyncFrame){ cancelAnimationFrame(modelSyncFrame); modelSyncFrame=null; }
@@ -1666,6 +1842,20 @@
     });
   }
 
+  function setSoloInfoOpen(isOpen){
+    const frame = document.querySelector('#sect-gallery.solo .solo-frame');
+    if(frame) frame.classList.toggle('info-open', isOpen);
+
+    const btn = document.getElementById('soloInfoBtn');
+    if(btn){
+      btn.classList.toggle('active', isOpen);
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    const card = document.getElementById('soloInfoCard');
+    if(card) card.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  }
+
   function openSolo(p){
     document.getElementById("shop").classList.add("solo");
     document.getElementById("sect-gallery").classList.add("solo");
@@ -1677,6 +1867,17 @@
     document.getElementById("soloStore").textContent = p.store.name;
     document.getElementById("spMat").textContent = p.specs.mat;
     document.getElementById("spDim").textContent = p.specs.dim;
+
+    const soloInfoName = document.getElementById("soloInfoName");
+    if(soloInfoName) soloInfoName.textContent = p.name.toUpperCase();
+    const soloInfoLoc = document.getElementById("soloInfoLoc");
+    if(soloInfoLoc) soloInfoLoc.textContent = p.store.name;
+    const soloInfoMat = document.getElementById("soloInfoMat");
+    if(soloInfoMat) soloInfoMat.textContent = p.specs.mat;
+    const soloInfoDim = document.getElementById("soloInfoDim");
+    if(soloInfoDim) soloInfoDim.textContent = p.specs.dim;
+
+    setSoloInfoOpen(false);
 
     document.getElementById("artistName").textContent = p.artist.name;
     document.getElementById("artistRole").textContent = p.artist.role;
@@ -1700,6 +1901,8 @@
   }
 
   function closeSolo(){
+    setSoloInfoOpen(false);
+
     const shopEl = document.getElementById("shop");
     const galleryEl = document.getElementById("sect-gallery");
     if(shopEl) shopEl.classList.remove("solo");
@@ -1719,6 +1922,13 @@
   safeAdd("btnBack","click",closeSolo);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
+
+  safeAdd("soloInfoBtn","click", () => {
+    const frame = document.querySelector('#sect-gallery.solo .solo-frame');
+    if(!frame) return;
+    setSoloInfoOpen(!frame.classList.contains('info-open'));
+  });
+  safeAdd("soloInfoClose","click", () => setSoloInfoOpen(false));
 
   const modalArtist = document.getElementById("modalArtistOverlay");
   const artistBtnEl = document.getElementById("artistBtn");
