@@ -18,6 +18,7 @@
   }
 
   *,*::before,*::after{ box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  [hidden]{ display:none !important; }
   body{
     margin:0; height:100vh; width:100vw;
     background:#fff; color:var(--text-main);
@@ -610,31 +611,39 @@
     align-items:flex-end;
     gap:10px;
   }
-  .solo-suboptions{
-    width:100%;
+  .solo-tab-wrap{
+    position:relative;
     display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:10px;
   }
-  .solo-suboptions-row{
+  .solo-tab-wrap .solo-bottom-tab{ width:100%; }
+  .solo-popover{
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 10px);
+    transform:translateX(-50%);
     display:flex;
-    gap:8px;
-    padding:8px;
-    border-radius:16px;
-    background:rgba(0,0,0,0.04);
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    padding:10px;
+    border-radius:22px;
+    background:rgba(0,0,0,0.06);
+    box-shadow:0 18px 42px rgba(0,0,0,0.14);
+    z-index:18;
+    pointer-events:auto;
+    max-width:min(420px, calc(100vw - 44px));
   }
   .solo-suboption{
     border:none;
     cursor:pointer;
-    padding:9px 12px;
+    padding:14px 18px;
     border-radius:999px;
     font-weight:950;
     letter-spacing:0.08em;
     text-transform:uppercase;
-    font-size:10px;
+    font-size:12px;
     color:#111;
-    background:rgba(255,255,255,0.70);
+    background:rgba(255,255,255,0.92);
     transition:all .18s ease;
   }
   .solo-suboption.active{
@@ -1207,9 +1216,9 @@
     .solo-foot-right{ width:100%; align-items:stretch; }
     .solo-bottom-tabs-inner{ width:100%; justify-content:space-between; }
     .solo-bottom-tab{ flex:1; padding:10px 8px; font-size:10px; }
-    .solo-suboptions{ width:100%; align-items:stretch; }
-    .solo-suboptions-row{ width:100%; justify-content:space-between; }
-    .solo-suboption{ flex:1; text-align:center; padding:9px 8px; }
+    .solo-tab-wrap{ flex:1; }
+    .solo-popover{ gap:8px; padding:10px; }
+    .solo-suboption{ flex:1; text-align:center; padding:12px 10px; font-size:11px; }
     .solo-info-card{
       left:16px; right:16px;
       top:auto; bottom:128px;
@@ -1456,27 +1465,30 @@
                 <div class="solo-bottom-tabs" aria-label="Product options">
                   <div class="solo-bottom-tabs-inner">
                     <button class="solo-bottom-tab" type="button" id="soloInfoBtn" aria-controls="soloInfoCard" aria-expanded="false">INFO</button>
-                    <button class="solo-bottom-tab" type="button" id="soloColorBtn" aria-expanded="false">COLOR</button>
-                    <button class="solo-bottom-tab" type="button" id="soloSizeBtn" aria-expanded="false">SIZE</button>
-                    <button class="solo-bottom-tab" type="button" id="soloCustomsBtn" aria-controls="soloConfig" aria-expanded="false">CUSTOMS</button>
-                  </div>
-                </div>
 
-                <div class="solo-suboptions" id="soloSubOptions" hidden>
-                  <div class="solo-suboptions-row" id="soloColorOptions" hidden>
-                    <button class="solo-suboption" type="button" data-color="Red">RED</button>
-                    <button class="solo-suboption" type="button" data-color="Blue">BLUE</button>
-                    <button class="solo-suboption" type="button" data-color="Sand">SAND</button>
-                  </div>
-                  <div class="solo-suboptions-row" id="soloSizeOptions" hidden>
-                    <button class="solo-suboption" type="button" data-size="Small">SMALL</button>
-                    <button class="solo-suboption" type="button" data-size="Medium">MEDIUM</button>
-                    <button class="solo-suboption" type="button" data-size="Large">LARGE</button>
+                    <div class="solo-tab-wrap">
+                      <button class="solo-bottom-tab" type="button" id="soloColorBtn" aria-expanded="false">COLOR</button>
+                      <div class="solo-popover" id="soloColorPopover" hidden>
+                        <button class="solo-suboption" type="button" data-color="Red">RED</button>
+                        <button class="solo-suboption" type="button" data-color="Blue">BLUE</button>
+                        <button class="solo-suboption" type="button" data-color="Sand">SAND</button>
+                      </div>
+                    </div>
+
+                    <div class="solo-tab-wrap">
+                      <button class="solo-bottom-tab" type="button" id="soloSizeBtn" aria-expanded="false">SIZE</button>
+                      <div class="solo-popover" id="soloSizePopover" hidden>
+                        <button class="solo-suboption" type="button" data-size="Small">SMALL</button>
+                        <button class="solo-suboption" type="button" data-size="Medium">MEDIUM</button>
+                        <button class="solo-suboption" type="button" data-size="Large">LARGE</button>
+                      </div>
+                    </div>
+
+                    <button class="solo-bottom-tab" type="button" id="soloCustomsBtn" aria-controls="soloConfig" aria-expanded="false">CUSTOMS</button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
           </div>
 
           <div class="solo-info-block">
@@ -2051,28 +2063,26 @@
         el.classList.toggle('active', !!value && v === value);
       });
     };
-    setActive('#soloColorOptions .solo-suboption', 'data-color', soloSelectedColor);
+    setActive('#soloColorPopover .solo-suboption', 'data-color', soloSelectedColor);
     setActive('#soloConfigColors .solo-config-option', 'data-color', soloSelectedColor);
-    setActive('#soloSizeOptions .solo-suboption', 'data-size', soloSelectedSize);
+    setActive('#soloSizePopover .solo-suboption', 'data-size', soloSelectedSize);
     setActive('#soloConfigSizes .solo-config-option', 'data-size', soloSelectedSize);
 
     const summary = document.getElementById('soloConfigSummary');
     if(summary) summary.textContent = `Selected: ${soloSelectedColor || '--'} / ${soloSelectedSize || '--'}`;
   }
 
-  function setSoloSubpanel(panel){
-    const subWrap = document.getElementById('soloSubOptions');
-    const colorRow = document.getElementById('soloColorOptions');
-    const sizeRow = document.getElementById('soloSizeOptions');
+  function setSoloOptionPopover(panel){
+    const colorPop = document.getElementById('soloColorPopover');
+    const sizePop = document.getElementById('soloSizePopover');
     const colorBtn = document.getElementById('soloColorBtn');
     const sizeBtn = document.getElementById('soloSizeBtn');
 
     const showColor = panel === 'color';
     const showSize = panel === 'size';
 
-    if(subWrap) subWrap.hidden = !(showColor || showSize);
-    if(colorRow) colorRow.hidden = !showColor;
-    if(sizeRow) sizeRow.hidden = !showSize;
+    if(colorPop) colorPop.hidden = !showColor;
+    if(sizePop) sizePop.hidden = !showSize;
 
     if(colorBtn){
       colorBtn.classList.toggle('active', showColor);
@@ -2117,7 +2127,7 @@
     document.getElementById("sect-gallery").classList.add("solo");
 
     setSoloInfoOpen(false);
-    setSoloSubpanel(null);
+    setSoloOptionPopover(null);
     setSoloCustomizerOpen(false);
     soloSelectedColor = "Red";
     soloSelectedSize = "Medium";
@@ -2166,7 +2176,7 @@
 
   function closeSolo(){
     setSoloInfoOpen(false);
-    setSoloSubpanel(null);
+    setSoloOptionPopover(null);
     setSoloCustomizerOpen(false);
 
     const shopEl = document.getElementById("shop");
@@ -2192,7 +2202,7 @@
   safeAdd("soloInfoBtn","click", () => {
     const frame = document.querySelector('#sect-gallery.solo .solo-frame');
     if(!frame) return;
-    setSoloSubpanel(null);
+    setSoloOptionPopover(null);
     setSoloCustomizerOpen(false);
     setSoloInfoOpen(!frame.classList.contains('info-open'));
   });
@@ -2203,7 +2213,7 @@
     setSoloCustomizerOpen(false);
     const colorBtn = document.getElementById('soloColorBtn');
     if(!colorBtn) return;
-    setSoloSubpanel(colorBtn.classList.contains('active') ? null : 'color');
+    setSoloOptionPopover(colorBtn.classList.contains('active') ? null : 'color');
   });
 
   safeAdd("soloSizeBtn","click", () => {
@@ -2211,30 +2221,41 @@
     setSoloCustomizerOpen(false);
     const sizeBtn = document.getElementById('soloSizeBtn');
     if(!sizeBtn) return;
-    setSoloSubpanel(sizeBtn.classList.contains('active') ? null : 'size');
+    setSoloOptionPopover(sizeBtn.classList.contains('active') ? null : 'size');
   });
 
   safeAdd("soloCustomsBtn","click", () => {
     const frame = document.querySelector('#sect-gallery.solo .solo-frame');
     if(!frame) return;
     setSoloInfoOpen(false);
-    setSoloSubpanel(null);
+    setSoloOptionPopover(null);
     setSoloCustomizerOpen(!frame.classList.contains('customize-open'));
   });
   safeAdd("soloConfigClose","click", () => setSoloCustomizerOpen(false));
 
-  const subOptions = document.getElementById('soloSubOptions');
-  if(subOptions && subOptions.dataset.bound !== "1"){
-    subOptions.dataset.bound = "1";
-    subOptions.addEventListener('click', (e) => {
+  const soloColorPopover = document.getElementById('soloColorPopover');
+  if(soloColorPopover && soloColorPopover.dataset.bound !== "1"){
+    soloColorPopover.dataset.bound = "1";
+    soloColorPopover.addEventListener('click', (e) => {
       const btn = e.target.closest('.solo-suboption');
       if(!btn) return;
       const color = btn.getAttribute('data-color');
-      const size = btn.getAttribute('data-size');
       if(color) soloSelectedColor = color;
+      syncSoloSelections();
+      setSoloOptionPopover(null);
+    });
+  }
+
+  const soloSizePopover = document.getElementById('soloSizePopover');
+  if(soloSizePopover && soloSizePopover.dataset.bound !== "1"){
+    soloSizePopover.dataset.bound = "1";
+    soloSizePopover.addEventListener('click', (e) => {
+      const btn = e.target.closest('.solo-suboption');
+      if(!btn) return;
+      const size = btn.getAttribute('data-size');
       if(size) soloSelectedSize = size;
       syncSoloSelections();
-      setSoloSubpanel(null);
+      setSoloOptionPopover(null);
     });
   }
 
