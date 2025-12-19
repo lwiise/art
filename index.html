@@ -264,11 +264,9 @@
     display:grid;
     grid-template-columns: 220px minmax(0, 1fr); /* text left, image right */
     gap:28px;
-    align-items:center;
-    align-content:center;
+    align-items:end;
+    align-content:end;
     justify-items:center;
-    margin-top:auto;
-    margin-bottom:auto;
   }
 
   /* ✅ glass liquid bg for text+button */
@@ -287,11 +285,11 @@
     max-height:var(--side-nav-height);
     padding:18px 22px;
     border-radius:0 18px 18px 0;
-    background:#e4e4e3;
-    border:1px solid rgba(255,255,255,0.45);
-    box-shadow:0 -10px 26px rgba(0,0,0,0.08), 0 12px 22px rgba(0,0,0,0.06);
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
+    background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(228,228,227,0.55));
+    border:1px solid rgba(255,255,255,0.65);
+    box-shadow:0 22px 46px rgba(0,0,0,0.12);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
     display:flex;
     flex-direction:column;
     justify-content:center;
