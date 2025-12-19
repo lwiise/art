@@ -455,18 +455,25 @@
     padding:0;
   }
   #sect-gallery.solo .solo-frame{
+    position:relative;
+    overflow:hidden;
     background:#f3f3f3;
     border-radius:28px;
-    padding:22px 22px 24px;
+    padding:0;
     border:1px solid #ececec;
     box-shadow:0 18px 40px rgba(0,0,0,0.06);
   }
   #sect-gallery.solo .solo-frame-head{
+    position:absolute;
+    top:18px;
+    left:22px;
+    right:22px;
+    z-index:10;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:16px;
-    margin-bottom:14px;
+    pointer-events:none;
   }
 
   .back-nav{ margin:4px 0 12px; }
@@ -489,13 +496,14 @@
     display:flex;
     justify-content:flex-end;
     margin:0;
+    pointer-events:auto;
   }
 
   .solo-media-container{
     width:100%;
     aspect-ratio:16 / 9;
     background:transparent;
-    border-radius:22px;
+    border-radius:0;
     overflow:hidden;
     position:relative;
     display:flex;
