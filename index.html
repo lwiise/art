@@ -348,29 +348,73 @@
     margin-right:19vw;
   }
 
-  /* ===== ABOUT VISUAL (unchanged) ===== */
-  .about-wrap{ max-width:1000px; }
-  .about-lead{ font-size:16px; line-height:1.85; color:#444; margin:0 0 18px; }
-  .about-sublead{ font-size:15px; line-height:1.85; color:#555; margin:0 0 26px; }
-  .about-grid{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; }
+  /* ===== ABOUT (matches screenshot card layout) ===== */
+  #sect-about .section-scroll{ background:#f6f6f6; }
+  .about-wrap{ max-width:1040px; margin:0 auto; }
+  .about-lead{
+    font-size:13px;
+    line-height:1.7;
+    color:#333;
+    margin:0 0 18px;
+    max-width:980px;
+  }
+  .about-sublead{ display:none; }
+
+  .about-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:18px;
+    margin-top:10px;
+  }
+
   .about-card{
     background:#fff;
+    border:1px solid #ededed;
+    border-radius:24px;
+    padding:16px;
+    box-shadow:0 22px 46px rgba(0,0,0,0.10);
+    display:flex;
+    flex-direction:column;
+    min-height:260px;
+  }
+
+  .about-card-media{
+    width:100%;
+    height:96px;
+    border-radius:18px;
+    overflow:hidden;
+    background:#f0f0f0;
     border:1px solid #efefef;
-    border-radius:22px;
-    padding:18px 18px 16px;
-    box-shadow:0 12px 28px rgba(0,0,0,0.06);
   }
-  .about-card h3{
-    margin:0 0 10px;
-    font-size:14px;
-    font-weight:950;
-    letter-spacing:0.08em;
+  .about-card-media img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    filter:grayscale(100%);
+  }
+
+  .about-card-meta{
+    margin:12px 0 6px;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:0.14em;
     text-transform:uppercase;
-    color:#111;
+    color:#9a9a9a;
   }
-  .about-card ul{ margin:0; padding-left:18px; color:#555; }
-  .about-card li{ margin:0 0 10px; line-height:1.75; font-size:13px; }
-  .about-card li:last-child{ margin-bottom:0; }
+  .about-card-title{
+    margin:0 0 10px;
+    font-size:15px;
+    font-weight:950;
+    letter-spacing:-0.01em;
+    color:#111;
+    line-height:1.2;
+  }
+  .about-card-desc{
+    margin:0;
+    font-size:12px;
+    line-height:1.65;
+    color:#666;
+  }
 
   /* ===== GALLERY ===== */
   #sect-gallery{ padding:0; }
@@ -1313,32 +1357,38 @@
           </p>
 
           <div class="about-grid">
-            <div class="about-card">
-              <h3>In Arts & Culture:</h3>
-              <ul>
-                <li>Curated Art Platforms: FNN presents original works by selected local and international artists, focusing on contemporary practices, conceptual art, and emerging creative voices.</li>
-                <li>Art Objects & Installations: Commissioned artworks, sculptural pieces, mixed-media works, and limited-edition art objects developed or showcased under the FNN platform.</li>
-                <li>Exhibitions & Programs: Gallery-style presentations, pop-up exhibitions, collaborations with institutions, and thematic art programs that explore identity, place, and modern culture.</li>
-                <li>Publications & Art Content: Art documentation, essays, catalogs, and digital content positioning FNN as a reference point for contemporary art discourse in the region.</li>
-              </ul>
-            </div>
+            <article class="about-card">
+              <div class="about-card-media">
+                <img src="https://images.unsplash.com/photo-1529421308418-eab98863cee9?auto=format&fit=crop&w=900&q=70" alt="Arts &amp; Culture">
+              </div>
+              <div class="about-card-meta">ARTS &amp; CULTURE</div>
+              <h3 class="about-card-title">Curated Platforms<br>&amp; Exhibitions</h3>
+              <p class="about-card-desc">
+                Presenting original works by local and international artists, alongside commissioned installations and gallery-style programs exploring identity, place, and modern culture.
+              </p>
+            </article>
 
-            <div class="about-card">
-              <h3>In Creative Infrastructure:</h3>
-              <ul>
-                <li>Art Content Center (NDCC): FNN operates as a central node for art content creation, curation, archiving, and distribution, bridging artists, collectors, institutions, and the public.</li>
-                <li>Cultural Partnerships: Collaboration with museums, cultural entities, developers, and brands to integrate art into public spaces and cultural developments.</li>
-                <li>Digital Presence: Online exhibitions, artist profiles, and visual archives that extend the physical art experience into digital and media platforms.</li>
-              </ul>
-            </div>
+            <article class="about-card">
+              <div class="about-card-media">
+                <img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=70" alt="Creative Infrastructure">
+              </div>
+              <div class="about-card-meta">CREATIVE INFRASTRUCTURE</div>
+              <h3 class="about-card-title">Art Content Center<br>&amp; Partnerships</h3>
+              <p class="about-card-desc">
+                Operating as the NDCC for art creation and archiving. Collaborating with cultural entities to integrate art into public spaces, extending the physical experience through digital platforms.
+              </p>
+            </article>
 
-            <div class="about-card">
-              <h3>In Media & Cultural Impact:</h3>
-              <ul>
-                <li>Cultural Narrative Building: FNN contributes to shaping Saudi Arabia’s contemporary art narrative by positioning art as a living, evolving cultural identity.</li>
-                <li>Audience Engagement: Creating accessible yet elevated art experiences that connect diverse audiences with contemporary creative expression.</li>
-              </ul>
-            </div>
+            <article class="about-card">
+              <div class="about-card-media">
+                <img src="https://images.unsplash.com/photo-1526481280695-3c687fd5432c?auto=format&fit=crop&w=900&q=70" alt="Media &amp; Cultural Impact">
+              </div>
+              <div class="about-card-meta">MEDIA &amp; CULTURAL IMPACT</div>
+              <h3 class="about-card-title">Cultural Narrative<br>&amp; Engagement</h3>
+              <p class="about-card-desc">
+                Shaping Saudi Arabia&#39;s contemporary art narrative and creating accessible, elevated art experiences to connect diverse audiences with creative expression.
+              </p>
+            </article>
           </div>
         </div>
       </div>
