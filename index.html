@@ -435,160 +435,105 @@
     text-align:center;
   }
   .card:hover{ transform:translateY(-6px); box-shadow:0 18px 42px rgba(0,0,0,0.07); }
-  .card-media{ width:100%; height:180px; display:flex; align-items:flex-end;\n    justify-content:center; margin-bottom:16px; }
+  .card-media{
+    width:100%;
+    height:180px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    margin-bottom:16px;
+  }
   .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:none; }
   .card-name{ font-size:12px; font-weight:900; letter-spacing:0.10em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
   .card-sub{ font-size:10px; color:#d0d0d0; text-transform:uppercase; letter-spacing:0.06em; }
 
   .solo-wrap{ display:none; }
   #sect-gallery.solo .grid{ display:none; }
-  #sect-gallery.solo .solo-wrap{ display:block; }
-
-  /* gallery solo view styling */
-  #sect-gallery.solo .shop-body{
-    background:#f7f7f7;
-    padding:28px 28px 70px;
-  }
-  .solo-wrap{
-    background:#f2f2f2;
-    border-radius:26px;
-    padding:22px 22px 30px;
-    box-shadow:0 16px 40px rgba(0,0,0,0.08);
-    border:1px solid #e8e8e8;
-  }
-  .back-nav{ margin:4px 0 18px; }
-  .btn-back{
-    color:#7a7a7a;
-    font-weight:700;
-  }
-
-  .solo-name{
-    font-size:24px;
-    font-weight:900;
-    letter-spacing:-0.01em;
-    color:#111;
-    margin:0 0 14px;
-  }
-
-  .solo-tabs-bar{
-    margin:0 0 12px;
-    display:flex;
-    justify-content:flex-end;
-  }
-  .media-tabs{
-    padding:8px;
-    background:#c8c8c8;
-    backdrop-filter:none;
-    border-radius:999px;
-  }
-  .media-tab{
-    padding:10px 16px;
-    font-size:12px;
-    letter-spacing:0.04em;
-    color:#6a6a6a;
-    background:rgba(255,255,255,0.65);
-  }
-  .media-tab.active{
-    background:#fff;
-    color:#111;
-  }
-
-  .solo-media-container{
-    width:100%;
-    aspect-ratio:16 / 9;
-    background:#f4f4f4;
-    border-radius:26px;
-    overflow:hidden;
-    position:relative;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 18px 38px rgba(0,0,0,0.08);
-    border:1px solid #ececec;
-  }
-  .solo-media-container img,
-  .solo-media-container video{
-    object-fit:contain;
-  }
-
-  .img-arrow{
-    width:46px; height:46px;
-    background:#d7d7d7;
-    color:#555;
-    font-size:18px;
-  }
-
-  .solo-info-block{
-    padding:22px 4px 0;
-  }
-  .solo-desc{
-    border-top:none;
-    padding-top:0;
-    margin-bottom:14px;
-    color:#666;
-  }
-  .solo-desc strong{
+  #sect-gallery.solo .shop-body{ background:#fff; }
+  #sect-gallery.solo .solo-wrap{
     display:block;
-    margin-bottom:6px;
-    font-size:18px;
+    padding:0;
+  }
+  #sect-gallery.solo .solo-frame{
+    background:#f3f3f3;
+    border-radius:28px;
+    padding:22px 22px 24px;
+    border:1px solid #ececec;
+    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+  }
+  #sect-gallery.solo .solo-frame-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:14px;
   }
 
-  .back-nav{ margin:10px 0 16px; }
+  .back-nav{ margin:4px 0 12px; }
   .btn-back{
     background:none; border:none; padding:0;
-    color:#999; font-size:13px; font-weight:700;
+    color:#9a9a9a; font-size:13px; font-weight:700;
     cursor:pointer; display:inline-flex; align-items:center; gap:8px;
   }
 
   .solo-name{
-    margin:10px 0 12px;
-    font-size:22px;
+    margin:0;
+    font-size:20px;
     font-weight:900;
     letter-spacing:-0.02em;
     color:#111;
   }
 
   .solo-tabs-bar{
-    width:100%;
+    width:auto;
     display:flex;
     justify-content:flex-end;
-    margin:8px 0 12px;
+    margin:0;
   }
 
   .solo-media-container{
     width:100%;
     aspect-ratio:16 / 9;
-    background:#f3f3f3;
-    border-radius:28px;
+    background:transparent;
+    border-radius:22px;
     overflow:hidden;
     position:relative;
-    display:flex; align-items:flex-end;\n    justify-content:center;
-    box-shadow:0 18px 40px rgba(0,0,0,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:none;
+    border:none;
   }
   .solo-media-container img,
   .solo-media-container video{
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:contain;
+  }
+  .solo-media-container img{
+    filter:drop-shadow(0 18px 28px rgba(0,0,0,0.18));
   }
   model-viewer{ width:100%; height:100%; }
 
   .media-tabs{
-    display:flex; gap:8px;
-    padding:10px;
+    display:flex;
+    gap:8px;
+    padding:8px;
     border-radius:999px;
-    background:rgba(0,0,0,0.30);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    background:#bdbdbd;
+    backdrop-filter:none; -webkit-backdrop-filter:none;
   }
   .media-tab{
     border:none;
     cursor:pointer;
-    padding:10px 16px;
+    padding:10px 18px;
     border-radius:999px;
     font-weight:900;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    font-size:12px;
+    font-size:11px;
     color:rgba(255,255,255,0.85);
-    background:rgba(255,255,255,0.16);
+    background:rgba(255,255,255,0.18);
     transition:all .2s ease;
     white-space:nowrap;
   }
@@ -599,18 +544,22 @@
 
   .img-arrow{
     position:absolute;
-    top:50%; transform:translateY(-50%);
-    width:44px; height:44px;
+    top:50%;
+    transform:translateY(-50%);
+    width:44px;
+    height:44px;
     border:none; border-radius:999px;
-    background:rgba(0,0,0,0.35);
-    color:#fff;
+    background:#cfcfcf;
+    color:#666;
     cursor:pointer;
-    display:flex; align-items:flex-end;\n    justify-content:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     font-size:18px;
-    backdrop-filter:blur(10px);
+    backdrop-filter:none;
   }
-  .img-arrow.left{ left:14px; }
-  .img-arrow.right{ right:14px; }
+  .img-arrow.left{ left:16px; }
+  .img-arrow.right{ right:16px; }
 
   .v360-ui{
     position:absolute;
@@ -650,22 +599,33 @@
     box-shadow:0 10px 18px rgba(0,0,0,0.18);
   }
 
-  .solo-info-block{ padding:18px 4px 0; }
+  .solo-info-block{
+    padding:18px 0 0;
+    border-top:1px solid #e9e9e9;
+  }
   .solo-desc{
     text-align:left;
     color:#666;
-    font-size:14px;
+    font-size:13px;
     line-height:1.7;
-    border-top:1px solid #eee;
-    padding-top:20px;
-    margin-bottom:22px;
+    border-top:none;
+    padding-top:0;
+    margin-bottom:18px;
   }
-  .data-row{ display:flex; flex-wrap:wrap; gap:26px; margin-top:14px; }
+  .solo-desc strong{
+    display:block;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#666;
+    margin:0 0 6px;
+  }
+  .data-row{ display:flex; flex-wrap:wrap; gap:38px; margin-top:14px; }
   .data-item span:first-child{
     display:block; font-size:10px; color:#999; text-transform:uppercase;
     font-weight:900; margin-bottom:4px; letter-spacing:0.08em;
   }
-  .data-item span:last-child{ font-size:15px; font-weight:900; color:#222; }
+  .data-item span:last-child{ font-size:14px; font-weight:900; color:#222; }
 
   .artist-profile{
     display:flex; align-items:center; gap:14px;
@@ -723,7 +683,9 @@
   .svc-ico{
     width:36px; height:36px; border-radius:14px;
     background:#f4f4f4;
-    display:flex; align-items:flex-end;\n    justify-content:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     font-weight:900;
     margin-bottom:12px;
   }
@@ -802,7 +764,9 @@
     border-radius:20px;
     border:1px solid #f0f0f0;
     background:linear-gradient(180deg,#f8f8f8,#f2f2f2);
-    display:flex; align-items:flex-end;\n    justify-content:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     font-weight:900; color:#bbb; letter-spacing:0.08em;
     text-transform:uppercase;
     font-size:12px;
@@ -836,7 +800,9 @@
     background:rgba(0,0,0,0.45);
     backdrop-filter:blur(5px);
     z-index:9999;
-    display:none; align-items:flex-end;\n    justify-content:center;
+    display:none;
+    align-items:center;
+    justify-content:center;
     opacity:0; transition:opacity .25s ease;
   }
   .modal-overlay.open{ display:flex; opacity:1; }
@@ -1151,12 +1117,15 @@
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
-          <div class="back-nav"><button class="btn-back" id="btnBack">← Back to Collection</button></div>
+          <div class="back-nav"><button class="btn-back" id="btnBack">&larr; Back to Collection</button></div>
 
-          <div class="solo-name" id="soloName">PRODUCT</div>
-
-          <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
-          <div class="solo-media-container" id="soloMedia"></div>
+          <div class="solo-frame">
+            <div class="solo-frame-head">
+              <div class="solo-name" id="soloName">PRODUCT</div>
+              <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
+            </div>
+            <div class="solo-media-container" id="soloMedia"></div>
+          </div>
 
           <div class="solo-info-block">
             <div class="solo-desc">
@@ -1525,8 +1494,8 @@
     let idx = 0;
     const html = `
       <img id="imgSlide" src="${images[0]}" alt="Image" />
-      <button class="img-arrow left" id="imgPrev">‹</button>
-      <button class="img-arrow right" id="imgNext">›</button>
+      <button class="img-arrow left" id="imgPrev">&lsaquo;</button>
+      <button class="img-arrow right" id="imgNext">&rsaquo;</button>
     `;
     return { html, mount: (container) => {
       const img = container.querySelector('#imgSlide');
