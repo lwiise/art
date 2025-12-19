@@ -1418,7 +1418,7 @@
       if(!activePopupProduct) return;
       const b = map.getBearing(); // Mapbox bearing increases clockwise
       const az = (-b + 45);       // invert to fix opposite rotation
-      viewer.cameraOrbit = `${az}deg 75deg 3m`;
+      viewer.cameraOrbit = `${az}deg 75deg 4.5m`;
       modelSyncFrame = requestAnimationFrame(sync);
     };
     if(modelSyncFrame){ cancelAnimationFrame(modelSyncFrame); modelSyncFrame=null; }
@@ -1568,7 +1568,7 @@
         auto-rotate
         shadow-intensity="1"
         style="background:transparent; width:100%; height:100%;"
-        camera-orbit="45deg 75deg 3m"
+        camera-orbit="45deg 75deg 4.5m"
         environment-image="neutral"
         alt="${productName || '3D'}">
       </model-viewer>
