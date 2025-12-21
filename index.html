@@ -214,25 +214,37 @@
   p.sec-sub{ font-size:16px; color:var(--muted); line-height:1.7; margin:0 0 24px; width:100%; }
 
   /* =========================================================
-     ✅ HOME — matches your screenshot layout
+     HOME - matches screenshot layout
      - No scroll needed
-     - Logo/top area + 2-column main (text left, image right)
-     - Text+button have glass liquid bg
+     - Logo/top area + 2-column main (copy left, image right)
+     - Left copy + CTA
      ========================================================= */
   #sect-home .section-scroll{
     padding:0;
-    overflow:hidden;    /* ✅ no scroll in Home */
+    overflow:hidden;    /* no scroll in Home */
     height:100%;
   }
 
   .home-screen{
     height:100%;
-    padding:38px 52px var(--side-nav-offset) 0;
+    padding:38px 52px 36px 40px;
     display:flex;
     flex-direction:column;
-    gap:14px;
+    gap:16px;
     overflow:hidden;
     justify-content:flex-start;
+    position:relative;
+    background:
+      radial-gradient(120% 80% at 100% 100%, rgba(0,0,0,0.08), rgba(255,255,255,0) 68%),
+      linear-gradient(180deg, #fff 0%, #fff 58%, #f3f3f3 100%);
+  }
+  .home-screen::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(90% 60% at 50% 100%, rgba(0,0,0,0.06), rgba(255,255,255,0) 70%);
+    pointer-events:none;
+    z-index:0;
   }
 
   .home-top{
@@ -240,112 +252,128 @@
     display:flex;
     flex-direction:column;
     align-items:flex-start;
-    gap:10px;
+    gap:6px;
+    position:relative;
+    z-index:1;
   }
 
   .home-top small{
-    color:#8a8a8a;
+    color:#9a9a9a;
     font-weight:600;
-    font-size:28px;
+    font-size:20px;
     letter-spacing:0.02em;
-    padding-left:40px;
+    padding-left:0;
   }
 
   .home-logo{
-    width:min(768px, 95%);
+    width:min(560px, 92%);
     height:auto;
     display:block;
     object-fit:contain;
+  }
+
+  .home-tagline{
+    font-size:11px;
+    letter-spacing:0.36em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:#6f6f6f;
   }
 
   .home-main{
     flex:1;
     min-height:0;
     display:grid;
-    grid-template-columns: 220px minmax(0, 1fr); /* text left, image right */
-    gap:28px;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap:26px;
     align-items:end;
     align-content:end;
-    justify-items:center;
+    justify-items:stretch;
+    margin-top:auto;
+    position:relative;
+    z-index:1;
   }
 
-  /* ✅ glass liquid bg for text+button */
+  /* Home copy block */
   .home-copy{
     align-self:end;
     justify-self:start;
     margin:0;
     width:100%;
     display:flex;
-    align-items:stretch;
+    align-items:flex-end;
   }
   .home-glass{
-    width:100%;
-    height:var(--side-nav-height);
-    min-height:var(--side-nav-height);
-    max-height:var(--side-nav-height);
-    padding:18px 22px;
-    border-radius:0 18px 18px 0;
-    background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(228,228,227,0.55));
-    border:1px solid rgba(255,255,255,0.65);
-    box-shadow:0 -14px 26px rgba(0,0,0,0.10), 0 22px 46px rgba(0,0,0,0.12);
-    backdrop-filter:blur(18px);
-    -webkit-backdrop-filter:blur(18px);
+    width:auto;
+    height:auto;
+    min-height:0;
+    max-height:none;
+    padding:0 0 8px 0;
+    border-radius:0;
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
     display:flex;
     flex-direction:column;
-    justify-content:center;
-    row-gap:18px;
+    justify-content:flex-end;
+    align-items:flex-start;
+    gap:14px;
   }
-  .home-glass p{
+  .home-copy-title{
     margin:0;
-    color:#111;
-    font-size:15px;
-    line-height:1.6;
-    max-width:34ch;
+    font-size:22px;
+    font-weight:700;
+    color:#5f5f5f;
+    letter-spacing:0.02em;
+    line-height:1.12;
   }
+  .home-copy-title span{ display:block; }
 
   .btn-home{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:14px 26px;
+    padding:10px 18px;
     border-radius:999px;
-    border:1px solid #e2bdb8;
+    border:1px solid #d7d7d7;
     cursor:pointer;
     font-weight:700;
-    font-size:12px;
-    letter-spacing:0.02em;
-    color:#111;
-    background:linear-gradient(180deg, #ead0cc, #e1b9b5);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:none;
+    color:#3a3a3a;
+    background:linear-gradient(180deg, #ededed, #d7d7d7);
     box-shadow:0 8px 14px rgba(0,0,0,0.08);
   }
-  .btn-home:hover{ background:linear-gradient(180deg, #e4c5c1, #d9aea9); }
+  .btn-home:hover{ background:linear-gradient(180deg, #e4e4e4, #cfcfcf); }
 
   .home-illustration-wrap{
     width:100%;
     height:auto;
     min-height:0;
     display:flex;
-    align-items:center;
-    justify-content:center;
+    align-items:flex-end;
+    justify-content:flex-end;
     overflow:hidden;
-    padding:0;
-    align-self:center;
-    justify-self:center;
+    padding:0 8px 6px 0;
+    align-self:end;
+    justify-self:end;
   }
 
   /* ✅ no hover on second image + fit screen */
   .home-illustration{
-    width:min(100%, 1380px);
+    width:min(100%, 640px);
     height:auto;
     object-fit:contain;
-    object-position:center center;
+    object-position:bottom right;
     display:block;
     transition:none !important;
     transform:none !important;
-    max-width:1380px;
-    max-height:845px;
+    max-height:380px;
     filter:none;
-    margin-right:19vw;
+    margin-right:0;
   }
 
   /* ===== ABOUT (matches screenshot card layout) ===== */
@@ -1231,13 +1259,17 @@
     .section-scroll{ padding:22px; }
 
     /* HOME mobile */
-    .home-screen{ padding:18px 20px; gap:14px; }
-    .home-main{ grid-template-columns:1fr; gap:14px; align-items:start; }
-    .home-logo{ width:min(520px, 92%); }
-    .home-copy{ margin-bottom:18px; }
-    .home-glass{ height:auto; }
-    .home-glass p{ max-width:none; }
-    .home-illustration-wrap{ height:30vh; }
+    .home-screen{ padding:22px 20px 26px; gap:12px; }
+    .home-top{ padding-left:0; }
+    .home-top small{ font-size:18px; }
+    .home-logo{ width:min(420px, 92%); }
+    .home-tagline{ font-size:10px; letter-spacing:0.28em; }
+    .home-main{ grid-template-columns:1fr; gap:18px; align-items:start; margin-top:0; }
+    .home-copy{ margin-bottom:10px; }
+    .home-copy-title{ font-size:18px; }
+    .btn-home{ font-size:10px; padding:10px 16px; }
+    .home-illustration-wrap{ height:32vh; justify-content:center; padding:0; }
+    .home-illustration{ width:min(100%, 520px); max-height:240px; }
 
     /* 3D popup mobile */
     .map-3d-popup{
@@ -1319,7 +1351,7 @@
 
   <aside class="shop" id="shop">
 
-    <!-- ✅ HOME (updated) -->
+    <!-- HOME -->
     <section id="sect-home" class="app-section">
       <div class="section-scroll">
         <div class="home-screen">
@@ -1330,14 +1362,17 @@
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69442b591074614cc12c66e3_IMAGE.png"
               alt="FNN ART"
             />
+            <div class="home-tagline">The New Marketplace for Exceptional Art</div>
           </div>
 
           <div class="home-main">
             <div class="home-copy">
               <div class="home-glass">
-                <p>
-                  FNN is a modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
-                </p>
+                <div class="home-copy-title">
+                  <span>Original</span>
+                  <span>Art For</span>
+                  <span>Sale</span>
+                </div>
                 <button class="btn-home" onclick="switchSection('sect-gallery')">Explore Collection</button>
               </div>
             </div>
