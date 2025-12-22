@@ -305,7 +305,8 @@
     align-items:flex-end;
   }
   .home-glass{
-    width:100%;
+    width:fit-content;
+    max-width:100%;
     height:var(--side-nav-height);
     min-height:var(--side-nav-height);
     max-height:var(--side-nav-height);
@@ -328,7 +329,7 @@
     font-weight:700;
     color:#5f5f5f;
     letter-spacing:0.02em;
-    line-height:1.25;
+    line-height:1.4;
   }
   .home-copy-title span{ display:block; }
 
@@ -406,14 +407,14 @@
   /* ✅ no hover on second image + fit screen */
   .home-illustration{
     flex:0 0 auto;
-    width:min(100%, 760px);
+    width:min(100%, 860px);
     height:auto;
     object-fit:contain;
     object-position:center center;
     display:block;
     transition:none !important;
     transform:none !important;
-    max-height:460px;
+    max-height:520px;
     filter:none;
     margin:0;
     scroll-snap-align:start;
@@ -1308,12 +1309,12 @@
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
     .home-main{ grid-template-columns:1fr; gap:18px; align-items:center; margin-top:0; }
     .home-copy{ margin:0 0 10px 0; width:100%; }
-    .home-copy-title{ font-size:30px; line-height:1.28; }
+    .home-copy-title{ font-size:30px; line-height:1.4; }
     .home-glass{ padding:20px 20px; height:auto; min-height:0; max-height:none; }
     .btn-home{ font-size:12px; padding:12px 22px; }
     .home-illustration-wrap{ height:32vh; justify-content:flex-start; padding:0; }
     .home-illustration-track{ gap:16px; padding:0 18px; scroll-padding-left:18px; }
-    .home-illustration{ width:min(100%, 560px); max-height:300px; }
+    .home-illustration{ width:min(100%, 640px); max-height:360px; }
     .home-slider-btn{
       height:38px;
       min-width:56px;
