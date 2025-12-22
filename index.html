@@ -305,12 +305,12 @@
     align-items:flex-end;
   }
   .home-glass{
-    width:auto;
+    width:100%;
     height:var(--side-nav-height);
     min-height:var(--side-nav-height);
     max-height:var(--side-nav-height);
-    padding:20px 24px;
-    border-radius:18px;
+    padding:28px 30px;
+    border-radius:22px;
     background:rgba(240,240,240,0.78);
     border:1px solid rgba(255,255,255,0.9);
     box-shadow:0 18px 32px rgba(0,0,0,0.08);
@@ -320,15 +320,15 @@
     flex-direction:column;
     justify-content:flex-end;
     align-items:flex-start;
-    gap:14px;
+    gap:18px;
   }
   .home-copy-title{
     margin:0;
-    font-size:36px;
+    font-size:42px;
     font-weight:700;
     color:#5f5f5f;
     letter-spacing:0.02em;
-    line-height:1.12;
+    line-height:1.25;
   }
   .home-copy-title span{ display:block; }
 
@@ -336,13 +336,13 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:10px 18px;
+    padding:14px 28px;
     border-radius:999px;
     border:1px solid rgba(228,144,144,0.7);
     cursor:pointer;
     font-weight:700;
-    font-size:11px;
-    letter-spacing:0.08em;
+    font-size:13px;
+    letter-spacing:0.06em;
     text-transform:none;
     color:#7b4b4b;
     background:rgba(228,144,144,0.28);
@@ -361,6 +361,7 @@
     padding:0;
     align-self:center;
     justify-self:center;
+    position:relative;
   }
 
   .home-illustration-track{
@@ -379,17 +380,40 @@
   .home-illustration-track::-webkit-scrollbar{ display:none; }
   .home-illustration-track{ scrollbar-width:none; }
 
+  .home-slider-btn{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    height:44px;
+    min-width:64px;
+    padding:0 14px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,0.08);
+    background:rgba(255,255,255,0.9);
+    color:#111;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    box-shadow:0 10px 24px rgba(0,0,0,0.12);
+    z-index:2;
+  }
+  .home-slider-btn:hover{ background:rgba(255,255,255,1); }
+  .home-slider-btn.prev{ left:12px; }
+  .home-slider-btn.next{ right:12px; }
+
   /* ✅ no hover on second image + fit screen */
   .home-illustration{
     flex:0 0 auto;
-    width:min(100%, 640px);
+    width:min(100%, 760px);
     height:auto;
     object-fit:contain;
     object-position:center center;
     display:block;
     transition:none !important;
     transform:none !important;
-    max-height:380px;
+    max-height:460px;
     filter:none;
     margin:0;
     scroll-snap-align:start;
@@ -1284,12 +1308,20 @@
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
     .home-main{ grid-template-columns:1fr; gap:18px; align-items:center; margin-top:0; }
     .home-copy{ margin:0 0 10px 0; width:100%; }
-    .home-copy-title{ font-size:26px; }
-    .home-glass{ padding:16px 18px; height:auto; min-height:0; max-height:none; }
-    .btn-home{ font-size:10px; padding:10px 16px; }
+    .home-copy-title{ font-size:30px; line-height:1.28; }
+    .home-glass{ padding:20px 20px; height:auto; min-height:0; max-height:none; }
+    .btn-home{ font-size:12px; padding:12px 22px; }
     .home-illustration-wrap{ height:32vh; justify-content:flex-start; padding:0; }
     .home-illustration-track{ gap:16px; padding:0 18px; scroll-padding-left:18px; }
-    .home-illustration{ width:min(100%, 480px); max-height:240px; }
+    .home-illustration{ width:min(100%, 560px); max-height:300px; }
+    .home-slider-btn{
+      height:38px;
+      min-width:56px;
+      font-size:10px;
+      padding:0 12px;
+    }
+    .home-slider-btn.prev{ left:8px; }
+    .home-slider-btn.next{ right:8px; }
 
     /* 3D popup mobile */
     .map-3d-popup{
@@ -1357,7 +1389,7 @@
       <div class="nav-item" id="navAbout">About Us</div>
       <div class="nav-item" id="navServices">Services</div>
       <div class="nav-item active" id="navGallery">Gallery</div>
-      <div class="nav-item" id="navContact">Contacts</div>
+      <div class="nav-item" id="navContact">Contact Us</div>
     </nav>
 
     <nav class="mobile-nav" id="mobileNav">
@@ -1365,7 +1397,7 @@
       <div class="nav-item" id="mNavAbout">About</div>
       <div class="nav-item" id="mNavServices">Services</div>
       <div class="nav-item active" id="mNavGallery">Gallery</div>
-      <div class="nav-item" id="mNavContact">Contacts</div>
+      <div class="nav-item" id="mNavContact">Contact Us</div>
     </nav>
   </div>
 
@@ -1398,6 +1430,7 @@
             </div>
 
             <div class="home-illustration-wrap">
+              <button class="home-slider-btn prev" id="homeSlidePrev" type="button" aria-label="Previous artwork">Prev</button>
               <div class="home-illustration-track" aria-label="Home artwork slider">
                 <img
                   class="home-illustration"
@@ -1415,6 +1448,7 @@
                   alt="Home artwork 3"
                 />
               </div>
+              <button class="home-slider-btn next" id="homeSlideNext" type="button" aria-label="Next artwork">Next</button>
             </div>
           </div>
         </div>
@@ -1830,6 +1864,24 @@
   safeAdd('mNavServices','click',() => switchSection('sect-services'));
   safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
   safeAdd('mNavContact','click',() => switchSection('sect-contact'));
+
+  const homeSliderTrack = document.querySelector('.home-illustration-track');
+  const getHomeSlideStep = () => {
+    if(!homeSliderTrack) return 0;
+    const slide = homeSliderTrack.querySelector('.home-illustration');
+    const base = slide ? slide.getBoundingClientRect().width : homeSliderTrack.clientWidth;
+    const style = getComputedStyle(homeSliderTrack);
+    const gap = parseFloat(style.columnGap || style.gap || "0") || 0;
+    return base + gap;
+  };
+  const scrollHomeSlider = (dir) => {
+    if(!homeSliderTrack) return;
+    const step = getHomeSlideStep();
+    if(!step) return;
+    homeSliderTrack.scrollBy({ left: dir * step, behavior:'smooth' });
+  };
+  safeAdd('homeSlidePrev','click',() => scrollHomeSlider(-1));
+  safeAdd('homeSlideNext','click',() => scrollHomeSlider(1));
 
   const form = document.getElementById('ajaxForm');
   const submitBtn = document.getElementById('formSubmitBtn');
