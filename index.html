@@ -97,7 +97,7 @@
   .side-nav{
     position:absolute; top:auto; bottom:var(--side-nav-offset); right:0; transform:none;
     display:flex; flex-direction:column; z-index:20;
-    background:rgba(255,255,255,0.1);
+    background:rgba(0,0,0,0.5);
     backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
     border-radius:20px 0 0 20px;
     border-left:1px solid rgba(255,255,255,0.15);
@@ -108,7 +108,7 @@
     height:var(--side-nav-height);
   }
   .side-nav.focused{
-    background:rgba(0,0,0,0.6);
+    background:rgba(0,0,0,0.75);
     border-color:rgba(255,255,255,0.1);
   }
   .nav-item{
@@ -303,7 +303,7 @@
   .home-copy{
     align-self:end;
     justify-self:start;
-    margin:0 0 0 calc(-1 * var(--home-pad-left));
+    margin:0;
     width:fit-content;
     max-width:100%;
     display:flex;
@@ -1397,7 +1397,6 @@
       <div class="nav-item" id="navServices">Services</div>
       <div class="nav-item active" id="navGallery">Gallery</div>
       <div class="nav-item" id="navContact">Contact Us</div>
-      <div class="nav-item" id="navContactAlt">Contact Us</div>
     </nav>
 
     <nav class="mobile-nav" id="mobileNav">
@@ -1844,10 +1843,6 @@
 
     const navEl = document.getElementById(navIdMap[id]);
     if(navEl) navEl.classList.add('active');
-    if(id === 'sect-contact'){
-      const navAlt = document.getElementById('navContactAlt');
-      if(navAlt) navAlt.classList.add('active');
-    }
     const mNavEl = document.getElementById(mNavIdMap[id]);
     if(mNavEl) mNavEl.classList.add('active');
 
@@ -1870,7 +1865,6 @@
   safeAdd('navServices','click',() => switchSection('sect-services'));
   safeAdd('navGallery','click',() => switchSection('sect-gallery'));
   safeAdd('navContact','click',() => switchSection('sect-contact'));
-  safeAdd('navContactAlt','click',() => switchSection('sect-contact'));
 
   safeAdd('mNavHome','click',() => switchSection('sect-home'));
   safeAdd('mNavAbout','click',() => switchSection('sect-about'));
