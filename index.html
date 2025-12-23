@@ -1917,6 +1917,19 @@
   safeAdd('homeSlidePrev','click',() => scrollHomeSlider(-1));
   safeAdd('homeSlideNext','click',() => scrollHomeSlider(1));
 
+  if(homeSliderTrack){
+    setInterval(() => {
+      const homeSection = document.getElementById('sect-home');
+      if(!homeSection || !homeSection.classList.contains('active-section')) return;
+      const atEnd = homeSliderTrack.scrollLeft + homeSliderTrack.clientWidth >= homeSliderTrack.scrollWidth - 4;
+      if(atEnd){
+        homeSliderTrack.scrollTo({ left:0, behavior:'smooth' });
+      } else {
+        scrollHomeSlider(1);
+      }
+    }, 2000);
+  }
+
   const form = document.getElementById('ajaxForm');
   const submitBtn = document.getElementById('formSubmitBtn');
   const successMsg = document.getElementById('formSuccess');
