@@ -13,7 +13,7 @@
     --muted:#666;
     --card-radius:32px;
     --btn-radius:30px;
-    --side-nav-height:320px;
+    --side-nav-height:380px;
     --side-nav-offset:34px;
   }
 
@@ -112,7 +112,7 @@
     border-color:rgba(255,255,255,0.1);
   }
   .nav-item{
-    padding:30px 40px;
+    padding:22px 40px;
     color:rgba(255,255,255,0.8);
     font-weight:600; font-size:14px;
     text-transform:uppercase; letter-spacing:0.05em;
@@ -134,6 +134,10 @@
     background:rgba(255,255,255,0.2);
     color:#fff;
     padding-right:50px;
+  }
+  .side-nav .nav-item:hover,
+  .side-nav .nav-item.active{
+    border-radius:20px 0 0 20px;
   }
 
   .mobile-nav{
@@ -226,7 +230,7 @@
   }
 
   .home-screen{
-    --home-pad-left:40px;
+    --home-pad-left:52px;
     height:100%;
     padding:38px 52px var(--side-nav-offset) var(--home-pad-left);
     display:flex;
@@ -311,7 +315,8 @@
     height:var(--side-nav-height);
     min-height:var(--side-nav-height);
     max-height:var(--side-nav-height);
-    padding:28px 30px;
+    --home-glass-pad-x:34px;
+    padding:30px var(--home-glass-pad-x);
     border-radius:22px;
     background:rgba(240,240,240,0.78);
     border:1px solid rgba(255,255,255,0.9);
@@ -1392,6 +1397,7 @@
       <div class="nav-item" id="navServices">Services</div>
       <div class="nav-item active" id="navGallery">Gallery</div>
       <div class="nav-item" id="navContact">Contact Us</div>
+      <div class="nav-item" id="navContactAlt">Contact Us</div>
     </nav>
 
     <nav class="mobile-nav" id="mobileNav">
@@ -1838,6 +1844,10 @@
 
     const navEl = document.getElementById(navIdMap[id]);
     if(navEl) navEl.classList.add('active');
+    if(id === 'sect-contact'){
+      const navAlt = document.getElementById('navContactAlt');
+      if(navAlt) navAlt.classList.add('active');
+    }
     const mNavEl = document.getElementById(mNavIdMap[id]);
     if(mNavEl) mNavEl.classList.add('active');
 
@@ -1860,6 +1870,7 @@
   safeAdd('navServices','click',() => switchSection('sect-services'));
   safeAdd('navGallery','click',() => switchSection('sect-gallery'));
   safeAdd('navContact','click',() => switchSection('sect-contact'));
+  safeAdd('navContactAlt','click',() => switchSection('sect-contact'));
 
   safeAdd('mNavHome','click',() => switchSection('sect-home'));
   safeAdd('mNavAbout','click',() => switchSection('sect-about'));
