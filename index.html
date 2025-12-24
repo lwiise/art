@@ -303,7 +303,7 @@
     width:calc(100% + var(--home-pad-left) + var(--home-pad-right));
     position:relative;
     z-index:1;
-    border-radius:24px;
+    border-radius:0 24px 24px 0;
     overflow:hidden;
   }
 
@@ -337,8 +337,8 @@
     background:#f0e6e2;
     color:#6a5550;
     font-weight:700;
-    font-size:12px;
-    padding:8px 14px;
+    font-size:21px;
+    padding:13px 24px;
     border-radius:999px;
     cursor:pointer;
   }
@@ -415,6 +415,51 @@
     justify-self:center;
     position:relative;
   }
+
+  .home-slider-controls{
+    position:absolute;
+    left:18px;
+    right:18px;
+    bottom:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    z-index:3;
+    pointer-events:none;
+  }
+  .home-slider-dots{
+    display:flex;
+    gap:10px;
+    pointer-events:auto;
+  }
+  .home-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    border:none;
+    background:rgba(0,0,0,0.25);
+    cursor:pointer;
+    padding:0;
+  }
+  .home-dot.active{
+    width:22px;
+    background:rgba(0,0,0,0.6);
+  }
+  .home-slider-arrows{
+    display:flex;
+    gap:12px;
+    pointer-events:auto;
+  }
+  .home-arrow{
+    border:none;
+    background:transparent;
+    color:rgba(0,0,0,0.45);
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+    padding:0;
+  }
+  .home-arrow:hover{ color:rgba(0,0,0,0.75); }
 
   .home-illustration-track{
     width:100%;
@@ -1380,13 +1425,14 @@
     .home-top{ --home-logo-width:min(520px, 92%); }
     .home-top small{ font-size:18px; padding-left:5%; }
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
-    .home-main{ grid-template-columns:1fr; gap:12px; align-items:stretch; margin-top:0; border-radius:18px; }
+    .home-main{ grid-template-columns:1fr; gap:12px; align-items:stretch; margin-top:0; border-radius:0 18px 18px 0; }
     .home-banner{
       position:static;
       width:100%;
       padding:20px 18px;
     }
     .home-banner-title{ font-size:22px; }
+    .home-banner-btn{ font-size:18px; padding:12px 21px; }
     .home-copy{ margin:0 0 10px 0; width:100%; }
     .home-copy-title{ font-size:30px; line-height:1.4; }
     .home-glass{ padding:20px 20px; height:auto; min-height:0; max-height:none; }
@@ -1396,6 +1442,12 @@
     .home-slide{ padding:0; flex-direction:column; align-items:stretch; }
     .home-slide-media{ width:100%; height:220px; padding-left:0; }
     .home-illustration{ border-radius:0; }
+    .home-slider-controls{ left:14px; right:14px; bottom:12px; }
+    .home-slider-dots{ gap:8px; }
+    .home-dot{ width:7px; height:7px; }
+    .home-dot.active{ width:18px; }
+    .home-slider-arrows{ gap:10px; }
+    .home-arrow{ font-size:16px; }
 
     /* 3D popup mobile */
     .map-3d-popup{
@@ -1522,6 +1574,16 @@
                     />
                   </div>
                 </article>
+              </div>
+              <div class="home-slider-controls" aria-label="Home slider controls">
+                <div class="home-slider-dots" id="homeSliderDots" aria-label="Home slider dots">
+                  <button class="home-dot active" type="button" data-index="0" aria-label="Slide 1"></button>
+                  <button class="home-dot" type="button" data-index="1" aria-label="Slide 2"></button>
+                </div>
+                <div class="home-slider-arrows" aria-label="Home slider arrows">
+                  <button class="home-arrow" type="button" data-dir="-1" aria-label="Previous slide">&larr;</button>
+                  <button class="home-arrow" type="button" data-dir="1" aria-label="Next slide">&rarr;</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1940,6 +2002,8 @@
   safeAdd('mNavContact','click',() => switchSection('sect-contact'));
 
   const homeSliderTrack = document.querySelector('.home-illustration-track');
+  const homeSliderDots = document.getElementById('homeSliderDots');
+  const homeSliderArrows = document.querySelector('.home-slider-arrows');
   const getHomeSlideStep = () => {
     if(!homeSliderTrack) return 0;
     const slide = homeSliderTrack.querySelector('.home-slide');
@@ -1954,6 +2018,44 @@
     if(!step) return;
     homeSliderTrack.scrollBy({ left: dir * step, behavior:'smooth' });
   };
+  const setHomeActiveDot = () => {
+    if(!homeSliderDots || !homeSliderTrack) return;
+    const dots = Array.from(homeSliderDots.querySelectorAll('.home-dot'));
+    if(!dots.length) return;
+    const step = getHomeSlideStep();
+    if(!step) return;
+    const idx = Math.max(0, Math.min(dots.length - 1, Math.round(homeSliderTrack.scrollLeft / step)));
+    dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
+  };
+
+  if(homeSliderTrack && homeSliderDots){
+    homeSliderDots.addEventListener('click', (e) => {
+      const btn = e.target.closest('.home-dot');
+      if(!btn) return;
+      const idx = Number(btn.dataset.index || 0);
+      const step = getHomeSlideStep();
+      if(!step) return;
+      homeSliderTrack.scrollTo({ left: idx * step, behavior:'smooth' });
+    });
+
+    let dotRaf = null;
+    homeSliderTrack.addEventListener('scroll', () => {
+      if(dotRaf) return;
+      dotRaf = requestAnimationFrame(() => {
+        dotRaf = null;
+        setHomeActiveDot();
+      });
+    }, { passive:true });
+  }
+  if(homeSliderTrack && homeSliderArrows){
+    homeSliderArrows.addEventListener('click', (e) => {
+      const btn = e.target.closest('.home-arrow');
+      if(!btn) return;
+      const dir = Number(btn.dataset.dir || 0);
+      if(!dir) return;
+      scrollHomeSlider(dir);
+    });
+  }
   if(homeSliderTrack){
     setInterval(() => {
       const homeSection = document.getElementById('sect-home');
