@@ -291,7 +291,7 @@
     flex:1;
     min-height:0;
     display:grid;
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(260px, 34%) minmax(0, 1fr);
     gap:0;
     align-items:stretch;
     align-content:stretch;
@@ -302,6 +302,37 @@
     width:calc(100% + var(--home-pad-left) + var(--home-pad-right));
     position:relative;
     z-index:1;
+    border-radius:24px;
+    overflow:hidden;
+  }
+
+  .home-banner{
+    background:#eeeeee;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
+    gap:14px;
+    padding:28px 26px;
+    height:100%;
+  }
+  .home-banner-title{
+    margin:0;
+    font-size:28px;
+    font-weight:800;
+    line-height:1.2;
+    color:#111;
+  }
+  .home-banner-title span{ display:block; }
+  .home-banner-btn{
+    border:1px solid #d8d2cf;
+    background:#f0e6e2;
+    color:#6a5550;
+    font-weight:700;
+    font-size:12px;
+    padding:8px 14px;
+    border-radius:999px;
+    cursor:pointer;
   }
 
   /* Home copy block */
@@ -368,7 +399,7 @@
     height:100%;
     min-height:0;
     display:flex;
-    align-items:center;
+    align-items:stretch;
     justify-content:flex-start;
     overflow:hidden;
     padding:0;
@@ -381,7 +412,7 @@
     width:100%;
     height:100%;
     display:flex;
-    align-items:center;
+    align-items:stretch;
     gap:0;
     overflow-x:auto;
     overflow-y:hidden;
@@ -1339,7 +1370,9 @@
     .home-top{ --home-logo-width:min(520px, 92%); }
     .home-top small{ font-size:18px; padding-left:5%; }
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
-    .home-main{ grid-template-columns:1fr; gap:0; align-items:stretch; margin-top:0; }
+    .home-main{ grid-template-columns:1fr; gap:12px; align-items:stretch; margin-top:0; border-radius:18px; }
+    .home-banner{ padding:20px 18px; }
+    .home-banner-title{ font-size:22px; }
     .home-copy{ margin:0 0 10px 0; width:100%; }
     .home-copy-title{ font-size:30px; line-height:1.4; }
     .home-glass{ padding:20px 20px; height:auto; min-height:0; max-height:none; }
@@ -1447,6 +1480,14 @@
           </div>
 
           <div class="home-main">
+            <div class="home-banner">
+              <h3 class="home-banner-title">
+                <span>Explore &amp; Collect</span>
+                <span>Unique Artwork</span>
+              </h3>
+              <button class="home-banner-btn" type="button" onclick="switchSection('sect-gallery')">Browse Collection</button>
+            </div>
+
             <div class="home-illustration-wrap">
               <div class="home-illustration-track" aria-label="Home artwork slider">
                 <article class="home-slide">
@@ -1909,7 +1950,7 @@
       } else {
         scrollHomeSlider(1);
       }
-    }, 2000);
+    }, 4000);
   }
 
   const form = document.getElementById('ajaxForm');
