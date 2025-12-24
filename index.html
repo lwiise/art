@@ -378,7 +378,7 @@
     height:100%;
     display:flex;
     align-items:center;
-    gap:24px;
+    gap:20px;
     overflow-x:auto;
     overflow-y:hidden;
     scroll-snap-type:x mandatory;
@@ -389,43 +389,65 @@
   .home-illustration-track::-webkit-scrollbar{ display:none; }
   .home-illustration-track{ scrollbar-width:none; }
 
-  .home-slider-btn{
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    height:44px;
-    min-width:64px;
-    padding:0 14px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,0.08);
-    background:rgba(255,255,255,0.9);
+  .home-slide{
+    flex:0 0 100%;
+    height:100%;
+    background:#f4f4f4;
+    border-radius:26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 26px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.08);
+    overflow:hidden;
+    scroll-snap-align:start;
+  }
+  .home-slide-content{
+    max-width:38%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .home-slide-title{
+    margin:0;
+    font-size:26px;
+    font-weight:800;
+    line-height:1.2;
     color:#111;
+  }
+  .home-slide-title span{ display:block; }
+  .home-slide-btn{
+    align-self:flex-start;
+    border:1px solid #d8d2cf;
+    background:#f0e6e2;
+    color:#6a5550;
     font-weight:700;
     font-size:12px;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
+    padding:8px 14px;
+    border-radius:999px;
     cursor:pointer;
-    box-shadow:0 10px 24px rgba(0,0,0,0.12);
-    z-index:2;
   }
-  .home-slider-btn:hover{ background:rgba(255,255,255,1); }
-  .home-slider-btn.prev{ left:12px; }
-  .home-slider-btn.next{ right:12px; }
-
+  .home-slide-media{
+    flex:1;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-left:18px;
+  }
   /* ✅ no hover on second image + fit screen */
   .home-illustration{
-    flex:0 0 auto;
-    width:min(100%, 1120px);
-    height:auto;
+    width:100%;
+    height:100%;
     object-fit:contain;
     object-position:center center;
     display:block;
     transition:none !important;
     transform:none !important;
-    max-height:680px;
     filter:none;
     margin:0;
-    scroll-snap-align:start;
+    border-radius:20px;
+    background:#fff;
   }
 
   /* ===== ABOUT (matches screenshot card layout) ===== */
@@ -1343,17 +1365,13 @@
     .home-copy-title{ font-size:30px; line-height:1.4; }
     .home-glass{ padding:20px 20px; height:auto; min-height:0; max-height:none; }
     .btn-home{ font-size:12px; padding:12px 22px; }
-    .home-illustration-wrap{ height:42vh; justify-content:flex-start; padding:0; }
+    .home-illustration-wrap{ height:auto; justify-content:flex-start; padding:0; }
     .home-illustration-track{ gap:16px; padding:0; scroll-padding-left:0; }
-    .home-illustration{ width:min(100%, 820px); max-height:480px; }
-    .home-slider-btn{
-      height:38px;
-      min-width:56px;
-      font-size:10px;
-      padding:0 12px;
-    }
-    .home-slider-btn.prev{ left:8px; }
-    .home-slider-btn.next{ right:8px; }
+    .home-slide{ padding:16px 16px 18px; flex-direction:column; align-items:flex-start; }
+    .home-slide-content{ max-width:100%; }
+    .home-slide-title{ font-size:20px; }
+    .home-slide-media{ width:100%; height:180px; padding-left:0; }
+    .home-illustration{ border-radius:16px; }
 
     /* 3D popup mobile */
     .map-3d-popup{
@@ -1464,25 +1482,40 @@
             </div>
 
             <div class="home-illustration-wrap">
-              <button class="home-slider-btn prev" id="homeSlidePrev" type="button" aria-label="Previous artwork">Prev</button>
               <div class="home-illustration-track" aria-label="Home artwork slider">
-                <img
-                  class="home-illustration"
-                  src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69416b180e44275100eb5de3_Gemini_Generated_Image_xkyrarxkyrarxkyr%20(1).png"
-                  alt="Home artwork 1"
-                />
-                <img
-                  class="home-illustration"
-                  src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/694bd3258d5818af743ab9c0_Hands-rendering-small.bmp"
-                  alt="Home artwork 2"
-                />
-                <img
-                  class="home-illustration"
-                  src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png"
-                  alt="Home artwork 3"
-                />
+                <article class="home-slide">
+                  <div class="home-slide-content">
+                    <h3 class="home-slide-title">
+                      <span>Explore &amp; Collect</span>
+                      <span>Unique Artwork</span>
+                    </h3>
+                    <button class="home-slide-btn" type="button" onclick="switchSection('sect-gallery')">Browse Collection</button>
+                  </div>
+                  <div class="home-slide-media">
+                    <img
+                      class="home-illustration"
+                      src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69416b180e44275100eb5de3_Gemini_Generated_Image_xkyrarxkyrarxkyr%20(1).png"
+                      alt="Gallery artwork 1"
+                    />
+                  </div>
+                </article>
+                <article class="home-slide">
+                  <div class="home-slide-content">
+                    <h3 class="home-slide-title">
+                      <span>Explore &amp; Collect</span>
+                      <span>Unique Artwork</span>
+                    </h3>
+                    <button class="home-slide-btn" type="button" onclick="switchSection('sect-gallery')">Browse Collection</button>
+                  </div>
+                  <div class="home-slide-media">
+                    <img
+                      class="home-illustration"
+                      src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/694bd3258d5818af743ab9c0_Hands-rendering-small.bmp"
+                      alt="Gallery artwork 2"
+                    />
+                  </div>
+                </article>
               </div>
-              <button class="home-slider-btn next" id="homeSlideNext" type="button" aria-label="Next artwork">Next</button>
             </div>
           </div>
         </div>
@@ -1902,7 +1935,7 @@
   const homeSliderTrack = document.querySelector('.home-illustration-track');
   const getHomeSlideStep = () => {
     if(!homeSliderTrack) return 0;
-    const slide = homeSliderTrack.querySelector('.home-illustration');
+    const slide = homeSliderTrack.querySelector('.home-slide');
     const base = slide ? slide.getBoundingClientRect().width : homeSliderTrack.clientWidth;
     const style = getComputedStyle(homeSliderTrack);
     const gap = parseFloat(style.columnGap || style.gap || "0") || 0;
@@ -1914,9 +1947,6 @@
     if(!step) return;
     homeSliderTrack.scrollBy({ left: dir * step, behavior:'smooth' });
   };
-  safeAdd('homeSlidePrev','click',() => scrollHomeSlider(-1));
-  safeAdd('homeSlideNext','click',() => scrollHomeSlider(1));
-
   if(homeSliderTrack){
     setInterval(() => {
       const homeSection = document.getElementById('sect-home');
