@@ -291,7 +291,7 @@
     flex:1;
     min-height:0;
     display:grid;
-    grid-template-columns:minmax(260px, 34%) minmax(0, 1fr);
+    grid-template-columns:1fr;
     grid-template-rows:1fr;
     gap:0;
     align-items:stretch;
@@ -308,6 +308,11 @@
   }
 
   .home-banner{
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    width:min(38%, 440px);
     background:#eeeeee;
     display:flex;
     flex-direction:column;
@@ -316,6 +321,7 @@
     gap:14px;
     padding:28px 26px;
     height:100%;
+    z-index:2;
   }
   .home-banner-title{
     margin:0;
@@ -1374,7 +1380,11 @@
     .home-top small{ font-size:18px; padding-left:5%; }
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
     .home-main{ grid-template-columns:1fr; gap:12px; align-items:stretch; margin-top:0; border-radius:18px; }
-    .home-banner{ padding:20px 18px; }
+    .home-banner{
+      position:static;
+      width:100%;
+      padding:20px 18px;
+    }
     .home-banner-title{ font-size:22px; }
     .home-copy{ margin:0 0 10px 0; width:100%; }
     .home-copy-title{ font-size:30px; line-height:1.4; }
