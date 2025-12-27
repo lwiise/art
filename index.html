@@ -2719,7 +2719,6 @@
 
     let minY = 0;
     let maxY = 0;
-    let lastScrollPos = null;
 
     const isWindowScroll = () => {
       const style = getComputedStyle(scroller);
@@ -2728,42 +2727,44 @@
       return !scrollable || overflowY === "visible";
     };
 
+    const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
 
-      const centers = steps.map(step => step.offsetTop + (step.offsetHeight / 2));
+      const railRect = rail.getBoundingClientRect();
+      const centers = steps.map(step => {
+        const rect = step.getBoundingClientRect();
+        return (rect.top + (rect.height / 2)) - railRect.top;
+      });
       if(centers.length < 2) return;
 
-      minY = centers[0];
-      maxY = centers[centers.length - 1];
+      minY = Math.min(...centers);
+      maxY = Math.max(...centers);
 
       line.style.top = `${minY}px`;
       line.style.height = `${Math.max(0, (maxY - minY))}px`;
       line.style.bottom = "auto";
     };
 
-    const clamp01 = (v) => Math.max(0, Math.min(1, v));
-    const getScrollProgress = () => {
-      const useWindow = isWindowScroll();
-      if(useWindow){
-        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-        const viewport = window.innerHeight || document.documentElement.clientHeight || 0;
-        const rect = itemsWrap.getBoundingClientRect();
-        const start = rect.top + scrollTop;
-        const end = rect.bottom + scrollTop;
-        const maxScroll = Math.max(1, (end - start) - viewport);
-        return clamp01((scrollTop - start) / maxScroll);
-      }
-      const scrollTop = scroller.scrollTop;
-      const viewport = scroller.clientHeight;
-      const start = itemsWrap.offsetTop;
-      const end = start + itemsWrap.offsetHeight;
-      const maxScroll = Math.max(1, (end - start) - viewport);
-      return clamp01((scrollTop - start) / maxScroll);
+    const getViewportCenter = () => {
+      if(isWindowScroll()) return window.innerHeight / 2;
+      const rect = scroller.getBoundingClientRect();
+      return rect.top + (scroller.clientHeight / 2);
     };
 
     const moveDot = () => {
-      const progress = getScrollProgress();
+      const viewportCenter = getViewportCenter();
+      const centers = steps.map(step => {
+        const rect = step.getBoundingClientRect();
+        return rect.top + (rect.height / 2);
+      });
+      if(centers.length < 2){
+        dot.style.top = `${minY}px`;
+        return;
+      }
+      const span = centers[centers.length - 1] - centers[0];
+      const progress = clamp01(span ? (viewportCenter - centers[0]) / span : 0);
       const y = minY + (maxY - minY) * progress;
       dot.style.top = `${y}px`;
     };
@@ -2794,21 +2795,10 @@
     if(grid.dataset.procLoop === "1") return;
     grid.dataset.procLoop = "1";
 
-    const getScrollPos = () => {
-      if(isWindowScroll()){
-        return window.scrollY || document.documentElement.scrollTop || 0;
-      }
-      return scroller.scrollTop;
-    };
-
     const tick = () => {
       if(section && section.classList.contains("active-section")){
-        const scrollPos = getScrollPos();
-        if(scrollPos !== lastScrollPos){
-          lastScrollPos = scrollPos;
-          computeGeometry();
-          moveDot();
-        }
+        computeGeometry();
+        moveDot();
       }
       requestAnimationFrame(tick);
     };
