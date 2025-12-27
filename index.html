@@ -2707,6 +2707,8 @@
     const grid = document.getElementById("processGrid");
     if(!dot || !itemsWrap || !grid) return;
 
+    const section = document.getElementById("sect-services");
+
     const steps = Array.from(itemsWrap.querySelectorAll(".proc-step"));
     const rail = grid.querySelector(".proc-rail");
     const line = rail ? rail.querySelector(".proc-line") : null;
@@ -2717,6 +2719,7 @@
 
     let minY = 0;
     let maxY = 0;
+    let lastScrollPos = null;
 
     const isWindowScroll = () => {
       const style = getComputedStyle(scroller);
@@ -2792,6 +2795,29 @@
       computeGeometry();
       moveDot();
     });
+
+    if(grid.dataset.procLoop === "1") return;
+    grid.dataset.procLoop = "1";
+
+    const getScrollPos = () => {
+      if(isWindowScroll()){
+        return window.scrollY || document.documentElement.scrollTop || 0;
+      }
+      return scroller.scrollTop;
+    };
+
+    const tick = () => {
+      if(section && section.classList.contains("active-section")){
+        const scrollPos = getScrollPos();
+        if(scrollPos !== lastScrollPos){
+          lastScrollPos = scrollPos;
+          computeGeometry();
+          moveDot();
+        }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 
   (function init(){
