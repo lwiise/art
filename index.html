@@ -743,10 +743,11 @@
   }
 
   .solo-tabs-bar{
-    width:auto;
+    width:100%;
     display:flex;
-    justify-content:flex-end;
+    justify-content:center;
     margin:0;
+    padding:12px 22px 18px;
     pointer-events:auto;
   }
 
@@ -1516,6 +1517,9 @@
       align-items:stretch;
       gap:12px;
     }
+    .solo-tabs-bar{ padding:8px 16px 12px; }
+    .media-tabs{ padding:4px; gap:4px; }
+    .media-tab{ padding:6px 10px; font-size:8px; letter-spacing:0.05em; }
     .solo-foot-right{ width:100%; align-items:stretch; }
     .solo-bottom-tabs-inner{ width:100%; justify-content:space-between; }
     .solo-bottom-tab{ flex:1; padding:10px 8px; font-size:10px; }
@@ -1775,9 +1779,9 @@
           <div class="solo-frame">
             <div class="solo-frame-head">
               <div class="solo-name" id="soloName">PRODUCT</div>
-              <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
             </div>
             <div class="solo-media-container" id="soloMedia"></div>
+            <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
 
             <aside class="solo-info-card" id="soloInfoCard" aria-hidden="true">
               <button class="solo-info-close" type="button" id="soloInfoClose" aria-label="Close info">&times;</button>
