@@ -2718,6 +2718,13 @@
     let minY = 0;
     let maxY = 0;
 
+    const isWindowScroll = () => {
+      const style = getComputedStyle(scroller);
+      const overflowY = style.overflowY;
+      const scrollable = scroller.scrollHeight > scroller.clientHeight + 1;
+      return !scrollable || overflowY === "visible";
+    };
+
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
 
@@ -2734,9 +2741,10 @@
 
     const moveDot = () => {
       const railRect = rail.getBoundingClientRect();
-      const scrollerRect = scroller.getBoundingClientRect();
-
-      const viewportCenter = scrollerRect.top + (scroller.clientHeight / 2);
+      const useWindow = isWindowScroll();
+      const viewportCenter = useWindow
+        ? (window.innerHeight / 2)
+        : (scroller.getBoundingClientRect().top + (scroller.clientHeight / 2));
       const relY = viewportCenter - railRect.top;
 
       const y = Math.min(maxY, Math.max(minY, relY));
@@ -2759,6 +2767,7 @@
     });
 
     scroller.addEventListener("scroll", onScroll, { passive:true });
+    window.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("resize", () => {
       computeGeometry();
       moveDot();
