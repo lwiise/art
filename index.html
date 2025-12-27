@@ -2739,15 +2739,34 @@
       line.style.bottom = "auto";
     };
 
-    const moveDot = () => {
-      const railRect = rail.getBoundingClientRect();
+    const getScrollMetrics = () => {
       const useWindow = isWindowScroll();
-      const viewportCenter = useWindow
-        ? (window.innerHeight / 2)
-        : (scroller.getBoundingClientRect().top + (scroller.clientHeight / 2));
-      const relY = viewportCenter - railRect.top;
+      if(useWindow){
+        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        const viewport = window.innerHeight;
+        const rect = itemsWrap.getBoundingClientRect();
+        const start = rect.top + scrollTop;
+        const end = rect.bottom + scrollTop;
+        const mid = scrollTop + (viewport / 2);
+        return { start, end, mid };
+      }
+      const scrollTop = scroller.scrollTop;
+      const viewport = scroller.clientHeight;
+      const start = itemsWrap.offsetTop;
+      const end = start + itemsWrap.offsetHeight;
+      const mid = scrollTop + (viewport / 2);
+      return { start, end, mid };
+    };
 
-      const y = Math.min(maxY, Math.max(minY, relY));
+    const moveDot = () => {
+      const metrics = getScrollMetrics();
+      const span = metrics.end - metrics.start;
+      if(span <= 0){
+        dot.style.top = `${minY}px`;
+        return;
+      }
+      const progress = Math.max(0, Math.min(1, (metrics.mid - metrics.start) / span));
+      const y = minY + (maxY - minY) * progress;
       dot.style.top = `${y}px`;
     };
 
@@ -2768,6 +2787,7 @@
 
     scroller.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("scroll", onScroll, { passive:true });
+    document.addEventListener("scroll", onScroll, { passive:true });
     window.addEventListener("resize", () => {
       computeGeometry();
       moveDot();
