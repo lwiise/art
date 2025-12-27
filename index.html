@@ -2727,8 +2727,6 @@
       return !scrollable || overflowY === "visible";
     };
 
-    const clamp01 = (v) => Math.max(0, Math.min(1, v));
-
     const computeGeometry = () => {
       rail.style.height = itemsWrap.offsetHeight + "px";
 
@@ -2755,17 +2753,20 @@
 
     const moveDot = () => {
       const viewportCenter = getViewportCenter();
-      const centers = steps.map(step => {
+      let closestIdx = 0;
+      let closestDist = Infinity;
+      steps.forEach((step, idx) => {
         const rect = step.getBoundingClientRect();
-        return rect.top + (rect.height / 2);
+        const center = rect.top + (rect.height / 2);
+        const dist = Math.abs(center - viewportCenter);
+        if(dist < closestDist){
+          closestDist = dist;
+          closestIdx = idx;
+        }
       });
-      if(centers.length < 2){
-        dot.style.top = `${minY}px`;
-        return;
-      }
-      const span = centers[centers.length - 1] - centers[0];
-      const progress = clamp01(span ? (viewportCenter - centers[0]) / span : 0);
-      const y = minY + (maxY - minY) * progress;
+      const railRect = rail.getBoundingClientRect();
+      const targetRect = steps[closestIdx].getBoundingClientRect();
+      const y = (targetRect.top + (targetRect.height / 2)) - railRect.top;
       dot.style.top = `${y}px`;
     };
 
