@@ -2742,33 +2742,28 @@
       line.style.bottom = "auto";
     };
 
-    const getScrollMetrics = () => {
+    const clamp01 = (v) => Math.max(0, Math.min(1, v));
+    const getScrollProgress = () => {
       const useWindow = isWindowScroll();
       if(useWindow){
         const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-        const viewport = window.innerHeight;
+        const viewport = window.innerHeight || document.documentElement.clientHeight || 0;
         const rect = itemsWrap.getBoundingClientRect();
         const start = rect.top + scrollTop;
         const end = rect.bottom + scrollTop;
-        const mid = scrollTop + (viewport / 2);
-        return { start, end, mid };
+        const maxScroll = Math.max(1, (end - start) - viewport);
+        return clamp01((scrollTop - start) / maxScroll);
       }
       const scrollTop = scroller.scrollTop;
       const viewport = scroller.clientHeight;
       const start = itemsWrap.offsetTop;
       const end = start + itemsWrap.offsetHeight;
-      const mid = scrollTop + (viewport / 2);
-      return { start, end, mid };
+      const maxScroll = Math.max(1, (end - start) - viewport);
+      return clamp01((scrollTop - start) / maxScroll);
     };
 
     const moveDot = () => {
-      const metrics = getScrollMetrics();
-      const span = metrics.end - metrics.start;
-      if(span <= 0){
-        dot.style.top = `${minY}px`;
-        return;
-      }
-      const progress = Math.max(0, Math.min(1, (metrics.mid - metrics.start) / span));
+      const progress = getScrollProgress();
       const y = minY + (maxY - minY) * progress;
       dot.style.top = `${y}px`;
     };
