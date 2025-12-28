@@ -1589,7 +1589,7 @@
   <aside class="shop" id="shop">
 
     <!-- HOME -->
-    <section id="sect-home" class="app-section">
+    <section id="sect-home" class="app-section active-section">
       <div class="section-scroll">
         <div class="home-screen">
           <div class="home-top">
@@ -1762,7 +1762,7 @@
     </section>
 
     <!-- GALLERY -->
-    <section id="sect-gallery" class="app-section active-section">
+    <section id="sect-gallery" class="app-section">
       <header class="shop-head">
         <nav class="nav-group" id="filters">
           <button class="chip active" data-filter="all" id="btnAll">ALL</button>
@@ -2812,12 +2812,12 @@
     // ✅ Always render all 12 at start
     render(PRODUCTS);
 
-    // Default active nav = Gallery (as you had)
+    // Default active nav = Home
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navGallery = document.getElementById('navGallery');
-    if(navGallery) navGallery.classList.add('active');
-    const mNavGallery = document.getElementById('mNavGallery');
-    if(mNavGallery) mNavGallery.classList.add('active');
+    const navHome = document.getElementById('navHome');
+    if(navHome) navHome.classList.add('active');
+    const mNavHome = document.getElementById('mNavHome');
+    if(mNavHome) mNavHome.classList.add('active');
 
     setupProcessAnimation();
   })();
