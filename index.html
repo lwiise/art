@@ -1279,6 +1279,9 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    align-self:start;
+    position:sticky;
+    top:24px;
   }
   .book-media img{
     width:100%;
@@ -1427,10 +1430,27 @@
     letter-spacing:0.06em;
     text-transform:uppercase;
     color:#111;
+    cursor:pointer;
   }
   .book-accordion-item span:last-child{
     font-size:18px;
     color:#111;
+    transition:transform .2s ease;
+  }
+  .book-accordion-item.open span:last-child{
+    transform:rotate(45deg);
+  }
+  .book-accordion-panel{
+    max-height:0;
+    overflow:hidden;
+    font-size:12px;
+    line-height:1.7;
+    color:#666;
+    transition:max-height .2s ease;
+  }
+  .book-accordion-panel.open{
+    max-height:240px;
+    padding:0 0 14px;
   }
   .book-accessory{
     margin-top:22px;
@@ -1841,7 +1861,7 @@
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
-    .book-media{ min-height:320px; }
+    .book-media{ min-height:320px; position:static; top:auto; }
     .book-title{ font-size:20px; }
     .book-offer{ flex-direction:column; align-items:flex-start; }
     .book-offer-btn{ margin-left:0; }
@@ -2264,10 +2284,19 @@
 
                 <div class="book-accordion">
                   <div class="book-accordion-item"><span>Description</span><span>+</span></div>
+                  <div class="book-accordion-panel">A collectible volume featuring rich photography, archival imagery, and cultural essays that trace the story behind the destination.</div>
+
                   <div class="book-accordion-item"><span>Care instructions</span><span>+</span></div>
+                  <div class="book-accordion-panel">Keep in the dust jacket when not in use. Store away from direct sunlight and moisture to preserve the cover and pages.</div>
+
                   <div class="book-accordion-item"><span>Shipping, returns & exchanges</span><span>+</span></div>
+                  <div class="book-accordion-panel">Standard delivery in 3–5 business days. Returns accepted within 14 days in original condition. Exchanges are subject to availability.</div>
+
                   <div class="book-accordion-item"><span>Press</span><span>+</span></div>
+                  <div class="book-accordion-panel">Featured by international art & design publications for its photography, craftsmanship, and editorial direction.</div>
+
                   <div class="book-accordion-item"><span>About the author</span><span>+</span></div>
+                  <div class="book-accordion-panel">Written by a leading cultural historian with decades of experience documenting heritage, travel, and contemporary art.</div>
                 </div>
 
                 <div class="book-accessory">
@@ -3160,6 +3189,20 @@
   safeAdd("bookBack","click",closeBook);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
+
+  const bookAccordion = document.querySelector('.book-accordion');
+  if(bookAccordion && bookAccordion.dataset.bound !== "1"){
+    bookAccordion.dataset.bound = "1";
+    bookAccordion.addEventListener('click', (e) => {
+      const item = e.target.closest('.book-accordion-item');
+      if(!item) return;
+      item.classList.toggle('open');
+      const panel = item.nextElementSibling;
+      if(panel && panel.classList.contains('book-accordion-panel')){
+        panel.classList.toggle('open');
+      }
+    });
+  }
 
   safeAdd("soloInfoBtn","click", () => {
     const frame = document.querySelector('#sect-gallery.solo .solo-frame');
