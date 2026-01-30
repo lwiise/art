@@ -635,7 +635,7 @@
   .gallery-head{
     display:flex;
     flex-direction:column;
-    gap:12px;
+    gap:18px;
   }
   .gallery-tabs{
     display:flex;
@@ -644,12 +644,40 @@
     flex-wrap:nowrap;
     overflow-x:auto;
     scrollbar-width:none;
+    padding:6px;
+    border-radius:999px;
+    background:#111;
+    box-shadow:0 12px 24px rgba(0,0,0,0.08);
   }
   .gallery-tabs::-webkit-scrollbar{ display:none; }
   .gallery-tabs .chip{
     text-transform:uppercase;
-    letter-spacing:0.16em;
-    font-size:12px;
+    letter-spacing:0.18em;
+    font-size:11px;
+    color:rgba(255,255,255,0.7);
+    padding:8px 14px;
+  }
+  .gallery-tabs .chip:hover{ color:#fff; }
+  .gallery-tabs .chip.active{
+    background:#fff;
+    color:#111;
+    padding:8px 18px;
+  }
+
+  #filters{
+    padding-top:6px;
+  }
+  #filters .chip{
+    background:#f4f4f4;
+    color:#666;
+    border:1px solid #e8e8e8;
+  }
+  #filters .chip:hover{ color:#222; }
+  #filters .chip.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+    padding:8px 20px;
   }
 
   .nav-group{
