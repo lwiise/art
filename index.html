@@ -712,7 +712,7 @@
     overflow-y:auto;
     min-height:0;
   }
-  #sect-gallery.gallery-non-furniture .grid{ display:none; }
+  #sect-gallery.gallery-empty-state .grid{ display:none; }
   .gallery-empty{
     display:flex;
     flex-direction:column;
@@ -2540,6 +2540,20 @@
     { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
   ];
 
+  const BOOKS = [
+    { id:"book-1", name:"Hajj and the Arts of Pilgrimage", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba2585301af28c70de99_hajj-and-the-arts-of-pilgrimage-assouline-2.jpg" },
+    { id:"book-2", name:"St. Catherine's Monastery: Behind Sacred Doors", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25efadf9246061f732_st-catherine-s-monastery-behind-sacred-doors-assouline-1.jpg" },
+    { id:"book-3", name:"Makkah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25d89ff47bf803d306_Makkah-IC_01_8fee0b8d-7690-4cfc-aed6-21495a0022f9.webp" },
+    { id:"book-4", name:"Qatar: Our Home", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba252ca2a04b62c99557_Qatar-Our-Home_02_00b26bd5-15cf-43d7-ba3c-f2016acea17b.webp" },
+    { id:"book-5", name:"Al Madinah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24df2d1dfd14a47e6a_AlMadinah-IC_01_b86a3bce-4fd0-4fe1-aa99-96c9a580ba2c.webp" },
+    { id:"book-6", name:"Sheikh Zayed", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24b670baf7a60642c9_Sheikh-Zayed_01_9d8b1f29-584d-4399-9379-4faf8eb4f2e7.webp" },
+    { id:"book-7", name:"Wine & Travel: Mediterranean Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba241771f110336e2c43_Wine_TravelMediterraneanIslands_Classic_01.webp" },
+    { id:"book-8", name:"Uzbekistan: Masterpieces of the Silk Road", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba249f5080bcedbd67d7_Uzbekistan_Materpieces_of_the_Silk_Road_01.webp" },
+    { id:"book-9", name:"Mleiha: Ancient Treasures of the UAE", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e192b9193b952524_MLEIHA_Ancient_Treausures_of_the_UAE_Classic_01.webp" },
+    { id:"book-10", name:"Greek Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e443e5bee39a7878_greek-islands-assouline-1.jpg" },
+    { id:"book-11", name:"Sharjah: The Capital of Culture", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba248e409ad226f097f9_SharjahTheCapitalofCulture_Classic001.webp" }
+  ];
+
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
   const galleryEmpty = document.getElementById("galleryEmpty");
@@ -2548,32 +2562,42 @@
   let currentFilter = "all";
   let currentGallery = "furniture";
 
-  function render(list){
+  function renderCards(list, options){
     if(!grid) return;
     grid.innerHTML = "";
+    const clickable = options && options.clickable;
+    const defaultSub = options && options.subLabel ? options.subLabel : "";
     list.forEach(p => {
       const el = document.createElement("article");
       el.className = "card";
+      const title = p.name || "Item";
+      const sub = (p.sub || defaultSub).trim();
       el.innerHTML = `
-        <div class="card-media"><img src="${p.img}" alt="${p.name}"/></div>
-        <div class="card-name">${p.name}</div>
-        <div class="card-sub">Edition 2024</div>
+        <div class="card-media"><img src="${p.img}" alt="${title}"/></div>
+        <div class="card-name">${title}</div>
+        ${sub ? `<div class="card-sub">${sub}</div>` : ""}
       `;
-      el.addEventListener("click", () => openSolo(p));
+      if(clickable) el.addEventListener("click", () => openSolo(p));
       grid.appendChild(el);
     });
   }
 
   function renderFurniture(){
     const list = currentFilter === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === currentFilter);
-    render(list);
+    renderCards(list, { clickable:true, subLabel:"Edition 2024" });
+  }
+
+  function renderBooks(){
+    renderCards(BOOKS, { clickable:false, subLabel:"Book" });
   }
 
   function setGallery(galleryKey){
     currentGallery = galleryKey;
     const isFurniture = galleryKey === "furniture";
+    const isBooks = galleryKey === "books";
+    const showGrid = isFurniture || isBooks;
     const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl) galleryEl.classList.toggle("gallery-non-furniture", !isFurniture);
+    if(galleryEl) galleryEl.classList.toggle("gallery-empty-state", !showGrid);
 
     if(galleryTabs){
       galleryTabs.querySelectorAll(".gallery-chip").forEach(btn => {
@@ -2591,7 +2615,7 @@
     }
 
     if(galleryEmpty){
-      if(isFurniture){
+      if(showGrid){
         galleryEmpty.hidden = true;
       }else{
         const labelEl = galleryTabs ? galleryTabs.querySelector(`[data-gallery="${galleryKey}"]`) : null;
@@ -2604,10 +2628,10 @@
 
     if(!isFurniture){
       if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
-      return;
     }
 
-    renderFurniture();
+    if(isFurniture) renderFurniture();
+    if(isBooks) renderBooks();
   }
 
   if(filtersEl){
