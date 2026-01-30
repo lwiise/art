@@ -632,6 +632,25 @@
     padding:22px 30px;
     border-bottom:1px solid #f0f0f0;
   }
+  .gallery-head{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .gallery-tabs{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .gallery-tabs::-webkit-scrollbar{ display:none; }
+  .gallery-tabs .chip{
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    font-size:12px;
+  }
 
   .nav-group{
     display:flex; gap:10px; align-items:center;
@@ -664,6 +683,32 @@
     flex-grow:1;
     overflow-y:auto;
     min-height:0;
+  }
+  .gallery-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:42px 26px;
+    border:1px dashed #e6e6e6;
+    border-radius:24px;
+    background:#fbfbfb;
+    color:#777;
+    margin-bottom:22px;
+  }
+  .gallery-empty-title{
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:#222;
+    margin-bottom:8px;
+  }
+  .gallery-empty-desc{
+    font-size:12px;
+    color:#8a8a8a;
+    margin:0;
   }
 
   .grid{
@@ -1764,15 +1809,27 @@
     <!-- GALLERY -->
     <section id="sect-gallery" class="app-section">
       <header class="shop-head">
-        <nav class="nav-group" id="filters">
-          <button class="chip active" data-filter="all" id="btnAll">ALL</button>
-          <button class="chip" data-filter="cabinet">Cabinets</button>
-          <button class="chip" data-filter="sideboard">Sideboards</button>
-          <button class="chip" data-filter="decor">Decor</button>
-        </nav>
+        <div class="gallery-head">
+          <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
+            <button class="chip gallery-chip" data-gallery="art">Art</button>
+            <button class="chip gallery-chip active" data-gallery="furniture">Furniture</button>
+            <button class="chip gallery-chip" data-gallery="designes">Designes</button>
+            <button class="chip gallery-chip" data-gallery="books">Books</button>
+          </nav>
+          <nav class="nav-group" id="filters" aria-label="Furniture filters">
+            <button class="chip active" data-filter="all" id="btnAll">ALL</button>
+            <button class="chip" data-filter="cabinet">Cabinets</button>
+            <button class="chip" data-filter="sideboard">Sideboards</button>
+            <button class="chip" data-filter="decor">Decor</button>
+          </nav>
+        </div>
       </header>
 
       <div class="shop-body">
+        <div class="gallery-empty" id="galleryEmpty" hidden>
+          <div class="gallery-empty-title">Collection coming soon</div>
+          <p class="gallery-empty-desc">We are curating new pieces now. Check back soon.</p>
+        </div>
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
@@ -2455,6 +2512,12 @@
   ];
 
   const grid = document.getElementById("grid");
+  const galleryTabs = document.getElementById("galleryTabs");
+  const galleryEmpty = document.getElementById("galleryEmpty");
+  const filtersEl = document.getElementById("filters");
+
+  let currentFilter = "all";
+  let currentGallery = "furniture";
 
   function render(list){
     if(!grid) return;
@@ -2472,15 +2535,69 @@
     });
   }
 
-  const filtersEl = document.getElementById("filters");
+  function renderFurniture(){
+    const list = currentFilter === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === currentFilter);
+    render(list);
+  }
+
+  function setGallery(galleryKey){
+    currentGallery = galleryKey;
+    const isFurniture = galleryKey === "furniture";
+
+    if(galleryTabs){
+      galleryTabs.querySelectorAll(".gallery-chip").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.gallery === galleryKey);
+      });
+    }
+
+    if(filtersEl){
+      filtersEl.hidden = !isFurniture;
+      filtersEl.setAttribute("aria-hidden", isFurniture ? "false" : "true");
+    }
+
+    if(grid){
+      grid.style.display = isFurniture ? "grid" : "none";
+    }
+
+    if(galleryEmpty){
+      if(isFurniture){
+        galleryEmpty.hidden = true;
+      }else{
+        const labelEl = galleryTabs ? galleryTabs.querySelector(`[data-gallery="${galleryKey}"]`) : null;
+        const label = labelEl ? labelEl.textContent.trim() : galleryKey;
+        const titleEl = galleryEmpty.querySelector(".gallery-empty-title");
+        if(titleEl) titleEl.textContent = `${label} collection coming soon`;
+        galleryEmpty.hidden = false;
+      }
+    }
+
+    if(!isFurniture){
+      const galleryEl = document.getElementById("sect-gallery");
+      if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
+      return;
+    }
+
+    renderFurniture();
+  }
+
   if(filtersEl){
     filtersEl.addEventListener("click", e => {
       const btn = e.target.closest(".chip");
-      if(!btn) return;
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      if(!btn || currentGallery !== "furniture") return;
+      currentFilter = btn.dataset.filter || "all";
+      filtersEl.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
       btn.classList.add("active");
-      const f = btn.dataset.filter;
-      render(f === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === f));
+      renderFurniture();
+    });
+  }
+
+  if(galleryTabs){
+    galleryTabs.addEventListener("click", e => {
+      const btn = e.target.closest(".gallery-chip");
+      if(!btn) return;
+      const g = btn.dataset.gallery;
+      if(!g || g === currentGallery) return;
+      setGallery(g);
     });
   }
 
@@ -2809,8 +2926,8 @@
   }
 
   (function init(){
-    // ✅ Always render all 12 at start
-    render(PRODUCTS);
+    // ✅ Default gallery = Furniture
+    setGallery("furniture");
 
     // Default active nav = Home
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
