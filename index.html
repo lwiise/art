@@ -712,6 +712,7 @@
     overflow-y:auto;
     min-height:0;
   }
+  #sect-gallery.gallery-non-furniture .grid{ display:none; }
   .gallery-empty{
     display:flex;
     flex-direction:column;
@@ -2571,6 +2572,8 @@
   function setGallery(galleryKey){
     currentGallery = galleryKey;
     const isFurniture = galleryKey === "furniture";
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl) galleryEl.classList.toggle("gallery-non-furniture", !isFurniture);
 
     if(galleryTabs){
       galleryTabs.querySelectorAll(".gallery-chip").forEach(btn => {
@@ -2584,7 +2587,7 @@
     }
 
     if(grid){
-      grid.style.display = isFurniture ? "grid" : "none";
+      grid.style.display = "";
     }
 
     if(galleryEmpty){
@@ -2600,7 +2603,6 @@
     }
 
     if(!isFurniture){
-      const galleryEl = document.getElementById("sect-gallery");
       if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
       return;
     }
