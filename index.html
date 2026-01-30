@@ -740,6 +740,159 @@
     margin:0;
   }
 
+  .book-filter-bar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .book-filter-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid #dcdcdc;
+    background:#fff;
+    padding:10px 16px;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .book-filter-btn svg{ width:18px; height:18px; }
+  .book-filter-summary{
+    font-size:11px;
+    color:#777;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+
+  .book-filter-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.32);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:46px 18px;
+    z-index:999;
+  }
+  .book-filter-modal.open{ display:flex; }
+  .book-filter-card{
+    width:min(520px, 94vw);
+    background:#fff;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.16);
+  }
+  .book-filter-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .book-filter-title{
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .book-filter-close{
+    background:none;
+    border:none;
+    font-size:24px;
+    cursor:pointer;
+    color:#111;
+  }
+  .book-filter-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:12px 0 20px;
+    border-bottom:1px solid #e9e9e9;
+  }
+  .book-filter-row label{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#555;
+  }
+  .book-filter-row select{
+    flex:1;
+    padding:10px 12px;
+    border:1px solid #e5e5e5;
+    background:#f7f7f7;
+    font-size:14px;
+  }
+  .book-filter-group{
+    border-bottom:1px solid #e9e9e9;
+  }
+  .book-filter-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:none;
+    border:none;
+    padding:16px 0;
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .book-filter-toggle span{
+    transition:transform .2s ease;
+  }
+  .book-filter-toggle.open span{
+    transform:rotate(180deg);
+  }
+  .book-filter-options{
+    display:none;
+    padding-bottom:16px;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .book-filter-options.open{
+    display:flex;
+  }
+  .book-filter-options label{
+    font-size:12px;
+    color:#444;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .book-filter-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding-top:22px;
+  }
+  .book-filter-clear{
+    background:none;
+    border:none;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#111;
+    cursor:pointer;
+  }
+  .book-filter-apply{
+    flex:1;
+    background:#c23a20;
+    color:#fff;
+    border:none;
+    padding:14px 16px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
@@ -1854,6 +2007,12 @@
     .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
     .card{ padding:16px 12px; border-radius:24px; }
     .card-media{ height:118px; }
+    .book-filter-bar{ flex-direction:column; align-items:flex-start; }
+    .book-filter-btn{ width:100%; justify-content:center; }
+    .book-filter-summary{ font-size:10px; }
+    .book-filter-card{ padding:20px; }
+    .book-filter-row{ flex-direction:column; align-items:flex-start; }
+    .book-filter-row select{ width:100%; }
     .card.book-card{ padding:0; }
     .card.book-card .card-media{ height:200px; }
     .card.book-card .card-name{ padding:12px 14px 4px; }
@@ -2133,6 +2292,18 @@
             <button class="chip" data-filter="sideboard">Sideboards</button>
             <button class="chip" data-filter="decor">Decor</button>
           </nav>
+          <div class="book-filter-bar" id="bookFilterBar" hidden>
+            <button class="book-filter-btn" type="button" id="bookFilterBtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="8" cy="6" r="1.6" fill="currentColor"/>
+                <circle cx="15" cy="12" r="1.6" fill="currentColor"/>
+                <circle cx="12" cy="18" r="1.6" fill="currentColor"/>
+              </svg>
+              Filter & Sort
+            </button>
+            <div class="book-filter-summary" id="bookFilterSummary">Featured · All Themes · All Colors · All Sizes</div>
+          </div>
         </div>
       </header>
 
@@ -2312,6 +2483,66 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="book-filter-modal" id="bookFilterModal" aria-hidden="true">
+        <div class="book-filter-card">
+          <div class="book-filter-head">
+            <div class="book-filter-title">Filter &amp; Sort</div>
+            <button class="book-filter-close" type="button" id="bookFilterClose" aria-label="Close">×</button>
+          </div>
+
+          <div class="book-filter-row">
+            <label for="bookSortSelect">Sort by:</label>
+            <select id="bookSortSelect">
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="title-asc">Title: A–Z</option>
+            </select>
+          </div>
+
+          <div class="book-filter-group">
+            <button class="book-filter-toggle" type="button" data-target="bookFilterThemes">
+              Themes <span>▾</span>
+            </button>
+            <div class="book-filter-options" id="bookFilterThemes">
+              <label><input type="checkbox" value="Heritage"> Heritage</label>
+              <label><input type="checkbox" value="Pilgrimage"> Pilgrimage</label>
+              <label><input type="checkbox" value="Architecture"> Architecture</label>
+              <label><input type="checkbox" value="Travel"> Travel</label>
+              <label><input type="checkbox" value="Culture"> Culture</label>
+            </div>
+          </div>
+
+          <div class="book-filter-group">
+            <button class="book-filter-toggle" type="button" data-target="bookFilterColors">
+              Color <span>▾</span>
+            </button>
+            <div class="book-filter-options" id="bookFilterColors">
+              <label><input type="checkbox" value="Warm"> Warm</label>
+              <label><input type="checkbox" value="Cool"> Cool</label>
+              <label><input type="checkbox" value="Neutral"> Neutral</label>
+              <label><input type="checkbox" value="Bold"> Bold</label>
+            </div>
+          </div>
+
+          <div class="book-filter-group">
+            <button class="book-filter-toggle" type="button" data-target="bookFilterSizes">
+              Size <span>▾</span>
+            </button>
+            <div class="book-filter-options" id="bookFilterSizes">
+              <label><input type="checkbox" value="Compact"> Compact</label>
+              <label><input type="checkbox" value="Classic"> Classic</label>
+              <label><input type="checkbox" value="Large"> Large</label>
+            </div>
+          </div>
+
+          <div class="book-filter-actions">
+            <button class="book-filter-clear" type="button" id="bookFilterClear">Clear</button>
+            <button class="book-filter-apply" type="button" id="bookFilterApply">Apply</button>
           </div>
         </div>
       </div>
@@ -2892,26 +3123,40 @@
   ];
 
   const BOOKS = [
-    { id:"book-1", name:"Hajj and the Arts of Pilgrimage", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba2585301af28c70de99_hajj-and-the-arts-of-pilgrimage-assouline-2.jpg" },
-    { id:"book-2", name:"St. Catherine's Monastery: Behind Sacred Doors", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25efadf9246061f732_st-catherine-s-monastery-behind-sacred-doors-assouline-1.jpg" },
-    { id:"book-3", name:"Makkah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25d89ff47bf803d306_Makkah-IC_01_8fee0b8d-7690-4cfc-aed6-21495a0022f9.webp" },
-    { id:"book-4", name:"Qatar: Our Home", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba252ca2a04b62c99557_Qatar-Our-Home_02_00b26bd5-15cf-43d7-ba3c-f2016acea17b.webp" },
-    { id:"book-5", name:"Al Madinah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24df2d1dfd14a47e6a_AlMadinah-IC_01_b86a3bce-4fd0-4fe1-aa99-96c9a580ba2c.webp" },
-    { id:"book-6", name:"Sheikh Zayed", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24b670baf7a60642c9_Sheikh-Zayed_01_9d8b1f29-584d-4399-9379-4faf8eb4f2e7.webp" },
-    { id:"book-7", name:"Wine & Travel: Mediterranean Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba241771f110336e2c43_Wine_TravelMediterraneanIslands_Classic_01.webp" },
-    { id:"book-8", name:"Uzbekistan: Masterpieces of the Silk Road", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba249f5080bcedbd67d7_Uzbekistan_Materpieces_of_the_Silk_Road_01.webp" },
-    { id:"book-9", name:"Mleiha: Ancient Treasures of the UAE", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e192b9193b952524_MLEIHA_Ancient_Treausures_of_the_UAE_Classic_01.webp" },
-    { id:"book-10", name:"Greek Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e443e5bee39a7878_greek-islands-assouline-1.jpg" },
-    { id:"book-11", name:"Sharjah: The Capital of Culture", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba248e409ad226f097f9_SharjahTheCapitalofCulture_Classic001.webp" }
+    { id:"book-1", name:"Hajj and the Arts of Pilgrimage", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba2585301af28c70de99_hajj-and-the-arts-of-pilgrimage-assouline-2.jpg", theme:"Pilgrimage", color:"Warm", size:"Large", price:"$1,400 USD", priceValue:1400, tag:"Back in Stock", kicker:"The Ultimate Collection" },
+    { id:"book-2", name:"St. Catherine's Monastery: Behind Sacred Doors", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25efadf9246061f732_st-catherine-s-monastery-behind-sacred-doors-assouline-1.jpg", theme:"Heritage", color:"Cool", size:"Classic", price:"$980 USD", priceValue:980, tag:"New Arrival", kicker:"Sacred Places Series" },
+    { id:"book-3", name:"Makkah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25d89ff47bf803d306_Makkah-IC_01_8fee0b8d-7690-4cfc-aed6-21495a0022f9.webp", theme:"Pilgrimage", color:"Warm", size:"Large", price:"$1,250 USD", priceValue:1250, tag:"Collector's Edition", kicker:"The Ultimate Collection" },
+    { id:"book-4", name:"Qatar: Our Home", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba252ca2a04b62c99557_Qatar-Our-Home_02_00b26bd5-15cf-43d7-ba3c-f2016acea17b.webp", theme:"Culture", color:"Bold", size:"Classic", price:"$900 USD", priceValue:900, tag:"Limited Run", kicker:"Modern Heritage" },
+    { id:"book-5", name:"Al Madinah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24df2d1dfd14a47e6a_AlMadinah-IC_01_b86a3bce-4fd0-4fe1-aa99-96c9a580ba2c.webp", theme:"Pilgrimage", color:"Cool", size:"Large", price:"$1,150 USD", priceValue:1150, tag:"Back in Stock", kicker:"The Ultimate Collection" },
+    { id:"book-6", name:"Sheikh Zayed", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24b670baf7a60642c9_Sheikh-Zayed_01_9d8b1f29-584d-4399-9379-4faf8eb4f2e7.webp", theme:"Architecture", color:"Neutral", size:"Classic", price:"$1,000 USD", priceValue:1000, tag:"Museum Edition", kicker:"Icons of Architecture" },
+    { id:"book-7", name:"Wine & Travel: Mediterranean Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba241771f110336e2c43_Wine_TravelMediterraneanIslands_Classic_01.webp", theme:"Travel", color:"Warm", size:"Compact", price:"$750 USD", priceValue:750, tag:"Traveler's Pick", kicker:"The Travel Desk" },
+    { id:"book-8", name:"Uzbekistan: Masterpieces of the Silk Road", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba249f5080bcedbd67d7_Uzbekistan_Materpieces_of_the_Silk_Road_01.webp", theme:"Heritage", color:"Warm", size:"Classic", price:"$820 USD", priceValue:820, tag:"Collector's Choice", kicker:"The Silk Road Series" },
+    { id:"book-9", name:"Mleiha: Ancient Treasures of the UAE", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e192b9193b952524_MLEIHA_Ancient_Treausures_of_the_UAE_Classic_01.webp", theme:"Heritage", color:"Neutral", size:"Classic", price:"$880 USD", priceValue:880, tag:"Featured", kicker:"Desert Histories" },
+    { id:"book-10", name:"Greek Islands", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba24e443e5bee39a7878_greek-islands-assouline-1.jpg", theme:"Travel", color:"Cool", size:"Compact", price:"$720 USD", priceValue:720, tag:"Best Seller", kicker:"The Travel Desk" },
+    { id:"book-11", name:"Sharjah: The Capital of Culture", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba248e409ad226f097f9_SharjahTheCapitalofCulture_Classic001.webp", theme:"Culture", color:"Bold", size:"Classic", price:"$950 USD", priceValue:950, tag:"New Arrival", kicker:"Modern Heritage" }
   ];
 
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
   const galleryEmpty = document.getElementById("galleryEmpty");
   const filtersEl = document.getElementById("filters");
+  const bookFilterBar = document.getElementById("bookFilterBar");
+  const bookFilterBtn = document.getElementById("bookFilterBtn");
+  const bookFilterSummary = document.getElementById("bookFilterSummary");
+  const bookFilterModal = document.getElementById("bookFilterModal");
+  const bookFilterClose = document.getElementById("bookFilterClose");
+  const bookSortSelect = document.getElementById("bookSortSelect");
+  const bookFilterClear = document.getElementById("bookFilterClear");
+  const bookFilterApply = document.getElementById("bookFilterApply");
 
   let currentFilter = "all";
   let currentGallery = "furniture";
+  const bookFilterState = {
+    sort: "featured",
+    themes: new Set(),
+    colors: new Set(),
+    sizes: new Set()
+  };
 
   function renderCards(list, options){
     if(!grid) return;
@@ -2943,8 +3188,56 @@
     renderCards(list, { clickable:true, subLabel:"Edition 2024", onClick:openSolo });
   }
 
+  function getBookSortLabel(value){
+    if(value === "price-low") return "Price: Low to High";
+    if(value === "price-high") return "Price: High to Low";
+    if(value === "title-asc") return "Title: A–Z";
+    return "Featured";
+  }
+
+  function summarizeSet(set, label){
+    if(!set || set.size === 0) return `All ${label}`;
+    const items = Array.from(set);
+    if(items.length <= 2) return items.join(", ");
+    return `${items.length} ${label}`;
+  }
+
+  function updateBookFilterSummary(){
+    if(!bookFilterSummary) return;
+    const parts = [
+      getBookSortLabel(bookFilterState.sort),
+      summarizeSet(bookFilterState.themes, "Themes"),
+      summarizeSet(bookFilterState.colors, "Colors"),
+      summarizeSet(bookFilterState.sizes, "Sizes")
+    ];
+    bookFilterSummary.textContent = parts.join(" · ");
+  }
+
+  function applyBookFilters(list){
+    let result = list.slice();
+    if(bookFilterState.themes.size){
+      result = result.filter(b => bookFilterState.themes.has(b.theme));
+    }
+    if(bookFilterState.colors.size){
+      result = result.filter(b => bookFilterState.colors.has(b.color));
+    }
+    if(bookFilterState.sizes.size){
+      result = result.filter(b => bookFilterState.sizes.has(b.size));
+    }
+    if(bookFilterState.sort === "price-low"){
+      result.sort((a,b) => (a.priceValue || 0) - (b.priceValue || 0));
+    }else if(bookFilterState.sort === "price-high"){
+      result.sort((a,b) => (b.priceValue || 0) - (a.priceValue || 0));
+    }else if(bookFilterState.sort === "title-asc"){
+      result.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+    }
+    return result;
+  }
+
   function renderBooks(){
-    renderCards(BOOKS, { clickable:true, subLabel:"Book", className:"book-card", onClick:openBook });
+    const list = applyBookFilters(BOOKS);
+    renderCards(list, { clickable:true, subLabel:"Book", className:"book-card", onClick:openBook });
+    updateBookFilterSummary();
   }
 
   function setGallery(galleryKey){
@@ -2964,6 +3257,9 @@
     if(filtersEl){
       filtersEl.hidden = !isFurniture;
       filtersEl.setAttribute("aria-hidden", isFurniture ? "false" : "true");
+    }
+    if(bookFilterBar){
+      bookFilterBar.hidden = !isBooks;
     }
 
     if(grid){
@@ -2987,6 +3283,7 @@
     }
     if(!isBooks){
       if(galleryEl && galleryEl.classList.contains("book-solo")) closeBook();
+      if(bookFilterModal) bookFilterModal.classList.remove("open");
     }
 
     if(isFurniture) renderFurniture();
@@ -3091,6 +3388,7 @@
       galleryEl.classList.remove("solo");
       galleryEl.classList.add("book-solo");
     }
+    closeBookFilterModal();
 
     const hero = document.getElementById("bookHero");
     if(hero){
@@ -3189,6 +3487,66 @@
   safeAdd("bookBack","click",closeBook);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
+
+  function openBookFilterModal(){
+    if(!bookFilterModal) return;
+    bookFilterModal.classList.add("open");
+    bookFilterModal.setAttribute("aria-hidden","false");
+  }
+  function closeBookFilterModal(){
+    if(!bookFilterModal) return;
+    bookFilterModal.classList.remove("open");
+    bookFilterModal.setAttribute("aria-hidden","true");
+  }
+  function collectFilterSet(id){
+    const wrap = document.getElementById(id);
+    if(!wrap) return new Set();
+    return new Set(Array.from(wrap.querySelectorAll("input:checked")).map(i => i.value));
+  }
+
+  if(bookFilterBtn) bookFilterBtn.addEventListener("click", openBookFilterModal);
+  if(bookFilterClose) bookFilterClose.addEventListener("click", closeBookFilterModal);
+  if(bookFilterModal){
+    bookFilterModal.addEventListener("click", (e) => {
+      if(e.target === bookFilterModal) closeBookFilterModal();
+    });
+  }
+
+  document.querySelectorAll(".book-filter-toggle").forEach(btn => {
+    if(btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("open");
+      const targetId = btn.getAttribute("data-target");
+      const panel = targetId ? document.getElementById(targetId) : null;
+      if(panel) panel.classList.toggle("open");
+    });
+  });
+
+  if(bookFilterClear){
+    bookFilterClear.addEventListener("click", () => {
+      if(bookSortSelect) bookSortSelect.value = "featured";
+      if(bookFilterModal){
+        bookFilterModal.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
+      }
+      bookFilterState.sort = "featured";
+      bookFilterState.themes = new Set();
+      bookFilterState.colors = new Set();
+      bookFilterState.sizes = new Set();
+      renderBooks();
+    });
+  }
+
+  if(bookFilterApply){
+    bookFilterApply.addEventListener("click", () => {
+      bookFilterState.sort = bookSortSelect ? bookSortSelect.value : "featured";
+      bookFilterState.themes = collectFilterSet("bookFilterThemes");
+      bookFilterState.colors = collectFilterSet("bookFilterColors");
+      bookFilterState.sizes = collectFilterSet("bookFilterSizes");
+      renderBooks();
+      closeBookFilterModal();
+    });
+  }
 
   const bookAccordion = document.querySelector('.book-accordion');
   if(bookAccordion && bookAccordion.dataset.bound !== "1"){
