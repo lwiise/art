@@ -920,6 +920,159 @@
     cursor:pointer;
   }
 
+  .sculpture-filter-bar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .sculpture-filter-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid #dcdcdc;
+    background:#fff;
+    padding:10px 16px;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .sculpture-filter-btn svg{ width:18px; height:18px; }
+  .sculpture-filter-summary{
+    font-size:11px;
+    color:#777;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+
+  .sculpture-filter-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.32);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:46px 18px;
+    z-index:999;
+  }
+  .sculpture-filter-modal.open{ display:flex; }
+  .sculpture-filter-card{
+    width:min(520px, 94vw);
+    background:#fff;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.16);
+  }
+  .sculpture-filter-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .sculpture-filter-title{
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .sculpture-filter-close{
+    background:none;
+    border:none;
+    font-size:24px;
+    cursor:pointer;
+    color:#111;
+  }
+  .sculpture-filter-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:12px 0 20px;
+    border-bottom:1px solid #e9e9e9;
+  }
+  .sculpture-filter-row label{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#555;
+  }
+  .sculpture-filter-row select{
+    flex:1;
+    padding:10px 12px;
+    border:1px solid #e5e5e5;
+    background:#f7f7f7;
+    font-size:14px;
+  }
+  .sculpture-filter-group{
+    border-bottom:1px solid #e9e9e9;
+  }
+  .sculpture-filter-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:none;
+    border:none;
+    padding:16px 0;
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .sculpture-filter-toggle span{
+    transition:transform .2s ease;
+  }
+  .sculpture-filter-toggle.open span{
+    transform:rotate(180deg);
+  }
+  .sculpture-filter-options{
+    display:none;
+    padding-bottom:16px;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .sculpture-filter-options.open{
+    display:flex;
+  }
+  .sculpture-filter-options label{
+    font-size:12px;
+    color:#444;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sculpture-filter-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding-top:22px;
+  }
+  .sculpture-filter-clear{
+    background:none;
+    border:none;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#111;
+    cursor:pointer;
+  }
+  .sculpture-filter-apply{
+    flex:1;
+    background:#111;
+    color:#fff;
+    border:none;
+    padding:14px 16px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+
   .book-filter-modal{
     position:fixed;
     inset:0;
@@ -1108,6 +1261,13 @@
     background:#fafafa;
   }
   .card.art-card .card-media img{
+    object-fit:contain;
+  }
+  .card.sculpture-card .card-media{
+    height:220px;
+    background:#fafafa;
+  }
+  .card.sculpture-card .card-media img{
     object-fit:contain;
   }
 
@@ -1575,6 +1735,14 @@
   #sect-gallery.art-solo .book-wrap{ display:none; }
   #sect-gallery.art-solo .art-wrap{ display:block; }
   #sect-gallery.art-solo .shop-body{ background:#fff; }
+
+  .sculpture-wrap{ display:none; }
+  #sect-gallery.sculpture-solo .grid{ display:none; }
+  #sect-gallery.sculpture-solo .solo-wrap{ display:none; }
+  #sect-gallery.sculpture-solo .book-wrap{ display:none; }
+  #sect-gallery.sculpture-solo .art-wrap{ display:none; }
+  #sect-gallery.sculpture-solo .sculpture-wrap{ display:block; }
+  #sect-gallery.sculpture-solo .shop-body{ background:#fff; }
 
   .art-frame{
     background:#fff;
@@ -2416,6 +2584,7 @@
     .card.book-card .card-name{ padding:12px 14px 4px; }
     .card.book-card .card-sub{ padding:0 14px 14px; }
     .card.art-card .card-media{ height:170px; }
+    .card.sculpture-card .card-media{ height:170px; }
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
@@ -2687,8 +2856,8 @@
         <div class="gallery-head">
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
+            <button class="chip gallery-chip" data-gallery="sculptures">Sculptures</button>
             <button class="chip gallery-chip active" data-gallery="furniture">Furniture</button>
-            <button class="chip gallery-chip" data-gallery="designes">Designes</button>
             <button class="chip gallery-chip" data-gallery="books">Books</button>
           </nav>
           <nav class="nav-group" id="filters" aria-label="Furniture filters">
@@ -2720,6 +2889,18 @@
               Filter & Sort
             </button>
             <div class="art-filter-summary" id="artFilterSummary">Featured · All Artists · All Periods · All Media</div>
+          </div>
+          <div class="sculpture-filter-bar" id="sculptureFilterBar" hidden>
+            <button class="sculpture-filter-btn" type="button" id="sculptureFilterBtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="8" cy="6" r="1.6" fill="currentColor"/>
+                <circle cx="15" cy="12" r="1.6" fill="currentColor"/>
+                <circle cx="12" cy="18" r="1.6" fill="currentColor"/>
+              </svg>
+              Filter & Sort
+            </button>
+            <div class="sculpture-filter-summary" id="sculptureFilterSummary">Featured · All Artists · All Eras · All Materials</div>
           </div>
         </div>
       </header>
@@ -2997,6 +3178,102 @@
             </div>
           </div>
         </div>
+
+        <div class="sculpture-wrap" id="sculptureWrap">
+          <div class="back-nav"><button class="btn-back" id="sculptureBack">&larr; Back to Collection</button></div>
+          <div class="art-frame">
+            <div class="art-layout">
+              <div class="art-config">
+                <div class="art-header">
+                  <div>
+                    <div class="art-title" id="sculptureTitle">Sculpture Title</div>
+                    <div class="art-artist">by <span id="sculptureArtist">Artist Name</span></div>
+                    <div class="art-rating">
+                      <span class="stars" id="sculptureStars">★★★★★</span>
+                      <span id="sculptureRatingText">4.8 stars from 50+ ratings</span>
+                    </div>
+                    <div class="art-artist" id="sculptureMeta">Marble · Renaissance · 1504</div>
+                  </div>
+                  <button class="art-fav" type="button" aria-label="Save">♡</button>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">1- Choose a finish:</div>
+                  <div class="art-service-grid" id="sculptureFinishOptions">
+                    <div class="art-service-card" data-finish="polished">
+                      <div class="art-service-illu"></div>
+                      Polished
+                    </div>
+                    <div class="art-service-card" data-finish="antique">
+                      <div class="art-service-illu"></div>
+                      Antique
+                    </div>
+                    <div class="art-service-card" data-finish="matte">
+                      <div class="art-service-illu"></div>
+                      Matte
+                    </div>
+                  </div>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">2- Choose size:</div>
+                  <div class="art-options" id="sculptureSizeOptions">
+                    <button class="art-option" type="button" data-size="small">Small</button>
+                    <button class="art-option" type="button" data-size="medium">Medium</button>
+                    <button class="art-option" type="button" data-size="large">Large</button>
+                  </div>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">3- Choose a base:</div>
+                  <div class="art-frame-grid" id="sculptureBaseOptions">
+                    <div class="art-frame-card" data-base="stone">Stone<br><strong>$180</strong></div>
+                    <div class="art-frame-card" data-base="wood">Wood<br><strong>$120</strong></div>
+                    <div class="art-frame-card" data-base="metal">Metal<br><strong>$150</strong></div>
+                    <div class="art-frame-card" data-base="none">None<br><strong>$0</strong></div>
+                  </div>
+                  <div class="art-frame-rail">
+                    <div class="art-frame-swatch" style="background:#e7e2dc;"></div>
+                    <div class="art-frame-swatch" style="background:#b07a4e;"></div>
+                    <div class="art-frame-swatch" style="background:#6f6f6f;"></div>
+                    <div class="art-frame-swatch" style="background:#f7f7f7;"></div>
+                  </div>
+                </div>
+
+                <div class="art-buy-row">
+                  <div class="art-buy-left">
+                    <div class="art-thumb"><img id="sculptureThumb" src="" alt="Sculpture preview"></div>
+                    <div>
+                      <strong>Buy just the sculpture</strong><br>
+                      <span id="sculptureSizeNote">(Medium)</span>
+                    </div>
+                  </div>
+                  <div class="art-print-price" id="sculptureBasePrice">$1200</div>
+                </div>
+              </div>
+
+              <div class="art-summary">
+                <div class="art-price" id="sculpturePrice">$1200</div>
+                <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
+                <button class="art-cta" type="button" id="sculptureAddToCart">Add to Cart</button>
+                <div class="art-pay-note">
+                  Pay in 4 interest-free payments. Learn more<br>
+                  Custom crating available on select sizes.
+                </div>
+
+                <div class="art-box">
+                  <h4>About Sculptures</h4>
+                  <ul>
+                    <li>Cast and finished by artisan studios with museum-grade materials.</li>
+                    <li>Protective coating resists UV and surface wear.</li>
+                    <li>Optional bases add stability and display versatility.</li>
+                    <li>Includes care instructions and authenticity documentation.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="book-filter-modal" id="bookFilterModal" aria-hidden="true">
@@ -3115,6 +3392,64 @@
           <div class="art-filter-actions">
             <button class="art-filter-clear" type="button" id="artFilterClear">Clear</button>
             <button class="art-filter-apply" type="button" id="artFilterApply">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sculpture-filter-modal" id="sculptureFilterModal" aria-hidden="true">
+        <div class="sculpture-filter-card">
+          <div class="sculpture-filter-head">
+            <div class="sculpture-filter-title">Filter &amp; Sort</div>
+            <button class="sculpture-filter-close" type="button" id="sculptureFilterClose" aria-label="Close">×</button>
+          </div>
+
+          <div class="sculpture-filter-row">
+            <label for="sculptureSortSelect">Sort by:</label>
+            <select id="sculptureSortSelect">
+              <option value="featured">Featured</option>
+              <option value="title-asc">Title: A–Z</option>
+              <option value="year-asc">Year: Oldest First</option>
+              <option value="year-desc">Year: Newest First</option>
+            </select>
+          </div>
+
+          <div class="sculpture-filter-group">
+            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterArtists">
+              Artists <span>▾</span>
+            </button>
+            <div class="sculpture-filter-options" id="sculptureFilterArtists">
+              <label><input type="checkbox" value="Michelangelo Buonarroti"> Michelangelo Buonarroti</label>
+              <label><input type="checkbox" value="Unknown Roman"> Unknown Roman</label>
+              <label><input type="checkbox" value="Jon Hicks"> Jon Hicks</label>
+              <label><input type="checkbox" value="Unknown Hellenistic"> Unknown Hellenistic</label>
+            </div>
+          </div>
+
+          <div class="sculpture-filter-group">
+            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterEras">
+              Eras <span>▾</span>
+            </button>
+            <div class="sculpture-filter-options" id="sculptureFilterEras">
+              <label><input type="checkbox" value="Renaissance"> Renaissance</label>
+              <label><input type="checkbox" value="Roman"> Roman</label>
+              <label><input type="checkbox" value="Classical"> Classical</label>
+              <label><input type="checkbox" value="Hellenistic"> Hellenistic</label>
+            </div>
+          </div>
+
+          <div class="sculpture-filter-group">
+            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterMaterials">
+              Materials <span>▾</span>
+            </button>
+            <div class="sculpture-filter-options" id="sculptureFilterMaterials">
+              <label><input type="checkbox" value="Marble"> Marble</label>
+              <label><input type="checkbox" value="Bronze"> Bronze</label>
+            </div>
+          </div>
+
+          <div class="sculpture-filter-actions">
+            <button class="sculpture-filter-clear" type="button" id="sculptureFilterClear">Clear</button>
+            <button class="sculpture-filter-apply" type="button" id="sculptureFilterApply">Apply</button>
           </div>
         </div>
       </div>
@@ -3717,6 +4052,15 @@
     { id:"art-6", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33, year:1872, period:"Impressionism", medium:"Oil on Canvas" }
   ];
 
+  const SCULPTURES = [
+    { id:"sculpt-1", name:"David", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c1857e82c35452c8e_michelangelo-buonarroti-david_u-l-puqrgp0.jpg", rating:4.9, ratingCount:"90+", basePrice:1200, year:1504, era:"Renaissance", material:"Marble" },
+    { id:"sculpt-2", name:"Marcus Aurelius", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c614592d086fd92fa_marcus-aurelius-statue_u-l-q1074ct0.jpg", rating:4.7, ratingCount:"60+", basePrice:980, year:175, era:"Roman", material:"Bronze" },
+    { id:"sculpt-3", name:"Plato at the Hellenic Academy", artist:"Jon Hicks", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c4e4b28f77296cd98_jon-hicks-plato-statue-outside-the-hellenic-academy_u-l-pzrr0a0.jpg", rating:4.6, ratingCount:"40+", basePrice:860, year:1886, era:"Classical", material:"Marble" },
+    { id:"sculpt-4", name:"Winged Victory of Samothrace", artist:"Unknown Hellenistic", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967caf8971c9ac8a8950_victoire-de-samothrace_u-l-q1igl1h0.jpg", rating:4.8, ratingCount:"70+", basePrice:1400, year:190, era:"Hellenistic", material:"Marble" },
+    { id:"sculpt-5", name:"Pietà", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c81c72c8235724d17_pieta-by-michelangelo-buonarroti_u-l-pzo61k0.jpg", rating:5.0, ratingCount:"120+", basePrice:1350, year:1499, era:"Renaissance", material:"Marble" },
+    { id:"sculpt-6", name:"Buste de Rome Casquée", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967ce3345ac63325b131_buste-de-rome-casquee_u-l-q1kypts0.jpg", rating:4.5, ratingCount:"35+", basePrice:920, year:100, era:"Roman", material:"Marble" }
+  ];
+
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
   const galleryEmpty = document.getElementById("galleryEmpty");
@@ -3737,6 +4081,14 @@
   const artSortSelect = document.getElementById("artSortSelect");
   const artFilterClear = document.getElementById("artFilterClear");
   const artFilterApply = document.getElementById("artFilterApply");
+  const sculptureFilterBar = document.getElementById("sculptureFilterBar");
+  const sculptureFilterBtn = document.getElementById("sculptureFilterBtn");
+  const sculptureFilterSummary = document.getElementById("sculptureFilterSummary");
+  const sculptureFilterModal = document.getElementById("sculptureFilterModal");
+  const sculptureFilterClose = document.getElementById("sculptureFilterClose");
+  const sculptureSortSelect = document.getElementById("sculptureSortSelect");
+  const sculptureFilterClear = document.getElementById("sculptureFilterClear");
+  const sculptureFilterApply = document.getElementById("sculptureFilterApply");
 
   let currentFilter = "all";
   let currentGallery = "furniture";
@@ -3751,6 +4103,12 @@
     artists: new Set(),
     periods: new Set(),
     media: new Set()
+  };
+  const sculptureFilterState = {
+    sort: "featured",
+    artists: new Set(),
+    eras: new Set(),
+    materials: new Set()
   };
 
   function renderCards(list, options){
@@ -3841,6 +4199,12 @@
     updateArtFilterSummary();
   }
 
+  function renderSculptures(){
+    const list = applySculptureFilters(SCULPTURES);
+    renderCards(list, { clickable:true, subLabel:"Sculpture", className:"sculpture-card", onClick:openSculpture });
+    updateSculptureFilterSummary();
+  }
+
   function getArtSortLabel(value){
     if(value === "title-asc") return "Title: A–Z";
     if(value === "year-asc") return "Year: Oldest First";
@@ -3880,12 +4244,52 @@
     return result;
   }
 
+  function getSculptureSortLabel(value){
+    if(value === "title-asc") return "Title: A–Z";
+    if(value === "year-asc") return "Year: Oldest First";
+    if(value === "year-desc") return "Year: Newest First";
+    return "Featured";
+  }
+
+  function updateSculptureFilterSummary(){
+    if(!sculptureFilterSummary) return;
+    const parts = [
+      getSculptureSortLabel(sculptureFilterState.sort),
+      summarizeSet(sculptureFilterState.artists, "Artists"),
+      summarizeSet(sculptureFilterState.eras, "Eras"),
+      summarizeSet(sculptureFilterState.materials, "Materials")
+    ];
+    sculptureFilterSummary.textContent = parts.join(" · ");
+  }
+
+  function applySculptureFilters(list){
+    let result = list.slice();
+    if(sculptureFilterState.artists.size){
+      result = result.filter(s => sculptureFilterState.artists.has(s.artist));
+    }
+    if(sculptureFilterState.eras.size){
+      result = result.filter(s => sculptureFilterState.eras.has(s.era));
+    }
+    if(sculptureFilterState.materials.size){
+      result = result.filter(s => sculptureFilterState.materials.has(s.material));
+    }
+    if(sculptureFilterState.sort === "title-asc"){
+      result.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+    }else if(sculptureFilterState.sort === "year-asc"){
+      result.sort((a,b) => (a.year || 0) - (b.year || 0));
+    }else if(sculptureFilterState.sort === "year-desc"){
+      result.sort((a,b) => (b.year || 0) - (a.year || 0));
+    }
+    return result;
+  }
+
   function setGallery(galleryKey){
     currentGallery = galleryKey;
     const isFurniture = galleryKey === "furniture";
     const isBooks = galleryKey === "books";
     const isArt = galleryKey === "art";
-    const showGrid = isFurniture || isBooks || isArt;
+    const isSculptures = galleryKey === "sculptures";
+    const showGrid = isFurniture || isBooks || isArt || isSculptures;
     const galleryEl = document.getElementById("sect-gallery");
     if(galleryEl) galleryEl.classList.toggle("gallery-empty-state", !showGrid);
 
@@ -3904,6 +4308,9 @@
     }
     if(artFilterBar){
       artFilterBar.hidden = !isArt;
+    }
+    if(sculptureFilterBar){
+      sculptureFilterBar.hidden = !isSculptures;
     }
 
     if(grid){
@@ -3932,13 +4339,20 @@
     if(!isArt){
       if(artFilterModal) artFilterModal.classList.remove("open");
     }
+    if(!isSculptures){
+      if(sculptureFilterModal) sculptureFilterModal.classList.remove("open");
+    }
     if(!isArt){
       if(galleryEl && galleryEl.classList.contains("art-solo")) closeArt();
+    }
+    if(!isSculptures){
+      if(galleryEl && galleryEl.classList.contains("sculpture-solo")) closeSculpture();
     }
 
     if(isFurniture) renderFurniture();
     if(isBooks) renderBooks();
     if(isArt) renderArt();
+    if(isSculptures) renderSculptures();
   }
 
   if(filtersEl){
@@ -4038,6 +4452,7 @@
     if(galleryEl){
       galleryEl.classList.remove("solo");
       galleryEl.classList.remove("art-solo");
+      galleryEl.classList.remove("sculpture-solo");
       galleryEl.classList.add("book-solo");
     }
     closeBookFilterModal();
@@ -4127,6 +4542,7 @@
     if(galleryEl){
       galleryEl.classList.remove("solo");
       galleryEl.classList.remove("book-solo");
+      galleryEl.classList.remove("sculpture-solo");
       galleryEl.classList.add("art-solo");
     }
     closeArtFilterModal();
@@ -4140,6 +4556,77 @@
     activeArt = null;
   }
 
+  const SCULPTURE_FINISH_PRICES = { polished:0, antique:80, matte:40 };
+  const SCULPTURE_SIZE_PRICES = { small:0, medium:180, large:360 };
+  const SCULPTURE_BASE_PRICES = { stone:180, wood:120, metal:150, none:0 };
+  let activeSculpture = null;
+  let sculptureSelection = { finish:"polished", size:"medium", base:"stone" };
+
+  function updateSculptureUI(){
+    if(!activeSculpture) return;
+    const title = document.getElementById("sculptureTitle");
+    const artist = document.getElementById("sculptureArtist");
+    const stars = document.getElementById("sculptureStars");
+    const ratingText = document.getElementById("sculptureRatingText");
+    const meta = document.getElementById("sculptureMeta");
+    const thumb = document.getElementById("sculptureThumb");
+    const sizeNote = document.getElementById("sculptureSizeNote");
+    const basePriceEl = document.getElementById("sculptureBasePrice");
+    const priceEl = document.getElementById("sculpturePrice");
+
+    if(title) title.textContent = activeSculpture.name;
+    if(artist) artist.textContent = activeSculpture.artist || "Unknown";
+    if(meta) meta.textContent = `${activeSculpture.material} · ${activeSculpture.era} · ${activeSculpture.year}`;
+    if(stars){
+      const filled = Math.max(1, Math.min(5, Math.round(activeSculpture.rating || 5)));
+      stars.textContent = "★★★★★".slice(0, filled) + "☆☆☆☆☆".slice(0, 5 - filled);
+    }
+    if(ratingText) ratingText.textContent = `${activeSculpture.rating || 5} stars from ${activeSculpture.ratingCount || "50+"} ratings`;
+    if(thumb){
+      thumb.src = activeSculpture.img;
+      thumb.alt = activeSculpture.name || "Sculpture preview";
+    }
+
+    document.querySelectorAll("#sculptureFinishOptions .art-service-card").forEach(card => {
+      card.classList.toggle("active", card.dataset.finish === sculptureSelection.finish);
+    });
+    document.querySelectorAll("#sculptureSizeOptions .art-option").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.size === sculptureSelection.size);
+    });
+    document.querySelectorAll("#sculptureBaseOptions .art-frame-card").forEach(card => {
+      card.classList.toggle("active", card.dataset.base === sculptureSelection.base);
+    });
+
+    const base = activeSculpture.basePrice || 1000;
+    const sizeAdj = SCULPTURE_SIZE_PRICES[sculptureSelection.size] || 0;
+    const finishAdj = SCULPTURE_FINISH_PRICES[sculptureSelection.finish] || 0;
+    const baseAdj = SCULPTURE_BASE_PRICES[sculptureSelection.base] || 0;
+    const total = base + sizeAdj + finishAdj + baseAdj;
+    if(priceEl) priceEl.textContent = formatPrice(total);
+    if(basePriceEl) basePriceEl.textContent = formatPrice(base + sizeAdj);
+    if(sizeNote) sizeNote.textContent = `(${sculptureSelection.size.charAt(0).toUpperCase()}${sculptureSelection.size.slice(1)})`;
+  }
+
+  function openSculpture(s){
+    activeSculpture = s;
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl){
+      galleryEl.classList.remove("solo");
+      galleryEl.classList.remove("book-solo");
+      galleryEl.classList.remove("art-solo");
+      galleryEl.classList.add("sculpture-solo");
+    }
+    closeSculptureFilterModal();
+    sculptureSelection = { finish:"polished", size:"medium", base:"stone" };
+    updateSculptureUI();
+  }
+
+  function closeSculpture(){
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl) galleryEl.classList.remove("sculpture-solo");
+    activeSculpture = null;
+  }
+
   function openSolo(p){
     document.getElementById("shop").classList.add("solo");
     const galleryEl = document.getElementById("sect-gallery");
@@ -4147,6 +4634,7 @@
       galleryEl.classList.add("solo");
       galleryEl.classList.remove("book-solo");
       galleryEl.classList.remove("art-solo");
+      galleryEl.classList.remove("sculpture-solo");
     }
 
     setSoloInfoOpen(false);
@@ -4221,6 +4709,7 @@
   safeAdd("btnBack","click",closeSolo);
   safeAdd("bookBack","click",closeBook);
   safeAdd("artBack","click",closeArt);
+  safeAdd("sculptureBack","click",closeSculpture);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
 
@@ -4339,6 +4828,61 @@
     });
   }
 
+  function openSculptureFilterModal(){
+    if(!sculptureFilterModal) return;
+    sculptureFilterModal.classList.add("open");
+    sculptureFilterModal.setAttribute("aria-hidden","false");
+  }
+  function closeSculptureFilterModal(){
+    if(!sculptureFilterModal) return;
+    sculptureFilterModal.classList.remove("open");
+    sculptureFilterModal.setAttribute("aria-hidden","true");
+  }
+
+  if(sculptureFilterBtn) sculptureFilterBtn.addEventListener("click", openSculptureFilterModal);
+  if(sculptureFilterClose) sculptureFilterClose.addEventListener("click", closeSculptureFilterModal);
+  if(sculptureFilterModal){
+    sculptureFilterModal.addEventListener("click", (e) => {
+      if(e.target === sculptureFilterModal) closeSculptureFilterModal();
+    });
+  }
+
+  document.querySelectorAll(".sculpture-filter-toggle").forEach(btn => {
+    if(btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("open");
+      const targetId = btn.getAttribute("data-target");
+      const panel = targetId ? document.getElementById(targetId) : null;
+      if(panel) panel.classList.toggle("open");
+    });
+  });
+
+  if(sculptureFilterClear){
+    sculptureFilterClear.addEventListener("click", () => {
+      if(sculptureSortSelect) sculptureSortSelect.value = "featured";
+      if(sculptureFilterModal){
+        sculptureFilterModal.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
+      }
+      sculptureFilterState.sort = "featured";
+      sculptureFilterState.artists = new Set();
+      sculptureFilterState.eras = new Set();
+      sculptureFilterState.materials = new Set();
+      renderSculptures();
+    });
+  }
+
+  if(sculptureFilterApply){
+    sculptureFilterApply.addEventListener("click", () => {
+      sculptureFilterState.sort = sculptureSortSelect ? sculptureSortSelect.value : "featured";
+      sculptureFilterState.artists = collectFilterSet("sculptureFilterArtists");
+      sculptureFilterState.eras = collectFilterSet("sculptureFilterEras");
+      sculptureFilterState.materials = collectFilterSet("sculptureFilterMaterials");
+      renderSculptures();
+      closeSculptureFilterModal();
+    });
+  }
+
   const artServiceOptions = document.getElementById("artServiceOptions");
   if(artServiceOptions){
     artServiceOptions.addEventListener("click", (e) => {
@@ -4371,6 +4915,42 @@
     artAddToCart.addEventListener("click", () => {
       if(!activeArt) return;
       const msg = `${activeArt.name} · ${artSelection.service} · ${artSelection.size} · ${artSelection.frame}`;
+      alert(`Added to cart: ${msg}`);
+    });
+  }
+
+  const sculptureFinishOptions = document.getElementById("sculptureFinishOptions");
+  if(sculptureFinishOptions){
+    sculptureFinishOptions.addEventListener("click", (e) => {
+      const card = e.target.closest(".art-service-card");
+      if(!card) return;
+      sculptureSelection.finish = card.dataset.finish;
+      updateSculptureUI();
+    });
+  }
+  const sculptureSizeOptions = document.getElementById("sculptureSizeOptions");
+  if(sculptureSizeOptions){
+    sculptureSizeOptions.addEventListener("click", (e) => {
+      const btn = e.target.closest(".art-option");
+      if(!btn) return;
+      sculptureSelection.size = btn.dataset.size;
+      updateSculptureUI();
+    });
+  }
+  const sculptureBaseOptions = document.getElementById("sculptureBaseOptions");
+  if(sculptureBaseOptions){
+    sculptureBaseOptions.addEventListener("click", (e) => {
+      const card = e.target.closest(".art-frame-card");
+      if(!card) return;
+      sculptureSelection.base = card.dataset.base;
+      updateSculptureUI();
+    });
+  }
+  const sculptureAddToCart = document.getElementById("sculptureAddToCart");
+  if(sculptureAddToCart){
+    sculptureAddToCart.addEventListener("click", () => {
+      if(!activeSculpture) return;
+      const msg = `${activeSculpture.name} · ${sculptureSelection.finish} · ${sculptureSelection.size} · ${sculptureSelection.base}`;
       alert(`Added to cart: ${msg}`);
     });
   }
