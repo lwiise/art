@@ -767,6 +767,159 @@
     text-transform:uppercase;
   }
 
+  .art-filter-bar{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .art-filter-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid #dcdcdc;
+    background:#fff;
+    padding:10px 16px;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .art-filter-btn svg{ width:18px; height:18px; }
+  .art-filter-summary{
+    font-size:11px;
+    color:#777;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+
+  .art-filter-modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.32);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:46px 18px;
+    z-index:999;
+  }
+  .art-filter-modal.open{ display:flex; }
+  .art-filter-card{
+    width:min(520px, 94vw);
+    background:#fff;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.16);
+  }
+  .art-filter-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .art-filter-title{
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .art-filter-close{
+    background:none;
+    border:none;
+    font-size:24px;
+    cursor:pointer;
+    color:#111;
+  }
+  .art-filter-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:12px 0 20px;
+    border-bottom:1px solid #e9e9e9;
+  }
+  .art-filter-row label{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#555;
+  }
+  .art-filter-row select{
+    flex:1;
+    padding:10px 12px;
+    border:1px solid #e5e5e5;
+    background:#f7f7f7;
+    font-size:14px;
+  }
+  .art-filter-group{
+    border-bottom:1px solid #e9e9e9;
+  }
+  .art-filter-toggle{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:none;
+    border:none;
+    padding:16px 0;
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .art-filter-toggle span{
+    transition:transform .2s ease;
+  }
+  .art-filter-toggle.open span{
+    transform:rotate(180deg);
+  }
+  .art-filter-options{
+    display:none;
+    padding-bottom:16px;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .art-filter-options.open{
+    display:flex;
+  }
+  .art-filter-options label{
+    font-size:12px;
+    color:#444;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .art-filter-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding-top:22px;
+  }
+  .art-filter-clear{
+    background:none;
+    border:none;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#111;
+    cursor:pointer;
+  }
+  .art-filter-apply{
+    flex:1;
+    background:#111;
+    color:#fff;
+    border:none;
+    padding:14px 16px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+
   .book-filter-modal{
     position:fixed;
     inset:0;
@@ -2252,6 +2405,12 @@
     .book-filter-card{ padding:20px; }
     .book-filter-row{ flex-direction:column; align-items:flex-start; }
     .book-filter-row select{ width:100%; }
+    .art-filter-bar{ flex-direction:column; align-items:flex-start; }
+    .art-filter-btn{ width:100%; justify-content:center; }
+    .art-filter-summary{ font-size:10px; }
+    .art-filter-card{ padding:20px; }
+    .art-filter-row{ flex-direction:column; align-items:flex-start; }
+    .art-filter-row select{ width:100%; }
     .card.book-card{ padding:0; }
     .card.book-card .card-media{ height:200px; }
     .card.book-card .card-name{ padding:12px 14px 4px; }
@@ -2549,6 +2708,18 @@
               Filter & Sort
             </button>
             <div class="book-filter-summary" id="bookFilterSummary">Featured · All Themes · All Colors · All Sizes</div>
+          </div>
+          <div class="art-filter-bar" id="artFilterBar" hidden>
+            <button class="art-filter-btn" type="button" id="artFilterBtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="8" cy="6" r="1.6" fill="currentColor"/>
+                <circle cx="15" cy="12" r="1.6" fill="currentColor"/>
+                <circle cx="12" cy="18" r="1.6" fill="currentColor"/>
+              </svg>
+              Filter & Sort
+            </button>
+            <div class="art-filter-summary" id="artFilterSummary">Featured · All Artists · All Periods · All Media</div>
           </div>
         </div>
       </header>
@@ -2884,6 +3055,66 @@
           <div class="book-filter-actions">
             <button class="book-filter-clear" type="button" id="bookFilterClear">Clear</button>
             <button class="book-filter-apply" type="button" id="bookFilterApply">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="art-filter-modal" id="artFilterModal" aria-hidden="true">
+        <div class="art-filter-card">
+          <div class="art-filter-head">
+            <div class="art-filter-title">Filter &amp; Sort</div>
+            <button class="art-filter-close" type="button" id="artFilterClose" aria-label="Close">×</button>
+          </div>
+
+          <div class="art-filter-row">
+            <label for="artSortSelect">Sort by:</label>
+            <select id="artSortSelect">
+              <option value="featured">Featured</option>
+              <option value="title-asc">Title: A–Z</option>
+              <option value="year-asc">Year: Oldest First</option>
+              <option value="year-desc">Year: Newest First</option>
+            </select>
+          </div>
+
+          <div class="art-filter-group">
+            <button class="art-filter-toggle" type="button" data-target="artFilterArtists">
+              Artists <span>▾</span>
+            </button>
+            <div class="art-filter-options" id="artFilterArtists">
+              <label><input type="checkbox" value="Roberto Ferruzzi"> Roberto Ferruzzi</label>
+              <label><input type="checkbox" value="Caspar David Friedrich"> Caspar David Friedrich</label>
+              <label><input type="checkbox" value="Vincent van Gogh"> Vincent van Gogh</label>
+              <label><input type="checkbox" value="Rembrandt van Rijn"> Rembrandt van Rijn</label>
+              <label><input type="checkbox" value="Claude Monet"> Claude Monet</label>
+            </div>
+          </div>
+
+          <div class="art-filter-group">
+            <button class="art-filter-toggle" type="button" data-target="artFilterPeriods">
+              Periods <span>▾</span>
+            </button>
+            <div class="art-filter-options" id="artFilterPeriods">
+              <label><input type="checkbox" value="Baroque"> Baroque</label>
+              <label><input type="checkbox" value="Romanticism"> Romanticism</label>
+              <label><input type="checkbox" value="Impressionism"> Impressionism</label>
+              <label><input type="checkbox" value="Post-Impressionism"> Post-Impressionism</label>
+              <label><input type="checkbox" value="19th Century"> 19th Century</label>
+            </div>
+          </div>
+
+          <div class="art-filter-group">
+            <button class="art-filter-toggle" type="button" data-target="artFilterMedia">
+              Medium <span>▾</span>
+            </button>
+            <div class="art-filter-options" id="artFilterMedia">
+              <label><input type="checkbox" value="Oil on Canvas"> Oil on Canvas</label>
+              <label><input type="checkbox" value="Oil on Paper"> Oil on Paper</label>
+            </div>
+          </div>
+
+          <div class="art-filter-actions">
+            <button class="art-filter-clear" type="button" id="artFilterClear">Clear</button>
+            <button class="art-filter-apply" type="button" id="artFilterApply">Apply</button>
           </div>
         </div>
       </div>
@@ -3478,12 +3709,12 @@
   ];
 
   const ARTWORKS = [
-    { id:"art-1", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32 },
-    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36 },
-    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34 },
-    { id:"art-4", name:"The Storm on the Sea of Galilee", artist:"Rembrandt van Rijn", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg", rating:4.6, ratingCount:"30+", basePrice:38 },
-    { id:"art-5", name:"The Starry Night (June 1889)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg", rating:5.0, ratingCount:"80+", basePrice:42 },
-    { id:"art-6", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33 }
+    { id:"art-1", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32, year:1890, period:"19th Century", medium:"Oil on Canvas" },
+    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36, year:1818, period:"Romanticism", medium:"Oil on Canvas" },
+    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34, year:1888, period:"Post-Impressionism", medium:"Oil on Canvas" },
+    { id:"art-4", name:"The Storm on the Sea of Galilee", artist:"Rembrandt van Rijn", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg", rating:4.6, ratingCount:"30+", basePrice:38, year:1633, period:"Baroque", medium:"Oil on Canvas" },
+    { id:"art-5", name:"The Starry Night (June 1889)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg", rating:5.0, ratingCount:"80+", basePrice:42, year:1889, period:"Post-Impressionism", medium:"Oil on Canvas" },
+    { id:"art-6", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33, year:1872, period:"Impressionism", medium:"Oil on Canvas" }
   ];
 
   const grid = document.getElementById("grid");
@@ -3498,6 +3729,14 @@
   const bookSortSelect = document.getElementById("bookSortSelect");
   const bookFilterClear = document.getElementById("bookFilterClear");
   const bookFilterApply = document.getElementById("bookFilterApply");
+  const artFilterBar = document.getElementById("artFilterBar");
+  const artFilterBtn = document.getElementById("artFilterBtn");
+  const artFilterSummary = document.getElementById("artFilterSummary");
+  const artFilterModal = document.getElementById("artFilterModal");
+  const artFilterClose = document.getElementById("artFilterClose");
+  const artSortSelect = document.getElementById("artSortSelect");
+  const artFilterClear = document.getElementById("artFilterClear");
+  const artFilterApply = document.getElementById("artFilterApply");
 
   let currentFilter = "all";
   let currentGallery = "furniture";
@@ -3506,6 +3745,12 @@
     themes: new Set(),
     colors: new Set(),
     sizes: new Set()
+  };
+  const artFilterState = {
+    sort: "featured",
+    artists: new Set(),
+    periods: new Set(),
+    media: new Set()
   };
 
   function renderCards(list, options){
@@ -3591,7 +3836,48 @@
   }
 
   function renderArt(){
-    renderCards(ARTWORKS, { clickable:true, subLabel:"Artwork", className:"art-card", onClick:openArt });
+    const list = applyArtFilters(ARTWORKS);
+    renderCards(list, { clickable:true, subLabel:"Artwork", className:"art-card", onClick:openArt });
+    updateArtFilterSummary();
+  }
+
+  function getArtSortLabel(value){
+    if(value === "title-asc") return "Title: A–Z";
+    if(value === "year-asc") return "Year: Oldest First";
+    if(value === "year-desc") return "Year: Newest First";
+    return "Featured";
+  }
+
+  function updateArtFilterSummary(){
+    if(!artFilterSummary) return;
+    const parts = [
+      getArtSortLabel(artFilterState.sort),
+      summarizeSet(artFilterState.artists, "Artists"),
+      summarizeSet(artFilterState.periods, "Periods"),
+      summarizeSet(artFilterState.media, "Media")
+    ];
+    artFilterSummary.textContent = parts.join(" · ");
+  }
+
+  function applyArtFilters(list){
+    let result = list.slice();
+    if(artFilterState.artists.size){
+      result = result.filter(a => artFilterState.artists.has(a.artist));
+    }
+    if(artFilterState.periods.size){
+      result = result.filter(a => artFilterState.periods.has(a.period));
+    }
+    if(artFilterState.media.size){
+      result = result.filter(a => artFilterState.media.has(a.medium));
+    }
+    if(artFilterState.sort === "title-asc"){
+      result.sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+    }else if(artFilterState.sort === "year-asc"){
+      result.sort((a,b) => (a.year || 0) - (b.year || 0));
+    }else if(artFilterState.sort === "year-desc"){
+      result.sort((a,b) => (b.year || 0) - (a.year || 0));
+    }
+    return result;
   }
 
   function setGallery(galleryKey){
@@ -3616,6 +3902,9 @@
     if(bookFilterBar){
       bookFilterBar.hidden = !isBooks;
     }
+    if(artFilterBar){
+      artFilterBar.hidden = !isArt;
+    }
 
     if(grid){
       grid.style.display = "";
@@ -3639,6 +3928,9 @@
     if(!isBooks){
       if(galleryEl && galleryEl.classList.contains("book-solo")) closeBook();
       if(bookFilterModal) bookFilterModal.classList.remove("open");
+    }
+    if(!isArt){
+      if(artFilterModal) artFilterModal.classList.remove("open");
     }
     if(!isArt){
       if(galleryEl && galleryEl.classList.contains("art-solo")) closeArt();
@@ -3837,6 +4129,7 @@
       galleryEl.classList.remove("book-solo");
       galleryEl.classList.add("art-solo");
     }
+    closeArtFilterModal();
     artSelection = { service:"print", size:"12x16", frame:"classic" };
     updateArtUI();
   }
@@ -3988,6 +4281,61 @@
       bookFilterState.sizes = collectFilterSet("bookFilterSizes");
       renderBooks();
       closeBookFilterModal();
+    });
+  }
+
+  function openArtFilterModal(){
+    if(!artFilterModal) return;
+    artFilterModal.classList.add("open");
+    artFilterModal.setAttribute("aria-hidden","false");
+  }
+  function closeArtFilterModal(){
+    if(!artFilterModal) return;
+    artFilterModal.classList.remove("open");
+    artFilterModal.setAttribute("aria-hidden","true");
+  }
+
+  if(artFilterBtn) artFilterBtn.addEventListener("click", openArtFilterModal);
+  if(artFilterClose) artFilterClose.addEventListener("click", closeArtFilterModal);
+  if(artFilterModal){
+    artFilterModal.addEventListener("click", (e) => {
+      if(e.target === artFilterModal) closeArtFilterModal();
+    });
+  }
+
+  document.querySelectorAll(".art-filter-toggle").forEach(btn => {
+    if(btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("open");
+      const targetId = btn.getAttribute("data-target");
+      const panel = targetId ? document.getElementById(targetId) : null;
+      if(panel) panel.classList.toggle("open");
+    });
+  });
+
+  if(artFilterClear){
+    artFilterClear.addEventListener("click", () => {
+      if(artSortSelect) artSortSelect.value = "featured";
+      if(artFilterModal){
+        artFilterModal.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
+      }
+      artFilterState.sort = "featured";
+      artFilterState.artists = new Set();
+      artFilterState.periods = new Set();
+      artFilterState.media = new Set();
+      renderArt();
+    });
+  }
+
+  if(artFilterApply){
+    artFilterApply.addEventListener("click", () => {
+      artFilterState.sort = artSortSelect ? artSortSelect.value : "featured";
+      artFilterState.artists = collectFilterSet("artFilterArtists");
+      artFilterState.periods = collectFilterSet("artFilterPeriods");
+      artFilterState.media = collectFilterSet("artFilterMedia");
+      renderArt();
+      closeArtFilterModal();
     });
   }
 
