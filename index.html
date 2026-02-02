@@ -950,6 +950,13 @@
     padding:0 18px 18px;
     color:#888;
   }
+  .card.art-card .card-media{
+    height:220px;
+    background:#fafafa;
+  }
+  .card.art-card .card-media img{
+    object-fit:contain;
+  }
 
   .solo-wrap{ display:none; }
   #sect-gallery.solo .grid{ display:none; }
@@ -2017,6 +2024,7 @@
     .card.book-card .card-media{ height:200px; }
     .card.book-card .card-name{ padding:12px 14px 4px; }
     .card.book-card .card-sub{ padding:0 14px 14px; }
+    .card.art-card .card-media{ height:170px; }
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
@@ -3136,6 +3144,15 @@
     { id:"book-11", name:"Sharjah: The Capital of Culture", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba248e409ad226f097f9_SharjahTheCapitalofCulture_Classic001.webp", theme:"Culture", color:"Bold", size:"Classic", price:"$950 USD", priceValue:950, tag:"New Arrival", kicker:"Modern Heritage" }
   ];
 
+  const ARTWORKS = [
+    { id:"art-1", name:"Praying Girl (Roberto Ferruzzi)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg" },
+    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg" },
+    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg" },
+    { id:"art-4", name:"The Storm on the Sea of Galilee", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg" },
+    { id:"art-5", name:"The Starry Night (June 1889)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg" },
+    { id:"art-6", name:"Impression, Sunrise (1872)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg" }
+  ];
+
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
   const galleryEmpty = document.getElementById("galleryEmpty");
@@ -3240,11 +3257,16 @@
     updateBookFilterSummary();
   }
 
+  function renderArt(){
+    renderCards(ARTWORKS, { clickable:false, subLabel:"Artwork", className:"art-card" });
+  }
+
   function setGallery(galleryKey){
     currentGallery = galleryKey;
     const isFurniture = galleryKey === "furniture";
     const isBooks = galleryKey === "books";
-    const showGrid = isFurniture || isBooks;
+    const isArt = galleryKey === "art";
+    const showGrid = isFurniture || isBooks || isArt;
     const galleryEl = document.getElementById("sect-gallery");
     if(galleryEl) galleryEl.classList.toggle("gallery-empty-state", !showGrid);
 
@@ -3288,6 +3310,7 @@
 
     if(isFurniture) renderFurniture();
     if(isBooks) renderBooks();
+    if(isArt) renderArt();
   }
 
   if(filtersEl){
