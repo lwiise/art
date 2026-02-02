@@ -1416,6 +1416,238 @@
   #sect-gallery.book-solo .book-wrap{ display:block; }
   #sect-gallery.book-solo .shop-body{ background:#fff; }
 
+  .art-wrap{ display:none; }
+  #sect-gallery.art-solo .grid{ display:none; }
+  #sect-gallery.art-solo .solo-wrap{ display:none; }
+  #sect-gallery.art-solo .book-wrap{ display:none; }
+  #sect-gallery.art-solo .art-wrap{ display:block; }
+  #sect-gallery.art-solo .shop-body{ background:#fff; }
+
+  .art-frame{
+    background:#fff;
+    border:1px solid #efefef;
+    border-radius:22px;
+    padding:22px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.04);
+  }
+  .art-layout{
+    display:grid;
+    grid-template-columns:minmax(280px, 1.2fr) minmax(260px, 0.8fr);
+    gap:28px;
+    align-items:start;
+  }
+  .art-config{
+    border-right:1px solid #ededed;
+    padding-right:24px;
+  }
+  .art-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .art-title{
+    font-size:22px;
+    font-weight:900;
+    letter-spacing:-0.01em;
+    margin:0 0 6px;
+    color:#111;
+  }
+  .art-artist{
+    font-size:12px;
+    color:#555;
+    margin-bottom:10px;
+  }
+  .art-fav{
+    background:none;
+    border:none;
+    font-size:20px;
+    cursor:pointer;
+    color:#111;
+  }
+  .art-rating{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12px;
+    color:#444;
+    margin-bottom:16px;
+  }
+  .art-rating .stars{ color:#0b6b5e; letter-spacing:2px; }
+
+  .art-section{
+    margin-bottom:16px;
+  }
+  .art-section-title{
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    color:#111;
+  }
+  .art-options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .art-option{
+    border:1px solid #dcdcdc;
+    background:#fff;
+    padding:8px 10px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    cursor:pointer;
+    min-width:90px;
+    text-align:center;
+  }
+  .art-option.active{
+    background:#111;
+    color:#fff;
+    border-color:#111;
+  }
+  .art-service-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:10px;
+  }
+  .art-service-card{
+    border:1px solid #dcdcdc;
+    padding:10px;
+    text-align:center;
+    font-size:11px;
+    font-weight:800;
+    text-transform:uppercase;
+    cursor:pointer;
+    background:#fff;
+  }
+  .art-service-card.active{
+    border-color:#111;
+    box-shadow:inset 0 0 0 1px #111;
+  }
+  .art-service-illu{
+    height:52px;
+    background:#f1f1f1;
+    border:1px solid #e1e1e1;
+    margin-bottom:8px;
+  }
+  .art-frame-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:10px;
+  }
+  .art-frame-card{
+    border:1px solid #dcdcdc;
+    padding:8px 6px;
+    text-align:center;
+    font-size:11px;
+    text-transform:uppercase;
+    cursor:pointer;
+    background:#fff;
+  }
+  .art-frame-card.active{
+    background:#111;
+    color:#fff;
+    border-color:#111;
+  }
+  .art-frame-card.disabled{
+    opacity:0.45;
+    pointer-events:none;
+  }
+  .art-frame-rail{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:10px;
+    margin-top:10px;
+  }
+  .art-frame-swatch{
+    height:50px;
+    border:1px solid #dcdcdc;
+    background:#f7f7f7;
+  }
+
+  .art-buy-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-top:1px solid #ededed;
+    padding-top:12px;
+    font-size:12px;
+  }
+  .art-buy-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .art-thumb{
+    width:56px;
+    height:56px;
+    border:1px solid #e1e1e1;
+    background:#f7f7f7;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .art-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+  .art-buy-row strong{ font-weight:900; }
+
+  .art-summary{
+    padding-left:6px;
+  }
+  .art-price{
+    font-size:26px;
+    font-weight:900;
+    margin-bottom:6px;
+  }
+  .art-arrival{
+    font-size:12px;
+    color:#444;
+    margin-bottom:12px;
+  }
+  .art-cta{
+    width:100%;
+    background:#0b0b0b;
+    color:#fff;
+    border:none;
+    padding:12px 14px;
+    font-weight:900;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    margin-bottom:10px;
+  }
+  .art-pay-note{
+    font-size:12px;
+    color:#666;
+    margin-bottom:18px;
+  }
+  .art-box{
+    border:1px solid #e6e6e6;
+    padding:14px;
+    font-size:12px;
+    color:#444;
+  }
+  .art-box h4{
+    margin:0 0 10px;
+    font-size:13px;
+    font-weight:900;
+    text-transform:uppercase;
+  }
+  .art-box ul{
+    margin:0;
+    padding-left:16px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
   .book-frame{
     background:#fff;
     border:1px solid #efefef;
@@ -2034,6 +2266,12 @@
     .book-offer-btn{ margin-left:0; }
     .book-accessory-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
 
+    .art-frame{ padding:16px; }
+    .art-layout{ grid-template-columns:1fr; }
+    .art-config{ border-right:none; padding-right:0; }
+    .art-frame-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .art-frame-rail{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+
     /* SOLO frame mobile */
     #sect-gallery.solo .solo-frame-head{ top:14px; left:16px; right:16px; }
     #sect-gallery.solo .solo-frame-foot{
@@ -2488,6 +2726,101 @@
                     <div class="book-accessory-item"><img src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png" alt="Accessory item 2"></div>
                     <div class="book-accessory-item"><img src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png" alt="Accessory item 3"></div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="art-wrap" id="artWrap">
+          <div class="back-nav"><button class="btn-back" id="artBack">&larr; Back to Collection</button></div>
+          <div class="art-frame">
+            <div class="art-layout">
+              <div class="art-config">
+                <div class="art-header">
+                  <div>
+                    <div class="art-title" id="artTitle">Artwork Title</div>
+                    <div class="art-artist">by <span id="artArtist">Artist Name</span></div>
+                    <div class="art-rating">
+                      <span class="stars" id="artStars">★★★★★</span>
+                      <span id="artRatingText">4.8 stars from 50+ ratings</span>
+                    </div>
+                  </div>
+                  <button class="art-fav" type="button" aria-label="Save">♡</button>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">1- Choose a service type:</div>
+                  <div class="art-service-grid" id="artServiceOptions">
+                    <div class="art-service-card" data-service="print">
+                      <div class="art-service-illu"></div>
+                      Print and Frames
+                    </div>
+                    <div class="art-service-card" data-service="canvas">
+                      <div class="art-service-illu"></div>
+                      Stretched Canvas
+                    </div>
+                    <div class="art-service-card" data-service="wood">
+                      <div class="art-service-illu"></div>
+                      Wood Mount &amp; More
+                    </div>
+                  </div>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">2- Choose print size:</div>
+                  <div class="art-options" id="artSizeOptions">
+                    <button class="art-option" type="button" data-size="12x16">12" x 16"</button>
+                    <button class="art-option" type="button" data-size="18x24">18" x 24"</button>
+                    <button class="art-option" type="button" data-size="24x32">24" x 32"</button>
+                  </div>
+                </div>
+
+                <div class="art-section">
+                  <div class="art-section-title">3- Choose a frame:</div>
+                  <div class="art-frame-grid" id="artFrameOptions">
+                    <div class="art-frame-card" data-frame="classic">Classic<br><strong>$121</strong></div>
+                    <div class="art-frame-card" data-frame="premium">Premium<br><strong>$182</strong></div>
+                    <div class="art-frame-card" data-frame="signature">Signature<br><strong>$237</strong></div>
+                    <div class="art-frame-card" data-frame="sale">Sale<br><strong>$107</strong></div>
+                  </div>
+                  <div class="art-frame-rail">
+                    <div class="art-frame-swatch" style="background:#111;"></div>
+                    <div class="art-frame-swatch" style="background:#f2f2f2;"></div>
+                    <div class="art-frame-swatch" style="background:#8b5a2b;"></div>
+                    <div class="art-frame-swatch" style="background:#fafafa;"></div>
+                  </div>
+                </div>
+
+                <div class="art-buy-row">
+                  <div class="art-buy-left">
+                    <div class="art-thumb"><img id="artThumb" src="" alt="Artwork preview"></div>
+                    <div>
+                      <strong>Buy just the print</strong><br>
+                      <span id="artPrintNote">(Image 12" x 16")</span>
+                    </div>
+                  </div>
+                  <div class="art-print-price" id="artPrintPrice">$32</div>
+                </div>
+              </div>
+
+              <div class="art-summary">
+                <div class="art-price" id="artPrice">$32</div>
+                <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
+                <button class="art-cta" type="button" id="artAddToCart">Add to Cart</button>
+                <div class="art-pay-note">
+                  Pay in 4 interest-free payments of $8.00 with PayPal. Learn more<br>
+                  Pay with Affirm on orders over $50. See if you qualify
+                </div>
+
+                <div class="art-box">
+                  <h4>About Framed Art</h4>
+                  <ul>
+                    <li>High-quality art prints created with non-toxic, archival inks.</li>
+                    <li>Decorative white mat enhances the artwork while preserving longevity.</li>
+                    <li>Art is protected by clear acrylic that is lighter and more impact resistant.</li>
+                    <li>Hanging hardware comes affixed to each framed art piece.</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -3145,12 +3478,12 @@
   ];
 
   const ARTWORKS = [
-    { id:"art-1", name:"Praying Girl (Roberto Ferruzzi)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg" },
-    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg" },
-    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg" },
-    { id:"art-4", name:"The Storm on the Sea of Galilee", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg" },
-    { id:"art-5", name:"The Starry Night (June 1889)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg" },
-    { id:"art-6", name:"Impression, Sunrise (1872)", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg" }
+    { id:"art-1", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32 },
+    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36 },
+    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34 },
+    { id:"art-4", name:"The Storm on the Sea of Galilee", artist:"Rembrandt van Rijn", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg", rating:4.6, ratingCount:"30+", basePrice:38 },
+    { id:"art-5", name:"The Starry Night (June 1889)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg", rating:5.0, ratingCount:"80+", basePrice:42 },
+    { id:"art-6", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33 }
   ];
 
   const grid = document.getElementById("grid");
@@ -3258,7 +3591,7 @@
   }
 
   function renderArt(){
-    renderCards(ARTWORKS, { clickable:false, subLabel:"Artwork", className:"art-card" });
+    renderCards(ARTWORKS, { clickable:true, subLabel:"Artwork", className:"art-card", onClick:openArt });
   }
 
   function setGallery(galleryKey){
@@ -3306,6 +3639,9 @@
     if(!isBooks){
       if(galleryEl && galleryEl.classList.contains("book-solo")) closeBook();
       if(bookFilterModal) bookFilterModal.classList.remove("open");
+    }
+    if(!isArt){
+      if(galleryEl && galleryEl.classList.contains("art-solo")) closeArt();
     }
 
     if(isFurniture) renderFurniture();
@@ -3409,6 +3745,7 @@
     if(shopEl) shopEl.classList.remove("solo");
     if(galleryEl){
       galleryEl.classList.remove("solo");
+      galleryEl.classList.remove("art-solo");
       galleryEl.classList.add("book-solo");
     }
     closeBookFilterModal();
@@ -3433,9 +3770,91 @@
     if(galleryEl) galleryEl.classList.remove("book-solo");
   }
 
+  const ART_SERVICE_PRICES = { print:0, canvas:18, wood:24 };
+  const ART_SIZE_PRICES = { "12x16":0, "18x24":24, "24x32":48 };
+  const ART_FRAME_PRICES = { classic:121, premium:182, signature:237, sale:107 };
+  let activeArt = null;
+  let artSelection = { service:"print", size:"12x16", frame:"classic" };
+
+  function formatPrice(v){
+    return `$${Math.round(v)}`;
+  }
+
+  function updateArtUI(){
+    if(!activeArt) return;
+    const title = document.getElementById("artTitle");
+    const artist = document.getElementById("artArtist");
+    const stars = document.getElementById("artStars");
+    const ratingText = document.getElementById("artRatingText");
+    const printNote = document.getElementById("artPrintNote");
+    const printPrice = document.getElementById("artPrintPrice");
+    const priceEl = document.getElementById("artPrice");
+    const thumb = document.getElementById("artThumb");
+
+    if(title) title.textContent = activeArt.name;
+    if(artist) artist.textContent = activeArt.artist || "Unknown";
+    if(stars){
+      const filled = Math.max(1, Math.min(5, Math.round(activeArt.rating || 5)));
+      stars.textContent = "★★★★★".slice(0, filled) + "☆☆☆☆☆".slice(0, 5 - filled);
+    }
+    if(ratingText) ratingText.textContent = `${activeArt.rating || 5} stars from ${activeArt.ratingCount || "50+"} ratings`;
+    if(thumb){
+      thumb.src = activeArt.img;
+      thumb.alt = activeArt.name || "Artwork preview";
+    }
+
+    document.querySelectorAll("#artServiceOptions .art-service-card").forEach(card => {
+      card.classList.toggle("active", card.dataset.service === artSelection.service);
+    });
+    document.querySelectorAll("#artSizeOptions .art-option").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.size === artSelection.size);
+    });
+    const frameDisabled = artSelection.service !== "print";
+    document.querySelectorAll("#artFrameOptions .art-frame-card").forEach(card => {
+      card.classList.toggle("active", card.dataset.frame === artSelection.frame);
+      card.classList.toggle("disabled", frameDisabled);
+    });
+
+    const base = activeArt.basePrice || 32;
+    const sizeAdj = ART_SIZE_PRICES[artSelection.size] || 0;
+    const serviceAdj = ART_SERVICE_PRICES[artSelection.service] || 0;
+    const frameAdj = frameDisabled ? 0 : (ART_FRAME_PRICES[artSelection.frame] || 0);
+    const total = base + sizeAdj + serviceAdj + frameAdj;
+    if(priceEl) priceEl.textContent = formatPrice(total);
+    if(printNote){
+      const sizeParts = artSelection.size.split("x");
+      const sizeLabel = `${sizeParts[0]}" x ${sizeParts[1]}"`;
+      printNote.textContent = `(Image ${sizeLabel})`;
+    }
+    if(printPrice) printPrice.textContent = formatPrice(base + sizeAdj);
+  }
+
+  function openArt(a){
+    activeArt = a;
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl){
+      galleryEl.classList.remove("solo");
+      galleryEl.classList.remove("book-solo");
+      galleryEl.classList.add("art-solo");
+    }
+    artSelection = { service:"print", size:"12x16", frame:"classic" };
+    updateArtUI();
+  }
+
+  function closeArt(){
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl) galleryEl.classList.remove("art-solo");
+    activeArt = null;
+  }
+
   function openSolo(p){
     document.getElementById("shop").classList.add("solo");
-    document.getElementById("sect-gallery").classList.add("solo");
+    const galleryEl = document.getElementById("sect-gallery");
+    if(galleryEl){
+      galleryEl.classList.add("solo");
+      galleryEl.classList.remove("book-solo");
+      galleryEl.classList.remove("art-solo");
+    }
 
     setSoloInfoOpen(false);
     setSoloOptionPopover(null);
@@ -3508,6 +3927,7 @@
 
   safeAdd("btnBack","click",closeSolo);
   safeAdd("bookBack","click",closeBook);
+  safeAdd("artBack","click",closeArt);
   safeAdd("btnClose","click",closeSolo);
   safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
 
@@ -3568,6 +3988,42 @@
       bookFilterState.sizes = collectFilterSet("bookFilterSizes");
       renderBooks();
       closeBookFilterModal();
+    });
+  }
+
+  const artServiceOptions = document.getElementById("artServiceOptions");
+  if(artServiceOptions){
+    artServiceOptions.addEventListener("click", (e) => {
+      const card = e.target.closest(".art-service-card");
+      if(!card) return;
+      artSelection.service = card.dataset.service;
+      updateArtUI();
+    });
+  }
+  const artSizeOptions = document.getElementById("artSizeOptions");
+  if(artSizeOptions){
+    artSizeOptions.addEventListener("click", (e) => {
+      const btn = e.target.closest(".art-option");
+      if(!btn) return;
+      artSelection.size = btn.dataset.size;
+      updateArtUI();
+    });
+  }
+  const artFrameOptions = document.getElementById("artFrameOptions");
+  if(artFrameOptions){
+    artFrameOptions.addEventListener("click", (e) => {
+      const card = e.target.closest(".art-frame-card");
+      if(!card || card.classList.contains("disabled")) return;
+      artSelection.frame = card.dataset.frame;
+      updateArtUI();
+    });
+  }
+  const artAddToCart = document.getElementById("artAddToCart");
+  if(artAddToCart){
+    artAddToCart.addEventListener("click", () => {
+      if(!activeArt) return;
+      const msg = `${activeArt.name} · ${artSelection.service} · ${artSelection.size} · ${artSelection.frame}`;
+      alert(`Added to cart: ${msg}`);
     });
   }
 
