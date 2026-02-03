@@ -1949,6 +1949,20 @@
     color:#666;
     margin-bottom:18px;
   }
+  .art-right-media{
+    margin:12px 0 14px;
+    background:#f7f7f7;
+    border:1px solid #e5e5e5;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .art-right-media img{
+    width:100%;
+    height:220px;
+    object-fit:contain;
+  }
   .art-box{
     border:1px solid #e6e6e6;
     padding:14px;
@@ -2599,6 +2613,7 @@
     .art-config{ border-right:none; padding-right:0; }
     .art-frame-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     .art-frame-rail{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .art-right-media img{ height:180px; }
 
     /* SOLO frame mobile */
     #sect-gallery.solo .solo-frame-head{ top:14px; left:16px; right:16px; }
@@ -3160,6 +3175,9 @@
                 <div class="art-price" id="artPrice">$32</div>
                 <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
                 <button class="art-cta" type="button" id="artAddToCart">Add to Cart</button>
+                <div class="art-right-media">
+                  <img id="artRightImage" src="" alt="Artwork preview">
+                </div>
                 <div class="art-pay-note">
                   Pay in 4 interest-free payments of $8.00 with PayPal. Learn more<br>
                   Pay with Affirm on orders over $50. See if you qualify
@@ -3256,6 +3274,9 @@
                 <div class="art-price" id="sculpturePrice">$1200</div>
                 <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
                 <button class="art-cta" type="button" id="sculptureAddToCart">Add to Cart</button>
+                <div class="art-right-media">
+                  <img id="sculptureRightImage" src="" alt="Sculpture preview">
+                </div>
                 <div class="art-pay-note">
                   Pay in 4 interest-free payments. Learn more<br>
                   Custom crating available on select sizes.
@@ -4497,6 +4518,7 @@
     const printPrice = document.getElementById("artPrintPrice");
     const priceEl = document.getElementById("artPrice");
     const thumb = document.getElementById("artThumb");
+    const rightImg = document.getElementById("artRightImage");
 
     if(title) title.textContent = activeArt.name;
     if(artist) artist.textContent = activeArt.artist || "Unknown";
@@ -4508,6 +4530,10 @@
     if(thumb){
       thumb.src = activeArt.img;
       thumb.alt = activeArt.name || "Artwork preview";
+    }
+    if(rightImg){
+      rightImg.src = activeArt.img;
+      rightImg.alt = activeArt.name || "Artwork preview";
     }
 
     document.querySelectorAll("#artServiceOptions .art-service-card").forEach(card => {
@@ -4570,6 +4596,7 @@
     const ratingText = document.getElementById("sculptureRatingText");
     const meta = document.getElementById("sculptureMeta");
     const thumb = document.getElementById("sculptureThumb");
+    const rightImg = document.getElementById("sculptureRightImage");
     const sizeNote = document.getElementById("sculptureSizeNote");
     const basePriceEl = document.getElementById("sculptureBasePrice");
     const priceEl = document.getElementById("sculpturePrice");
@@ -4585,6 +4612,10 @@
     if(thumb){
       thumb.src = activeSculpture.img;
       thumb.alt = activeSculpture.name || "Sculpture preview";
+    }
+    if(rightImg){
+      rightImg.src = activeSculpture.img;
+      rightImg.alt = activeSculpture.name || "Sculpture preview";
     }
 
     document.querySelectorAll("#sculptureFinishOptions .art-service-card").forEach(card => {
