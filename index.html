@@ -1753,13 +1753,15 @@
   }
   .art-layout{
     display:grid;
-    grid-template-columns:minmax(280px, 1.2fr) minmax(260px, 0.8fr);
+    grid-template-columns:minmax(260px, 0.8fr) minmax(280px, 1.2fr);
+    grid-template-areas:"summary config";
     gap:28px;
     align-items:start;
   }
   .art-config{
-    border-right:1px solid #ededed;
-    padding-right:24px;
+    grid-area:config;
+    border-left:1px solid #ededed;
+    padding-left:24px;
   }
   .art-header{
     display:flex;
@@ -1920,7 +1922,8 @@
   .art-buy-row strong{ font-weight:900; }
 
   .art-summary{
-    padding-left:6px;
+    grid-area:summary;
+    padding-right:6px;
   }
   .art-price{
     font-size:26px;
@@ -2609,8 +2612,9 @@
     .book-accessory-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
 
     .art-frame{ padding:16px; }
-    .art-layout{ grid-template-columns:1fr; }
-    .art-config{ border-right:none; padding-right:0; }
+    .art-layout{ grid-template-columns:1fr; grid-template-areas:"config" "summary"; }
+    .art-config{ border-left:none; padding-left:0; }
+    .art-summary{ padding-right:0; }
     .art-frame-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     .art-frame-rail{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     .art-right-media img{ height:180px; }
@@ -4605,6 +4609,7 @@
       galleryEl.classList.add("sculpture-solo");
     }
     closeSculptureFilterModal();
+    closeArtFilterModal();
     sculptureSelection = { finish:"polished", size:"medium", base:"stone" };
     updateSculptureUI();
   }
