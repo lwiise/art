@@ -2871,7 +2871,7 @@
         <div class="gallery-head">
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
-            <button class="chip gallery-chip" data-gallery="sculptures">Sculptures</button>
+            <button class="chip gallery-chip" data-gallery="designs">Designs</button>
             <button class="chip gallery-chip active" data-gallery="furniture">Furniture</button>
             <button class="chip gallery-chip" data-gallery="books">Books</button>
           </nav>
@@ -2903,19 +2903,7 @@
               </svg>
               Filter & Sort
             </button>
-            <div class="art-filter-summary" id="artFilterSummary">Featured · All Artists · All Periods · All Media</div>
-          </div>
-          <div class="sculpture-filter-bar" id="sculptureFilterBar" hidden>
-            <button class="sculpture-filter-btn" type="button" id="sculptureFilterBtn">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                <circle cx="8" cy="6" r="1.6" fill="currentColor"/>
-                <circle cx="15" cy="12" r="1.6" fill="currentColor"/>
-                <circle cx="12" cy="18" r="1.6" fill="currentColor"/>
-              </svg>
-              Filter & Sort
-            </button>
-            <div class="sculpture-filter-summary" id="sculptureFilterSummary">Featured · All Artists · All Eras · All Materials</div>
+            <div class="art-filter-summary" id="artFilterSummary">Featured · All Types · All Artists · All Periods · All Media</div>
           </div>
         </div>
       </header>
@@ -3375,6 +3363,16 @@
           </div>
 
           <div class="art-filter-group">
+            <button class="art-filter-toggle" type="button" data-target="artFilterTypes">
+              Type <span>â–¾</span>
+            </button>
+            <div class="art-filter-options" id="artFilterTypes">
+              <label><input type="checkbox" value="art"> Artwork</label>
+              <label><input type="checkbox" value="sculpture"> Sculpture</label>
+            </div>
+          </div>
+
+          <div class="art-filter-group">
             <button class="art-filter-toggle" type="button" data-target="artFilterArtists">
               Artists <span>▾</span>
             </button>
@@ -3384,6 +3382,10 @@
               <label><input type="checkbox" value="Vincent van Gogh"> Vincent van Gogh</label>
               <label><input type="checkbox" value="Rembrandt van Rijn"> Rembrandt van Rijn</label>
               <label><input type="checkbox" value="Claude Monet"> Claude Monet</label>
+              <label><input type="checkbox" value="Michelangelo Buonarroti"> Michelangelo Buonarroti</label>
+              <label><input type="checkbox" value="Unknown Roman"> Unknown Roman</label>
+              <label><input type="checkbox" value="Jon Hicks"> Jon Hicks</label>
+              <label><input type="checkbox" value="Unknown Hellenistic"> Unknown Hellenistic</label>
             </div>
           </div>
 
@@ -3397,6 +3399,10 @@
               <label><input type="checkbox" value="Impressionism"> Impressionism</label>
               <label><input type="checkbox" value="Post-Impressionism"> Post-Impressionism</label>
               <label><input type="checkbox" value="19th Century"> 19th Century</label>
+              <label><input type="checkbox" value="Renaissance"> Renaissance</label>
+              <label><input type="checkbox" value="Roman"> Roman</label>
+              <label><input type="checkbox" value="Classical"> Classical</label>
+              <label><input type="checkbox" value="Hellenistic"> Hellenistic</label>
             </div>
           </div>
 
@@ -3406,71 +3412,14 @@
             </button>
             <div class="art-filter-options" id="artFilterMedia">
               <label><input type="checkbox" value="Oil on Canvas"> Oil on Canvas</label>
-              <label><input type="checkbox" value="Oil on Paper"> Oil on Paper</label>
+              <label><input type="checkbox" value="Marble"> Marble</label>
+              <label><input type="checkbox" value="Bronze"> Bronze</label>
             </div>
           </div>
 
           <div class="art-filter-actions">
             <button class="art-filter-clear" type="button" id="artFilterClear">Clear</button>
             <button class="art-filter-apply" type="button" id="artFilterApply">Apply</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="sculpture-filter-modal" id="sculptureFilterModal" aria-hidden="true">
-        <div class="sculpture-filter-card">
-          <div class="sculpture-filter-head">
-            <div class="sculpture-filter-title">Filter &amp; Sort</div>
-            <button class="sculpture-filter-close" type="button" id="sculptureFilterClose" aria-label="Close">×</button>
-          </div>
-
-          <div class="sculpture-filter-row">
-            <label for="sculptureSortSelect">Sort by:</label>
-            <select id="sculptureSortSelect">
-              <option value="featured">Featured</option>
-              <option value="title-asc">Title: A–Z</option>
-              <option value="year-asc">Year: Oldest First</option>
-              <option value="year-desc">Year: Newest First</option>
-            </select>
-          </div>
-
-          <div class="sculpture-filter-group">
-            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterArtists">
-              Artists <span>▾</span>
-            </button>
-            <div class="sculpture-filter-options" id="sculptureFilterArtists">
-              <label><input type="checkbox" value="Michelangelo Buonarroti"> Michelangelo Buonarroti</label>
-              <label><input type="checkbox" value="Unknown Roman"> Unknown Roman</label>
-              <label><input type="checkbox" value="Jon Hicks"> Jon Hicks</label>
-              <label><input type="checkbox" value="Unknown Hellenistic"> Unknown Hellenistic</label>
-            </div>
-          </div>
-
-          <div class="sculpture-filter-group">
-            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterEras">
-              Eras <span>▾</span>
-            </button>
-            <div class="sculpture-filter-options" id="sculptureFilterEras">
-              <label><input type="checkbox" value="Renaissance"> Renaissance</label>
-              <label><input type="checkbox" value="Roman"> Roman</label>
-              <label><input type="checkbox" value="Classical"> Classical</label>
-              <label><input type="checkbox" value="Hellenistic"> Hellenistic</label>
-            </div>
-          </div>
-
-          <div class="sculpture-filter-group">
-            <button class="sculpture-filter-toggle" type="button" data-target="sculptureFilterMaterials">
-              Materials <span>▾</span>
-            </button>
-            <div class="sculpture-filter-options" id="sculptureFilterMaterials">
-              <label><input type="checkbox" value="Marble"> Marble</label>
-              <label><input type="checkbox" value="Bronze"> Bronze</label>
-            </div>
-          </div>
-
-          <div class="sculpture-filter-actions">
-            <button class="sculpture-filter-clear" type="button" id="sculptureFilterClear">Clear</button>
-            <button class="sculpture-filter-apply" type="button" id="sculptureFilterApply">Apply</button>
           </div>
         </div>
       </div>
@@ -4065,22 +4014,24 @@
   ];
 
   const ARTWORKS = [
-    { id:"art-1", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32, year:1890, period:"19th Century", medium:"Oil on Canvas" },
-    { id:"art-2", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36, year:1818, period:"Romanticism", medium:"Oil on Canvas" },
-    { id:"art-3", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34, year:1888, period:"Post-Impressionism", medium:"Oil on Canvas" },
-    { id:"art-4", name:"The Storm on the Sea of Galilee", artist:"Rembrandt van Rijn", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg", rating:4.6, ratingCount:"30+", basePrice:38, year:1633, period:"Baroque", medium:"Oil on Canvas" },
-    { id:"art-5", name:"The Starry Night (June 1889)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg", rating:5.0, ratingCount:"80+", basePrice:42, year:1889, period:"Post-Impressionism", medium:"Oil on Canvas" },
-    { id:"art-6", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33, year:1872, period:"Impressionism", medium:"Oil on Canvas" }
+    { id:"art-1", type:"art", sub:"Artwork", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32, year:1890, period:"19th Century", medium:"Oil on Canvas" },
+    { id:"art-2", type:"art", sub:"Artwork", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36, year:1818, period:"Romanticism", medium:"Oil on Canvas" },
+    { id:"art-3", type:"art", sub:"Artwork", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34, year:1888, period:"Post-Impressionism", medium:"Oil on Canvas" },
+    { id:"art-4", type:"art", sub:"Artwork", name:"The Storm on the Sea of Galilee", artist:"Rembrandt van Rijn", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121b4490b3b755b3a4_rembrandt-van-rijn-the-storm-on-the-sea-of-galilee_u-l-q1h9yxy0.jpg", rating:4.6, ratingCount:"30+", basePrice:38, year:1633, period:"Baroque", medium:"Oil on Canvas" },
+    { id:"art-5", type:"art", sub:"Artwork", name:"The Starry Night (June 1889)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1205b58982c0229dd3_vincent-van-gogh-the-starry-night-june-1889_u-l-q1qizd70.jpg", rating:5.0, ratingCount:"80+", basePrice:42, year:1889, period:"Post-Impressionism", medium:"Oil on Canvas" },
+    { id:"art-6", type:"art", sub:"Artwork", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33, year:1872, period:"Impressionism", medium:"Oil on Canvas" }
   ];
 
   const SCULPTURES = [
-    { id:"sculpt-1", name:"David", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c1857e82c35452c8e_michelangelo-buonarroti-david_u-l-puqrgp0.jpg", rating:4.9, ratingCount:"90+", basePrice:1200, year:1504, era:"Renaissance", material:"Marble" },
-    { id:"sculpt-2", name:"Marcus Aurelius", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c614592d086fd92fa_marcus-aurelius-statue_u-l-q1074ct0.jpg", rating:4.7, ratingCount:"60+", basePrice:980, year:175, era:"Roman", material:"Bronze" },
-    { id:"sculpt-3", name:"Plato at the Hellenic Academy", artist:"Jon Hicks", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c4e4b28f77296cd98_jon-hicks-plato-statue-outside-the-hellenic-academy_u-l-pzrr0a0.jpg", rating:4.6, ratingCount:"40+", basePrice:860, year:1886, era:"Classical", material:"Marble" },
-    { id:"sculpt-4", name:"Winged Victory of Samothrace", artist:"Unknown Hellenistic", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967caf8971c9ac8a8950_victoire-de-samothrace_u-l-q1igl1h0.jpg", rating:4.8, ratingCount:"70+", basePrice:1400, year:190, era:"Hellenistic", material:"Marble" },
-    { id:"sculpt-5", name:"Pietà", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c81c72c8235724d17_pieta-by-michelangelo-buonarroti_u-l-pzo61k0.jpg", rating:5.0, ratingCount:"120+", basePrice:1350, year:1499, era:"Renaissance", material:"Marble" },
-    { id:"sculpt-6", name:"Buste de Rome Casquée", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967ce3345ac63325b131_buste-de-rome-casquee_u-l-q1kypts0.jpg", rating:4.5, ratingCount:"35+", basePrice:920, year:100, era:"Roman", material:"Marble" }
+    { id:"sculpt-1", type:"sculpture", sub:"Sculpture", name:"David", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c1857e82c35452c8e_michelangelo-buonarroti-david_u-l-puqrgp0.jpg", rating:4.9, ratingCount:"90+", basePrice:1200, year:1504, era:"Renaissance", material:"Marble", period:"Renaissance", medium:"Marble" },
+    { id:"sculpt-2", type:"sculpture", sub:"Sculpture", name:"Marcus Aurelius", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c614592d086fd92fa_marcus-aurelius-statue_u-l-q1074ct0.jpg", rating:4.7, ratingCount:"60+", basePrice:980, year:175, era:"Roman", material:"Bronze", period:"Roman", medium:"Bronze" },
+    { id:"sculpt-3", type:"sculpture", sub:"Sculpture", name:"Plato at the Hellenic Academy", artist:"Jon Hicks", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c4e4b28f77296cd98_jon-hicks-plato-statue-outside-the-hellenic-academy_u-l-pzrr0a0.jpg", rating:4.6, ratingCount:"40+", basePrice:860, year:1886, era:"Classical", material:"Marble", period:"Classical", medium:"Marble" },
+    { id:"sculpt-4", type:"sculpture", sub:"Sculpture", name:"Winged Victory of Samothrace", artist:"Unknown Hellenistic", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967caf8971c9ac8a8950_victoire-de-samothrace_u-l-q1igl1h0.jpg", rating:4.8, ratingCount:"70+", basePrice:1400, year:190, era:"Hellenistic", material:"Marble", period:"Hellenistic", medium:"Marble" },
+    { id:"sculpt-5", type:"sculpture", sub:"Sculpture", name:"Pietà", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c81c72c8235724d17_pieta-by-michelangelo-buonarroti_u-l-pzo61k0.jpg", rating:5.0, ratingCount:"120+", basePrice:1350, year:1499, era:"Renaissance", material:"Marble", period:"Renaissance", medium:"Marble" },
+    { id:"sculpt-6", type:"sculpture", sub:"Sculpture", name:"Buste de Rome Casquée", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967ce3345ac63325b131_buste-de-rome-casquee_u-l-q1kypts0.jpg", rating:4.5, ratingCount:"35+", basePrice:920, year:100, era:"Roman", material:"Marble", period:"Roman", medium:"Marble" }
   ];
+
+  const ART_ITEMS = ARTWORKS.concat(SCULPTURES);
 
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
@@ -4121,6 +4072,7 @@
   };
   const artFilterState = {
     sort: "featured",
+    types: new Set(),
     artists: new Set(),
     periods: new Set(),
     media: new Set()
@@ -4215,9 +4167,14 @@
   }
 
   function renderArt(){
-    const list = applyArtFilters(ARTWORKS);
-    renderCards(list, { clickable:true, subLabel:"Artwork", className:"art-card", onClick:openArt });
+    const list = applyArtFilters(ART_ITEMS);
+    renderCards(list, { clickable:true, subLabel:"Artwork", className:"art-card", onClick:openArtItem });
     updateArtFilterSummary();
+  }
+
+  function openArtItem(item){
+    if(item.type === "sculpture") openSculpture(item);
+    else openArt(item);
   }
 
   function renderSculptures(){
@@ -4237,6 +4194,7 @@
     if(!artFilterSummary) return;
     const parts = [
       getArtSortLabel(artFilterState.sort),
+      summarizeSet(artFilterState.types, "Types"),
       summarizeSet(artFilterState.artists, "Artists"),
       summarizeSet(artFilterState.periods, "Periods"),
       summarizeSet(artFilterState.media, "Media")
@@ -4246,6 +4204,9 @@
 
   function applyArtFilters(list){
     let result = list.slice();
+    if(artFilterState.types.size){
+      result = result.filter(a => artFilterState.types.has(a.type));
+    }
     if(artFilterState.artists.size){
       result = result.filter(a => artFilterState.artists.has(a.artist));
     }
@@ -4309,8 +4270,8 @@
     const isFurniture = galleryKey === "furniture";
     const isBooks = galleryKey === "books";
     const isArt = galleryKey === "art";
-    const isSculptures = galleryKey === "sculptures";
-    const showGrid = isFurniture || isBooks || isArt || isSculptures;
+    const isDesigns = galleryKey === "designs";
+    const showGrid = isFurniture || isBooks || isArt;
     const galleryEl = document.getElementById("sect-gallery");
     if(galleryEl) galleryEl.classList.toggle("gallery-empty-state", !showGrid);
 
@@ -4329,9 +4290,6 @@
     }
     if(artFilterBar){
       artFilterBar.hidden = !isArt;
-    }
-    if(sculptureFilterBar){
-      sculptureFilterBar.hidden = !isSculptures;
     }
 
     if(grid){
@@ -4360,20 +4318,19 @@
     if(!isArt){
       if(artFilterModal) artFilterModal.classList.remove("open");
     }
-    if(!isSculptures){
-      if(sculptureFilterModal) sculptureFilterModal.classList.remove("open");
-    }
     if(!isArt){
       if(galleryEl && galleryEl.classList.contains("art-solo")) closeArt();
     }
-    if(!isSculptures){
+    if(!isArt){
       if(galleryEl && galleryEl.classList.contains("sculpture-solo")) closeSculpture();
     }
 
     if(isFurniture) renderFurniture();
     if(isBooks) renderBooks();
     if(isArt) renderArt();
-    if(isSculptures) renderSculptures();
+    if(isDesigns){
+      if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
+    }
   }
 
   if(filtersEl){
@@ -4841,6 +4798,7 @@
         artFilterModal.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
       }
       artFilterState.sort = "featured";
+      artFilterState.types = new Set();
       artFilterState.artists = new Set();
       artFilterState.periods = new Set();
       artFilterState.media = new Set();
@@ -4851,6 +4809,7 @@
   if(artFilterApply){
     artFilterApply.addEventListener("click", () => {
       artFilterState.sort = artSortSelect ? artSortSelect.value : "featured";
+      artFilterState.types = collectFilterSet("artFilterTypes");
       artFilterState.artists = collectFilterSet("artFilterArtists");
       artFilterState.periods = collectFilterSet("artFilterPeriods");
       artFilterState.media = collectFilterSet("artFilterMedia");
