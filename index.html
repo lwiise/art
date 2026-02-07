@@ -1478,7 +1478,7 @@
     left:50%;
     top:50%;
     transform:translate(-50%,-50%) translateY(12px);
-    width:340px;
+    width:510px;
     max-width:calc(100% - 44px);
     padding:16px 16px 14px;
     border-radius:20px;
@@ -1590,9 +1590,11 @@
     left:22px;
     top:50%;
     transform:translateY(-50%) translateX(-12px);
-    width:260px;
+    width:420px;
     max-width:calc(100% - 44px);
     padding:16px 16px 14px;
+    max-height:70vh;
+    overflow:auto;
     border-radius:18px;
     background:rgba(255,255,255,0.70);
     border:1px solid rgba(255,255,255,0.72);
@@ -1659,6 +1661,9 @@
     font-size:13px;
     font-weight:950;
     color:#111;
+  }
+  #soloInfoExtra{
+    margin-top:14px;
   }
 
   .img-arrow{
@@ -2965,6 +2970,7 @@
                 <div class="solo-meta-item"><span id="soloInfoLabel2">Dimensions</span><strong id="soloInfoDim">--</strong></div>
                 <div class="solo-meta-item"><span id="soloInfoLabel3">Location</span><strong id="soloInfoLoc">--</strong></div>
               </div>
+              <div id="soloInfoExtra"></div>
             </aside>
 
             <div class="solo-config" id="soloConfig" aria-hidden="true">
@@ -3205,7 +3211,6 @@
                 <div class="data-item"><span id="soloMetaLabel2">Dimensions</span><span id="spDim">--</span></div>
                 <div class="data-item"><span id="soloMetaLabel3">Location</span><span id="soloStore">--</span></div>
               </div>
-              <div id="soloInfoExtra"></div>
             </div>
 
             <div class="artist-profile" id="artistBtn">
@@ -4629,10 +4634,10 @@
     setSoloText("soloDescText", b.kicker || SOLO_DEFAULT_DESC);
     setSoloText("soloInfoName", title);
 
-    const infoBits = [];
-    if(b.kicker) infoBits.push(b.kicker);
-    if(b.price) infoBits.push(b.price);
-    setSoloText("soloInfoText", infoBits.join(" - ") || SOLO_DEFAULT_DESC);
+    const bookTheme = b.theme || "--";
+    const bookColor = b.color || "--";
+    const bookSize = b.size || "--";
+    setSoloText("soloInfoText", `${bookTheme} - ${bookColor} - ${bookSize}`);
 
     setSoloLabels("Theme", "Color", "Size");
     setSoloValues(b.theme || "--", b.color || "--", b.size || "--");
@@ -4735,7 +4740,7 @@
     setSoloText("soloTitle", title);
     setSoloText("soloDescText", `${a.period || "--"} - ${a.medium || "--"} - ${a.year || "--"}`);
     setSoloText("soloInfoName", title);
-    setSoloText("soloInfoText", `${a.artist || "Unknown"} - ${a.period || "--"}`);
+    setSoloText("soloInfoText", `${a.period || "--"} - ${a.medium || "--"} - ${a.year || "--"}`);
     setSoloLabels("Medium", "Period", "Year");
     setSoloValues(a.medium || "--", a.period || "--", a.year ? String(a.year) : "--");
     setSoloHtml("soloInfoExtra", buildArtInfoHtml(ART_INFO));
@@ -4824,7 +4829,7 @@
     setSoloText("soloTitle", title);
     setSoloText("soloDescText", `${s.material || "--"} - ${s.era || "--"} - ${s.year || "--"}`);
     setSoloText("soloInfoName", title);
-    setSoloText("soloInfoText", `${s.artist || "Unknown"} - ${s.era || "--"}`);
+    setSoloText("soloInfoText", `${s.material || "--"} - ${s.era || "--"} - ${s.year || "--"}`);
     setSoloLabels("Material", "Era", "Year");
     setSoloValues(s.material || "--", s.era || "--", s.year ? String(s.year) : "--");
     setSoloHtml("soloInfoExtra", buildArtInfoHtml(SCULPTURE_INFO));
