@@ -1347,6 +1347,10 @@
     object-position:center;
   }
   .solo-media-container img{ filter:none; }
+  #soloWrap[data-solo-mode="art"] .solo-media-container img,
+  #soloWrap[data-solo-mode="book"] .solo-media-container img{
+    object-fit:contain;
+  }
   model-viewer{ width:100%; height:100%; }
 
   .media-tabs{
@@ -1590,7 +1594,7 @@
     left:22px;
     top:50%;
     transform:translateY(-50%) translateX(-12px);
-    width:420px;
+    width:546px;
     max-width:calc(100% - 44px);
     padding:16px 16px 14px;
     max-height:70vh;
@@ -4398,6 +4402,8 @@
 
   function setSoloMode(mode){
     activeSoloType = mode;
+    const soloWrap = document.getElementById("soloWrap");
+    if(soloWrap) soloWrap.dataset.soloMode = mode;
     const isFurniture = mode === "furniture";
     const colorWrap = document.getElementById("soloColorTabWrap");
     const sizeWrap = document.getElementById("soloSizeTabWrap");
