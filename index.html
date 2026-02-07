@@ -1559,6 +1559,31 @@
     color:rgba(0,0,0,0.70);
     margin-top:6px;
   }
+  .solo-config-body{
+    max-height:62vh;
+    overflow:auto;
+    padding-right:4px;
+  }
+  .solo-config-section[hidden]{ display:none; }
+  .solo-inquiry-btn{
+    width:100%;
+    margin-top:12px;
+  }
+  .book-customs-title{
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .book-offer-select{
+    cursor:pointer;
+    border:1px solid #eee;
+  }
+  .book-offer-select.active{
+    border-color:#111;
+    box-shadow:inset 0 0 0 1px #111;
+  }
 
   .solo-info-card{
     position:absolute;
@@ -2877,11 +2902,11 @@
         <div class="gallery-head">
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
-            <button class="chip gallery-chip" data-gallery="designs">Designs</button>
-            <button class="chip gallery-chip active" data-gallery="furniture">Furniture</button>
+            <button class="chip gallery-chip active" data-gallery="furniture">Designs</button>
             <button class="chip gallery-chip" data-gallery="books">Books</button>
+            <button class="chip gallery-chip" data-gallery="designs">Photography</button>
           </nav>
-          <nav class="nav-group" id="filters" aria-label="Furniture filters">
+          <nav class="nav-group" id="filters" aria-label="Designs filters">
             <button class="chip active" data-filter="all" id="btnAll">ALL</button>
             <button class="chip" data-filter="cabinet">Cabinets</button>
             <button class="chip" data-filter="sideboard">Sideboards</button>
@@ -2934,48 +2959,219 @@
             <aside class="solo-info-card" id="soloInfoCard" aria-hidden="true">
               <button class="solo-info-close" type="button" id="soloInfoClose" aria-label="Close info">&times;</button>
               <div class="solo-info-title" id="soloInfoName">PRODUCT</div>
-              <div class="solo-info-text">Contemporary design meeting functionality.</div>
+              <div class="solo-info-text" id="soloInfoText">Contemporary design meeting functionality.</div>
               <div class="solo-info-meta">
-                <div class="solo-meta-item"><span>Material</span><strong id="soloInfoMat">--</strong></div>
-                <div class="solo-meta-item"><span>Dimensions</span><strong id="soloInfoDim">--</strong></div>
-                <div class="solo-meta-item"><span>Location</span><strong id="soloInfoLoc">--</strong></div>
+                <div class="solo-meta-item"><span id="soloInfoLabel1">Material</span><strong id="soloInfoMat">--</strong></div>
+                <div class="solo-meta-item"><span id="soloInfoLabel2">Dimensions</span><strong id="soloInfoDim">--</strong></div>
+                <div class="solo-meta-item"><span id="soloInfoLabel3">Location</span><strong id="soloInfoLoc">--</strong></div>
               </div>
             </aside>
 
             <div class="solo-config" id="soloConfig" aria-hidden="true">
               <button class="solo-config-close" type="button" id="soloConfigClose" aria-label="Close customizer">&times;</button>
-              <div class="solo-config-title">Customizer</div>
-              <div class="solo-config-group">
-                <div class="solo-config-label">Color</div>
-                <div class="solo-config-options" id="soloConfigColors" role="group" aria-label="Choose color">
-                  <button class="solo-config-option" type="button" data-color="Red">Red</button>
-                  <button class="solo-config-option" type="button" data-color="Blue">Blue</button>
-                  <button class="solo-config-option" type="button" data-color="Sand">Sand</button>
+              <div class="solo-config-title" id="soloConfigTitle">Customizer</div>
+              <div class="solo-config-body" id="soloConfigBody">
+                <div class="solo-config-section" id="soloConfigFurniture">
+                  <div class="solo-config-group">
+                    <div class="solo-config-label">Color</div>
+                    <div class="solo-config-options" id="soloConfigColors" role="group" aria-label="Choose color">
+                      <button class="solo-config-option" type="button" data-color="Red">Red</button>
+                      <button class="solo-config-option" type="button" data-color="Blue">Blue</button>
+                      <button class="solo-config-option" type="button" data-color="Sand">Sand</button>
+                    </div>
+                  </div>
+                  <div class="solo-config-group">
+                    <div class="solo-config-label">Size</div>
+                    <div class="solo-config-options" id="soloConfigSizes" role="group" aria-label="Choose size">
+                      <button class="solo-config-option" type="button" data-size="Small">Small</button>
+                      <button class="solo-config-option" type="button" data-size="Medium">Medium</button>
+                      <button class="solo-config-option" type="button" data-size="Large">Large</button>
+                    </div>
+                  </div>
+                  <div class="solo-config-summary" id="soloConfigSummary">Selected: -- / --</div>
+                </div>
+
+                <div class="solo-config-section" id="soloConfigArt" hidden>
+                  <div class="art-header">
+                    <div>
+                      <div class="art-title" id="artTitle">Artwork Title</div>
+                      <div class="art-artist">by <span id="artArtist">Artist Name</span></div>
+                      <div class="art-rating">
+                        <span class="stars" id="artStars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                        <span id="artRatingText">4.8 stars from 50+ ratings</span>
+                      </div>
+                    </div>
+                    <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
+                  </div>
+
+                  <div class="art-price" id="artPrice">$32</div>
+                  <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">1- Choose a service type:</div>
+                    <div class="art-service-grid" id="artServiceOptions">
+                      <div class="art-service-card" data-service="print">
+                        <div class="art-service-illu"></div>
+                        Print and Frames
+                      </div>
+                      <div class="art-service-card" data-service="canvas">
+                        <div class="art-service-illu"></div>
+                        Stretched Canvas
+                      </div>
+                      <div class="art-service-card" data-service="wood">
+                        <div class="art-service-illu"></div>
+                        Wood Mount &amp; More
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">2- Choose print size:</div>
+                    <div class="art-options" id="artSizeOptions">
+                      <button class="art-option" type="button" data-size="12x16">12" x 16"</button>
+                      <button class="art-option" type="button" data-size="18x24">18" x 24"</button>
+                      <button class="art-option" type="button" data-size="24x32">24" x 32"</button>
+                    </div>
+                  </div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">3- Choose a frame:</div>
+                    <div class="art-frame-grid" id="artFrameOptions">
+                      <div class="art-frame-card" data-frame="classic">Classic<br><strong>$121</strong></div>
+                      <div class="art-frame-card" data-frame="premium">Premium<br><strong>$182</strong></div>
+                      <div class="art-frame-card" data-frame="signature">Signature<br><strong>$237</strong></div>
+                      <div class="art-frame-card" data-frame="sale">Sale<br><strong>$107</strong></div>
+                    </div>
+                    <div class="art-frame-rail">
+                      <div class="art-frame-swatch" style="background:#111;"></div>
+                      <div class="art-frame-swatch" style="background:#f2f2f2;"></div>
+                      <div class="art-frame-swatch" style="background:#8b5a2b;"></div>
+                      <div class="art-frame-swatch" style="background:#fafafa;"></div>
+                    </div>
+                  </div>
+
+                  <div class="art-buy-row">
+                    <div class="art-buy-left">
+                      <div class="art-thumb"><img id="artThumb" src="" alt="Artwork preview"></div>
+                      <div>
+                        <strong>Buy just the print</strong><br>
+                        <span id="artPrintNote">(Image 12" x 16")</span>
+                      </div>
+                    </div>
+                    <div class="art-print-price" id="artPrintPrice">$32</div>
+                  </div>
+                </div>
+
+                <div class="solo-config-section" id="soloConfigSculpture" hidden>
+                  <div class="art-header">
+                    <div>
+                      <div class="art-title" id="sculptureTitle">Sculpture Title</div>
+                      <div class="art-artist">by <span id="sculptureArtist">Artist Name</span></div>
+                      <div class="art-rating">
+                        <span class="stars" id="sculptureStars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                        <span id="sculptureRatingText">4.8 stars from 50+ ratings</span>
+                      </div>
+                      <div class="art-artist" id="sculptureMeta">Marble - Renaissance - 1504</div>
+                    </div>
+                    <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
+                  </div>
+
+                  <div class="art-price" id="sculpturePrice">$1200</div>
+                  <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">1- Choose a finish:</div>
+                    <div class="art-service-grid" id="sculptureFinishOptions">
+                      <div class="art-service-card" data-finish="polished">
+                        <div class="art-service-illu"></div>
+                        Polished
+                      </div>
+                      <div class="art-service-card" data-finish="antique">
+                        <div class="art-service-illu"></div>
+                        Antique
+                      </div>
+                      <div class="art-service-card" data-finish="matte">
+                        <div class="art-service-illu"></div>
+                        Matte
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">2- Choose size:</div>
+                    <div class="art-options" id="sculptureSizeOptions">
+                      <button class="art-option" type="button" data-size="small">Small</button>
+                      <button class="art-option" type="button" data-size="medium">Medium</button>
+                      <button class="art-option" type="button" data-size="large">Large</button>
+                    </div>
+                  </div>
+
+                  <div class="art-section">
+                    <div class="art-section-title">3- Choose a base:</div>
+                    <div class="art-frame-grid" id="sculptureBaseOptions">
+                      <div class="art-frame-card" data-base="stone">Stone<br><strong>$180</strong></div>
+                      <div class="art-frame-card" data-base="wood">Wood<br><strong>$120</strong></div>
+                      <div class="art-frame-card" data-base="metal">Metal<br><strong>$150</strong></div>
+                      <div class="art-frame-card" data-base="none">None<br><strong>$0</strong></div>
+                    </div>
+                    <div class="art-frame-rail">
+                      <div class="art-frame-swatch" style="background:#e7e2dc;"></div>
+                      <div class="art-frame-swatch" style="background:#b07a4e;"></div>
+                      <div class="art-frame-swatch" style="background:#6f6f6f;"></div>
+                      <div class="art-frame-swatch" style="background:#f7f7f7;"></div>
+                    </div>
+                  </div>
+
+                  <div class="art-buy-row">
+                    <div class="art-buy-left">
+                      <div class="art-thumb"><img id="sculptureThumb" src="" alt="Sculpture preview"></div>
+                      <div>
+                        <strong>Buy just the sculpture</strong><br>
+                        <span id="sculptureSizeNote">(Medium)</span>
+                      </div>
+                    </div>
+                    <div class="art-print-price" id="sculptureBasePrice">$1200</div>
+                  </div>
+                </div>
+
+                <div class="solo-config-section" id="soloConfigBook" hidden>
+                  <div class="book-customs">
+                    <div class="book-customs-title">Book options</div>
+                    <div class="book-offer book-offer-select" data-option="gift-wrap">
+                      <div class="book-offer-media" aria-hidden="true"></div>
+                      <div class="book-offer-text">
+                        <div class="book-offer-title">Add complimentary gift wrapping</div>
+                        <div class="book-offer-desc">Make your gift memorable, on us.</div>
+                      </div>
+                      <button class="book-offer-btn" type="button" aria-pressed="false">+</button>
+                    </div>
+
+                    <div class="book-offer book-offer-alt book-offer-select" data-option="e-gift">
+                      <div class="book-offer-text">
+                        <div class="book-offer-title">Send this item as an e-gift, or gift it to multiple recipients.</div>
+                        <div class="book-offer-desc">Learn more</div>
+                      </div>
+                      <button class="book-offer-btn" type="button" aria-pressed="false">+</button>
+                    </div>
+                    <div class="solo-config-summary" id="bookCustomsSummary">Selected: None</div>
+                  </div>
                 </div>
               </div>
-              <div class="solo-config-group">
-                <div class="solo-config-label">Size</div>
-                <div class="solo-config-options" id="soloConfigSizes" role="group" aria-label="Choose size">
-                  <button class="solo-config-option" type="button" data-size="Small">Small</button>
-                  <button class="solo-config-option" type="button" data-size="Medium">Medium</button>
-                  <button class="solo-config-option" type="button" data-size="Large">Large</button>
-                </div>
-              </div>
-              <div class="solo-config-summary" id="soloConfigSummary">Selected: -- / --</div>
+              <button class="btn btn-primary solo-inquiry-btn" id="soloInquiryBtn" type="button" hidden>Send Inquiry</button>
             </div>
 
             <div class="solo-frame-foot">
               <div class="solo-foot-left">
-                <div class="solo-foot-title" id="soloFootTitle">PRODUCT</div>
-                <div class="solo-foot-desc" id="soloFootDesc">Contemporary design meeting functionality.</div>
-              </div>
+              <div class="solo-foot-title" id="soloFootTitle">PRODUCT</div>
+              <div class="solo-foot-desc" id="soloFootDesc">Contemporary design meeting functionality.</div>
+            </div>
 
               <div class="solo-foot-right">
                 <div class="solo-bottom-tabs" aria-label="Product options">
                   <div class="solo-bottom-tabs-inner">
                     <button class="solo-bottom-tab" type="button" id="soloInfoBtn" aria-controls="soloInfoCard" aria-expanded="false">INFO</button>
 
-                    <div class="solo-tab-wrap">
+                    <div class="solo-tab-wrap" id="soloColorTabWrap">
                       <button class="solo-bottom-tab" type="button" id="soloColorBtn" aria-expanded="false">COLOR</button>
                       <div class="solo-popover" id="soloColorPopover" hidden>
                         <button class="solo-suboption" type="button" data-color="Red">RED</button>
@@ -2984,7 +3180,7 @@
                       </div>
                     </div>
 
-                    <div class="solo-tab-wrap">
+                    <div class="solo-tab-wrap" id="soloSizeTabWrap">
                       <button class="solo-bottom-tab" type="button" id="soloSizeBtn" aria-expanded="false">SIZE</button>
                       <div class="solo-popover" id="soloSizePopover" hidden>
                         <button class="solo-suboption" type="button" data-size="Small">SMALL</button>
@@ -3003,12 +3199,13 @@
           <div class="solo-info-block">
             <div class="solo-desc">
               <strong id="soloTitle">PRODUCT</strong><br>
-              Contemporary design meeting functionality.
+              <span id="soloDescText">Contemporary design meeting functionality.</span>
               <div class="data-row">
-                <div class="data-item"><span>Material</span><span id="spMat">--</span></div>
-                <div class="data-item"><span>Dimensions</span><span id="spDim">--</span></div>
-                <div class="data-item"><span>Location</span><span id="soloStore">--</span></div>
+                <div class="data-item"><span id="soloMetaLabel1">Material</span><span id="spMat">--</span></div>
+                <div class="data-item"><span id="soloMetaLabel2">Dimensions</span><span id="spDim">--</span></div>
+                <div class="data-item"><span id="soloMetaLabel3">Location</span><span id="soloStore">--</span></div>
               </div>
+              <div id="soloInfoExtra"></div>
             </div>
 
             <div class="artist-profile" id="artistBtn">
@@ -3024,278 +3221,7 @@
           </div>
         </div>
 
-        <div class="book-wrap" id="bookWrap">
-          <div class="back-nav"><button class="btn-back" id="bookBack">&larr; Back to Collection</button></div>
-          <div class="book-frame">
-            <div class="book-layout">
-              <div class="book-media">
-                <span class="book-tag" id="bookTag">Back in Stock</span>
-                <img id="bookHero" src="" alt="Book cover">
-              </div>
-              <div class="book-details">
-                <div class="book-head">
-                  <div class="book-kicker" id="bookKicker">The Ultimate Collection</div>
-                  <button class="book-save" type="button" aria-label="Save">🔖</button>
-                </div>
-                <div class="book-title" id="bookTitle">BOOK TITLE</div>
-                <div class="book-price" id="bookPrice">$1,400 USD</div>
-                <button class="book-cta" type="button">ADD TO CART</button>
-
-                <div class="book-offer">
-                  <div class="book-offer-media" aria-hidden="true"></div>
-                  <div class="book-offer-text">
-                    <div class="book-offer-title">Add complimentary gift wrapping</div>
-                    <div class="book-offer-desc">Make your gift memorable, on us. <span>Learn more</span></div>
-                  </div>
-                  <button class="book-offer-btn" type="button">+</button>
-                </div>
-
-                <div class="book-offer book-offer-alt">
-                  <div class="book-offer-text">
-                    <div class="book-offer-title">Send this item as an e-gift, or gift it to multiple recipients.</div>
-                    <div class="book-offer-desc">Learn more</div>
-                  </div>
-                  <div class="book-offer-arrow">→</div>
-                </div>
-
-                <div class="book-note">Enjoy complimentary shipping on select orders.</div>
-
-                <div class="book-accordion">
-                  <div class="book-accordion-item"><span>Description</span><span>+</span></div>
-                  <div class="book-accordion-panel">A collectible volume featuring rich photography, archival imagery, and cultural essays that trace the story behind the destination.</div>
-
-                  <div class="book-accordion-item"><span>Care instructions</span><span>+</span></div>
-                  <div class="book-accordion-panel">Keep in the dust jacket when not in use. Store away from direct sunlight and moisture to preserve the cover and pages.</div>
-
-                  <div class="book-accordion-item"><span>Shipping, returns & exchanges</span><span>+</span></div>
-                  <div class="book-accordion-panel">Standard delivery in 3–5 business days. Returns accepted within 14 days in original condition. Exchanges are subject to availability.</div>
-
-                  <div class="book-accordion-item"><span>Press</span><span>+</span></div>
-                  <div class="book-accordion-panel">Featured by international art & design publications for its photography, craftsmanship, and editorial direction.</div>
-
-                  <div class="book-accordion-item"><span>About the author</span><span>+</span></div>
-                  <div class="book-accordion-panel">Written by a leading cultural historian with decades of experience documenting heritage, travel, and contemporary art.</div>
-                </div>
-
-                <div class="book-accessory">
-                  <div class="book-accessory-head">
-                    <div class="book-accessory-title">Accessorize your library</div>
-                    <div class="book-accessory-link">Shop Now →</div>
-                  </div>
-                  <div class="book-accessory-grid">
-                    <div class="book-accessory-item"><img src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png" alt="Accessory item 1"></div>
-                    <div class="book-accessory-item"><img src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png" alt="Accessory item 2"></div>
-                    <div class="book-accessory-item"><img src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png" alt="Accessory item 3"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="art-wrap" id="artWrap">
-          <div class="back-nav"><button class="btn-back" id="artBack">&larr; Back to Collection</button></div>
-          <div class="art-frame">
-            <div class="art-layout">
-              <div class="art-config">
-                <div class="art-right-media">
-                  <img id="artRightImage" src="" alt="Artwork preview">
-                </div>
-                <div class="art-pay-note">
-                  Pay in 4 interest-free payments of $8.00 with PayPal. Learn more<br>
-                  Pay with Affirm on orders over $50. See if you qualify
-                </div>
-
-                <div class="art-box">
-                  <h4>About Framed Art</h4>
-                  <ul>
-                    <li>High-quality art prints created with non-toxic, archival inks.</li>
-                    <li>Decorative white mat enhances the artwork while preserving longevity.</li>
-                    <li>Art is protected by clear acrylic that is lighter and more impact resistant.</li>
-                    <li>Hanging hardware comes affixed to each framed art piece.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="art-summary">
-                <div class="art-price" id="artPrice">$32</div>
-                <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
-                <button class="art-cta" type="button" id="artAddToCart">Add to Cart</button>
-                <div class="art-config-stack">
-                <div class="art-header">
-                  <div>
-                    <div class="art-title" id="artTitle">Artwork Title</div>
-                    <div class="art-artist">by <span id="artArtist">Artist Name</span></div>
-                    <div class="art-rating">
-                      <span class="stars" id="artStars">★★★★★</span>
-                      <span id="artRatingText">4.8 stars from 50+ ratings</span>
-                    </div>
-                  </div>
-                  <button class="art-fav" type="button" aria-label="Save">♡</button>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">1- Choose a service type:</div>
-                  <div class="art-service-grid" id="artServiceOptions">
-                    <div class="art-service-card" data-service="print">
-                      <div class="art-service-illu"></div>
-                      Print and Frames
-                    </div>
-                    <div class="art-service-card" data-service="canvas">
-                      <div class="art-service-illu"></div>
-                      Stretched Canvas
-                    </div>
-                    <div class="art-service-card" data-service="wood">
-                      <div class="art-service-illu"></div>
-                      Wood Mount &amp; More
-                    </div>
-                  </div>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">2- Choose print size:</div>
-                  <div class="art-options" id="artSizeOptions">
-                    <button class="art-option" type="button" data-size="12x16">12" x 16"</button>
-                    <button class="art-option" type="button" data-size="18x24">18" x 24"</button>
-                    <button class="art-option" type="button" data-size="24x32">24" x 32"</button>
-                  </div>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">3- Choose a frame:</div>
-                  <div class="art-frame-grid" id="artFrameOptions">
-                    <div class="art-frame-card" data-frame="classic">Classic<br><strong>$121</strong></div>
-                    <div class="art-frame-card" data-frame="premium">Premium<br><strong>$182</strong></div>
-                    <div class="art-frame-card" data-frame="signature">Signature<br><strong>$237</strong></div>
-                    <div class="art-frame-card" data-frame="sale">Sale<br><strong>$107</strong></div>
-                  </div>
-                  <div class="art-frame-rail">
-                    <div class="art-frame-swatch" style="background:#111;"></div>
-                    <div class="art-frame-swatch" style="background:#f2f2f2;"></div>
-                    <div class="art-frame-swatch" style="background:#8b5a2b;"></div>
-                    <div class="art-frame-swatch" style="background:#fafafa;"></div>
-                  </div>
-                </div>
-
-                <div class="art-buy-row">
-                  <div class="art-buy-left">
-                    <div class="art-thumb"><img id="artThumb" src="" alt="Artwork preview"></div>
-                    <div>
-                      <strong>Buy just the print</strong><br>
-                      <span id="artPrintNote">(Image 12" x 16")</span>
-                    </div>
-                  </div>
-                  <div class="art-print-price" id="artPrintPrice">$32</div>
-                </div>
-              
-                </div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sculpture-wrap" id="sculptureWrap">
-          <div class="back-nav"><button class="btn-back" id="sculptureBack">&larr; Back to Collection</button></div>
-          <div class="art-frame">
-            <div class="art-layout">
-              <div class="art-config">
-                <div class="art-right-media">
-                  <img id="sculptureRightImage" src="" alt="Sculpture preview">
-                </div>
-                <div class="art-pay-note">
-                  Pay in 4 interest-free payments. Learn more<br>
-                  Custom crating available on select sizes.
-                </div>
-
-                <div class="art-box">
-                  <h4>About Sculptures</h4>
-                  <ul>
-                    <li>Cast and finished by artisan studios with museum-grade materials.</li>
-                    <li>Protective coating resists UV and surface wear.</li>
-                    <li>Optional bases add stability and display versatility.</li>
-                    <li>Includes care instructions and authenticity documentation.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="art-summary">
-                <div class="art-price" id="sculpturePrice">$1200</div>
-                <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
-                <button class="art-cta" type="button" id="sculptureAddToCart">Add to Cart</button>
-                <div class="art-config-stack">
-                <div class="art-header">
-                  <div>
-                    <div class="art-title" id="sculptureTitle">Sculpture Title</div>
-                    <div class="art-artist">by <span id="sculptureArtist">Artist Name</span></div>
-                    <div class="art-rating">
-                      <span class="stars" id="sculptureStars">★★★★★</span>
-                      <span id="sculptureRatingText">4.8 stars from 50+ ratings</span>
-                    </div>
-                    <div class="art-artist" id="sculptureMeta">Marble · Renaissance · 1504</div>
-                  </div>
-                  <button class="art-fav" type="button" aria-label="Save">♡</button>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">1- Choose a finish:</div>
-                  <div class="art-service-grid" id="sculptureFinishOptions">
-                    <div class="art-service-card" data-finish="polished">
-                      <div class="art-service-illu"></div>
-                      Polished
-                    </div>
-                    <div class="art-service-card" data-finish="antique">
-                      <div class="art-service-illu"></div>
-                      Antique
-                    </div>
-                    <div class="art-service-card" data-finish="matte">
-                      <div class="art-service-illu"></div>
-                      Matte
-                    </div>
-                  </div>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">2- Choose size:</div>
-                  <div class="art-options" id="sculptureSizeOptions">
-                    <button class="art-option" type="button" data-size="small">Small</button>
-                    <button class="art-option" type="button" data-size="medium">Medium</button>
-                    <button class="art-option" type="button" data-size="large">Large</button>
-                  </div>
-                </div>
-
-                <div class="art-section">
-                  <div class="art-section-title">3- Choose a base:</div>
-                  <div class="art-frame-grid" id="sculptureBaseOptions">
-                    <div class="art-frame-card" data-base="stone">Stone<br><strong>$180</strong></div>
-                    <div class="art-frame-card" data-base="wood">Wood<br><strong>$120</strong></div>
-                    <div class="art-frame-card" data-base="metal">Metal<br><strong>$150</strong></div>
-                    <div class="art-frame-card" data-base="none">None<br><strong>$0</strong></div>
-                  </div>
-                  <div class="art-frame-rail">
-                    <div class="art-frame-swatch" style="background:#e7e2dc;"></div>
-                    <div class="art-frame-swatch" style="background:#b07a4e;"></div>
-                    <div class="art-frame-swatch" style="background:#6f6f6f;"></div>
-                    <div class="art-frame-swatch" style="background:#f7f7f7;"></div>
-                  </div>
-                </div>
-
-                <div class="art-buy-row">
-                  <div class="art-buy-left">
-                    <div class="art-thumb"><img id="sculptureThumb" src="" alt="Sculpture preview"></div>
-                    <div>
-                      <strong>Buy just the sculpture</strong><br>
-                      <span id="sculptureSizeNote">(Medium)</span>
-                    </div>
-                  </div>
-                  <div class="art-print-price" id="sculptureBasePrice">$1200</div>
-                </div>
-              
-                </div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="book-filter-modal" id="bookFilterModal" aria-hidden="true">
+        <div class="book-filter-modal" id="bookFilterModal" aria-hidden="true">
         <div class="book-filter-card">
           <div class="book-filter-head">
             <div class="book-filter-title">Filter &amp; Sort</div>
@@ -4023,6 +3949,59 @@
     { id:"book-11", name:"Sharjah: The Capital of Culture", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba248e409ad226f097f9_SharjahTheCapitalofCulture_Classic001.webp", theme:"Culture", color:"Bold", size:"Classic", price:"$950 USD", priceValue:950, tag:"New Arrival", kicker:"Modern Heritage" }
   ];
 
+  const BOOK_INFO = {
+    note: "Enjoy complimentary shipping on select orders.",
+    accordion: [
+      {
+        title:"Description",
+        body:"A collectible volume featuring rich photography, archival imagery, and cultural essays that trace the story behind the destination."
+      },
+      {
+        title:"Care instructions",
+        body:"Keep in the dust jacket when not in use. Store away from direct sunlight and moisture to preserve the cover and pages."
+      },
+      {
+        title:"Shipping, returns & exchanges",
+        body:"Standard delivery in 3-5 business days. Returns accepted within 14 days in original condition. Exchanges are subject to availability."
+      },
+      {
+        title:"Press",
+        body:"Featured by international art and design publications for its photography, craftsmanship, and editorial direction."
+      },
+      {
+        title:"About the author",
+        body:"Written by a leading cultural historian with decades of experience documenting heritage, travel, and contemporary art."
+      }
+    ],
+    accessories: [
+      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png",
+      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png",
+      "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a361104af2bd0614b_Screenshot_2025-11-23_142501-removebg-preview.png"
+    ]
+  };
+
+  const ART_INFO = {
+    payNote:"Pay in 4 interest-free payments of $8.00 with PayPal. Learn more<br>Pay with Affirm on orders over $50. See if you qualify",
+    aboutTitle:"About Framed Art",
+    aboutItems:[
+      "High-quality art prints created with non-toxic, archival inks.",
+      "Decorative white mat enhances the artwork while preserving longevity.",
+      "Art is protected by clear acrylic that is lighter and more impact resistant.",
+      "Hanging hardware comes affixed to each framed art piece."
+    ]
+  };
+
+  const SCULPTURE_INFO = {
+    payNote:"Pay in 4 interest-free payments. Learn more<br>Custom crating available on select sizes.",
+    aboutTitle:"About Sculptures",
+    aboutItems:[
+      "Cast and finished by artisan studios with museum-grade materials.",
+      "Protective coating resists UV and surface wear.",
+      "Optional bases add stability and display versatility.",
+      "Includes care instructions and authenticity documentation."
+    ]
+  };
+
   const ARTWORKS = [
     { id:"art-1", type:"art", sub:"Artwork", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32, year:1890, period:"19th Century", medium:"Oil on Canvas" },
     { id:"art-2", type:"art", sub:"Artwork", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36, year:1818, period:"Romanticism", medium:"Oil on Canvas" },
@@ -4318,21 +4297,12 @@
       }
     }
 
-    if(!isFurniture){
-      if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
-    }
+    if(galleryEl && galleryEl.classList.contains("solo")) closeSolo();
     if(!isBooks){
-      if(galleryEl && galleryEl.classList.contains("book-solo")) closeBook();
       if(bookFilterModal) bookFilterModal.classList.remove("open");
     }
     if(!isArt){
       if(artFilterModal) artFilterModal.classList.remove("open");
-    }
-    if(!isArt){
-      if(galleryEl && galleryEl.classList.contains("art-solo")) closeArt();
-    }
-    if(!isArt){
-      if(galleryEl && galleryEl.classList.contains("sculpture-solo")) closeSculpture();
     }
 
     if(isFurniture) renderFurniture();
@@ -4366,8 +4336,13 @@
 
   let soloSelectedColor = "Red";
   let soloSelectedSize = "Medium";
+  let activeSoloType = "furniture";
+  let activeBook = null;
+  let bookCustoms = { giftWrap:false, eGift:false };
+  const SOLO_DEFAULT_DESC = "Contemporary design meeting functionality.";
 
   function syncSoloSelections(){
+    if(activeSoloType !== "furniture") return;
     const setActive = (selector, attr, value) => {
       document.querySelectorAll(selector).forEach(el => {
         const v = el.getAttribute(attr);
@@ -4383,7 +4358,199 @@
     if(summary) summary.textContent = `Selected: ${soloSelectedColor || '--'} / ${soloSelectedSize || '--'}`;
   }
 
+  function setSoloText(id, value){
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  }
+
+  function setSoloHtml(id, value){
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = value || "";
+  }
+
+  function toggleSection(id, show){
+    const el = document.getElementById(id);
+    if(el) el.hidden = !show;
+  }
+
+  function setSoloLabels(a, b, c){
+    setSoloText("soloInfoLabel1", a);
+    setSoloText("soloInfoLabel2", b);
+    setSoloText("soloInfoLabel3", c);
+    setSoloText("soloMetaLabel1", a);
+    setSoloText("soloMetaLabel2", b);
+    setSoloText("soloMetaLabel3", c);
+  }
+
+  function setSoloValues(a, b, c){
+    setSoloText("soloInfoMat", a);
+    setSoloText("soloInfoDim", b);
+    setSoloText("soloInfoLoc", c);
+    setSoloText("spMat", a);
+    setSoloText("spDim", b);
+    setSoloText("soloStore", c);
+  }
+
+  function setSoloMode(mode){
+    activeSoloType = mode;
+    const isFurniture = mode === "furniture";
+    const colorWrap = document.getElementById("soloColorTabWrap");
+    const sizeWrap = document.getElementById("soloSizeTabWrap");
+    if(colorWrap) colorWrap.hidden = !isFurniture;
+    if(sizeWrap) sizeWrap.hidden = !isFurniture;
+    if(!isFurniture) setSoloOptionPopover(null);
+
+    toggleSection("soloConfigFurniture", isFurniture);
+    toggleSection("soloConfigArt", mode === "art");
+    toggleSection("soloConfigSculpture", mode === "sculpture");
+    toggleSection("soloConfigBook", mode === "book");
+
+    const cfgTitle = document.getElementById("soloConfigTitle");
+    if(cfgTitle) cfgTitle.textContent = isFurniture ? "Customizer" : "Customs";
+
+    const inquiryBtn = document.getElementById("soloInquiryBtn");
+    if(inquiryBtn) inquiryBtn.hidden = isFurniture;
+  }
+
+  function buildArtInfoHtml(info){
+    const items = info.aboutItems.map(item => `<li>${item}</li>`).join("");
+    return `
+      <div class="art-pay-note">${info.payNote}</div>
+      <div class="art-box">
+        <h4>${info.aboutTitle}</h4>
+        <ul>${items}</ul>
+      </div>
+    `;
+  }
+
+  function buildBookInfoHtml(){
+    const accordion = BOOK_INFO.accordion.map(item => `
+      <div class="book-accordion-item"><span>${item.title}</span><span>+</span></div>
+      <div class="book-accordion-panel">${item.body}</div>
+    `).join("");
+    const accessories = BOOK_INFO.accessories.map((src, idx) => `
+      <div class="book-accessory-item"><img src="${src}" alt="Accessory item ${idx + 1}"></div>
+    `).join("");
+    return `
+      <div class="book-note">${BOOK_INFO.note}</div>
+      <div class="book-accordion">${accordion}</div>
+      <div class="book-accessory">
+        <div class="book-accessory-head">
+          <div class="book-accessory-title">Accessorize your library</div>
+          <div class="book-accessory-link">Shop Now -></div>
+        </div>
+        <div class="book-accessory-grid">${accessories}</div>
+      </div>
+    `;
+  }
+
+  function bindBookAccordion(){
+    const bookAccordion = document.querySelector('.book-accordion');
+    if(bookAccordion && bookAccordion.dataset.bound !== "1"){
+      bookAccordion.dataset.bound = "1";
+      bookAccordion.addEventListener('click', (e) => {
+        const item = e.target.closest('.book-accordion-item');
+        if(!item) return;
+        item.classList.toggle('open');
+        const panel = item.nextElementSibling;
+        if(panel && panel.classList.contains('book-accordion-panel')){
+          panel.classList.toggle('open');
+        }
+      });
+    }
+  }
+
+  function updateBookCustomsUI(){
+    const wrap = document.getElementById("soloConfigBook");
+    if(!wrap) return;
+    wrap.querySelectorAll(".book-offer-select").forEach(card => {
+      const option = card.dataset.option;
+      const active = option === "gift-wrap" ? bookCustoms.giftWrap : bookCustoms.eGift;
+      card.classList.toggle("active", active);
+      const btn = card.querySelector(".book-offer-btn");
+      if(btn) btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const summary = document.getElementById("bookCustomsSummary");
+    if(summary){
+      const picks = [];
+      if(bookCustoms.giftWrap) picks.push("Gift wrap");
+      if(bookCustoms.eGift) picks.push("E-gift");
+      summary.textContent = picks.length ? `Selected: ${picks.join(" / ")}` : "Selected: None";
+    }
+  }
+
+  function bindBookCustoms(){
+    const wrap = document.getElementById("soloConfigBook");
+    if(!wrap || wrap.dataset.bound === "1") return;
+    wrap.dataset.bound = "1";
+    wrap.addEventListener("click", (e) => {
+      const card = e.target.closest(".book-offer-select");
+      if(!card) return;
+      const option = card.dataset.option;
+      if(option === "gift-wrap") bookCustoms.giftWrap = !bookCustoms.giftWrap;
+      if(option === "e-gift") bookCustoms.eGift = !bookCustoms.eGift;
+      updateBookCustomsUI();
+    });
+  }
+
+  function setArtistProfile(name, role, img, bio){
+    setSoloText("artistName", name || "--");
+    setSoloText("artistRole", role || "--");
+    const artistImg = document.getElementById("artistImg");
+    if(artistImg) artistImg.src = img || "";
+
+    setSoloText("modalArtistName", name || "");
+    setSoloText("modalArtistRole", role || "");
+    const modalImg = document.getElementById("modalArtistImg");
+    if(modalImg) modalImg.src = img || "";
+    setSoloText("modalArtistBio", bio || "");
+  }
+
+  function buildInquiryMessage(){
+    if(activeSoloType === "art" && activeArt){
+      return [
+        `Product: ${activeArt.name} (ID: ${activeArt.id})`,
+        "Type: Artwork",
+        `Selections: Service=${artSelection.service}, Size=${artSelection.size}, Frame=${artSelection.frame}`
+      ].join("\n");
+    }
+    if(activeSoloType === "sculpture" && activeSculpture){
+      return [
+        `Product: ${activeSculpture.name} (ID: ${activeSculpture.id})`,
+        "Type: Sculpture",
+        `Selections: Finish=${sculptureSelection.finish}, Size=${sculptureSelection.size}, Base=${sculptureSelection.base}`
+      ].join("\n");
+    }
+    if(activeSoloType === "book" && activeBook){
+      const picks = [];
+      if(bookCustoms.giftWrap) picks.push("Gift wrap");
+      if(bookCustoms.eGift) picks.push("E-gift");
+      const selectionText = picks.length ? picks.join(", ") : "None";
+      return [
+        `Product: ${activeBook.name} (ID: ${activeBook.id})`,
+        "Type: Book",
+        `Selections: ${selectionText}`
+      ].join("\n");
+    }
+    return "";
+  }
+
+  function triggerInquiry(){
+    const message = buildInquiryMessage();
+    if(!message) return;
+    let subject = "";
+    if(activeSoloType === "art" && activeArt) subject = `Inquiry: ${activeArt.name}`;
+    if(activeSoloType === "sculpture" && activeSculpture) subject = `Inquiry: ${activeSculpture.name}`;
+    if(activeSoloType === "book" && activeBook) subject = `Inquiry: ${activeBook.name}`;
+    const fs = document.getElementById("formSubject");
+    if(fs && subject) fs.value = subject;
+    const msgField = document.querySelector('textarea[name="message"]');
+    if(msgField) msgField.value = message;
+    switchSection('sect-contact');
+  }
+
   function setSoloOptionPopover(panel){
+    if(activeSoloType !== "furniture" && panel) return;
     const colorPop = document.getElementById('soloColorPopover');
     const sizePop = document.getElementById('soloSizePopover');
     const colorBtn = document.getElementById('soloColorBtn');
@@ -4433,36 +4600,62 @@
     if(card) card.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
   }
 
-  function openBook(b){
+  function activateSoloLayout(){
     const shopEl = document.getElementById("shop");
+    if(shopEl) shopEl.classList.add("solo");
     const galleryEl = document.getElementById("sect-gallery");
-    if(shopEl) shopEl.classList.remove("solo");
     if(galleryEl){
-      galleryEl.classList.remove("solo");
+      galleryEl.classList.add("solo");
+      galleryEl.classList.remove("book-solo");
       galleryEl.classList.remove("art-solo");
       galleryEl.classList.remove("sculpture-solo");
-      galleryEl.classList.add("book-solo");
     }
+    setSoloInfoOpen(false);
+    setSoloOptionPopover(null);
+    setSoloCustomizerOpen(false);
+  }
+
+  function openBook(b){
+    activeBook = b;
+    activateSoloLayout();
+    setSoloMode("book");
     closeBookFilterModal();
 
-    const hero = document.getElementById("bookHero");
-    if(hero){
-      hero.src = b.img;
-      hero.alt = b.name || "Book cover";
-    }
-    const title = document.getElementById("bookTitle");
-    if(title) title.textContent = (b.name || "BOOK").toUpperCase();
-    const kicker = document.getElementById("bookKicker");
-    if(kicker) kicker.textContent = b.kicker || "The Ultimate Collection";
-    const price = document.getElementById("bookPrice");
-    if(price) price.textContent = b.price || "$1,400 USD";
-    const tag = document.getElementById("bookTag");
-    if(tag) tag.textContent = b.tag || "Back in Stock";
+    const title = (b.name || "Book").toUpperCase();
+    setSoloText("soloName", b.name || "Book");
+    setSoloText("soloFootTitle", title);
+    setSoloText("soloFootDesc", b.kicker || SOLO_DEFAULT_DESC);
+    setSoloText("soloTitle", title);
+    setSoloText("soloDescText", b.kicker || SOLO_DEFAULT_DESC);
+    setSoloText("soloInfoName", title);
+
+    const infoBits = [];
+    if(b.kicker) infoBits.push(b.kicker);
+    if(b.price) infoBits.push(b.price);
+    setSoloText("soloInfoText", infoBits.join(" - ") || SOLO_DEFAULT_DESC);
+
+    setSoloLabels("Theme", "Color", "Size");
+    setSoloValues(b.theme || "--", b.color || "--", b.size || "--");
+    setSoloHtml("soloInfoExtra", buildBookInfoHtml());
+    bindBookAccordion();
+
+    const profileName = b.kicker || b.name || "Book";
+    const profileRole = b.tag || b.theme || "";
+    setArtistProfile(profileName, profileRole, b.img, BOOK_INFO.accordion[0].body);
+
+    bookCustoms = { giftWrap:false, eGift:false };
+    bindBookCustoms();
+    updateBookCustomsUI();
+
+    const fs = document.getElementById("formSubject");
+    if(fs) fs.value = "Inquiry: " + (b.name || "Book");
+
+    renderActiveMedia({ ...b, images:[b.img] }, 'images');
   }
 
   function closeBook(){
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl) galleryEl.classList.remove("book-solo");
+    closeSolo();
+    activeBook = null;
   }
 
   const ART_SERVICE_PRICES = { print:0, canvas:18, wood:24 };
@@ -4531,21 +4724,33 @@
 
   function openArt(a){
     activeArt = a;
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl){
-      galleryEl.classList.remove("solo");
-      galleryEl.classList.remove("book-solo");
-      galleryEl.classList.remove("sculpture-solo");
-      galleryEl.classList.add("art-solo");
-    }
+    activateSoloLayout();
+    setSoloMode("art");
     closeArtFilterModal();
     artSelection = { service:"print", size:"12x16", frame:"classic" };
+    const title = (a.name || "Artwork").toUpperCase();
+    setSoloText("soloName", a.name || "Artwork");
+    setSoloText("soloFootTitle", title);
+    setSoloText("soloFootDesc", `by ${a.artist || "Unknown"}`);
+    setSoloText("soloTitle", title);
+    setSoloText("soloDescText", `${a.period || "--"} - ${a.medium || "--"} - ${a.year || "--"}`);
+    setSoloText("soloInfoName", title);
+    setSoloText("soloInfoText", `${a.artist || "Unknown"} - ${a.period || "--"}`);
+    setSoloLabels("Medium", "Period", "Year");
+    setSoloValues(a.medium || "--", a.period || "--", a.year ? String(a.year) : "--");
+    setSoloHtml("soloInfoExtra", buildArtInfoHtml(ART_INFO));
+
+    setArtistProfile(a.artist || "Unknown", a.period || "", a.img, ART_INFO.aboutItems.join(" "));
+
+    const fs = document.getElementById("formSubject");
+    if(fs) fs.value = "Inquiry: " + (a.name || "Artwork");
+
     updateArtUI();
+    renderActiveMedia({ ...a, images:[a.img] }, 'images');
   }
 
   function closeArt(){
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl) galleryEl.classList.remove("art-solo");
+    closeSolo();
     activeArt = null;
   }
 
@@ -4607,38 +4812,40 @@
 
   function openSculpture(s){
     activeSculpture = s;
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl){
-      galleryEl.classList.remove("solo");
-      galleryEl.classList.remove("book-solo");
-      galleryEl.classList.remove("art-solo");
-      galleryEl.classList.add("sculpture-solo");
-    }
+    activateSoloLayout();
+    setSoloMode("sculpture");
     closeSculptureFilterModal();
     closeArtFilterModal();
     sculptureSelection = { finish:"polished", size:"medium", base:"stone" };
+    const title = (s.name || "Sculpture").toUpperCase();
+    setSoloText("soloName", s.name || "Sculpture");
+    setSoloText("soloFootTitle", title);
+    setSoloText("soloFootDesc", `by ${s.artist || "Unknown"}`);
+    setSoloText("soloTitle", title);
+    setSoloText("soloDescText", `${s.material || "--"} - ${s.era || "--"} - ${s.year || "--"}`);
+    setSoloText("soloInfoName", title);
+    setSoloText("soloInfoText", `${s.artist || "Unknown"} - ${s.era || "--"}`);
+    setSoloLabels("Material", "Era", "Year");
+    setSoloValues(s.material || "--", s.era || "--", s.year ? String(s.year) : "--");
+    setSoloHtml("soloInfoExtra", buildArtInfoHtml(SCULPTURE_INFO));
+
+    setArtistProfile(s.artist || "Unknown", s.era || "", s.img, SCULPTURE_INFO.aboutItems.join(" "));
+
+    const fs = document.getElementById("formSubject");
+    if(fs) fs.value = "Inquiry: " + (s.name || "Sculpture");
+
     updateSculptureUI();
+    renderActiveMedia({ ...s, images:[s.img] }, 'images');
   }
 
   function closeSculpture(){
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl) galleryEl.classList.remove("sculpture-solo");
+    closeSolo();
     activeSculpture = null;
   }
 
   function openSolo(p){
-    document.getElementById("shop").classList.add("solo");
-    const galleryEl = document.getElementById("sect-gallery");
-    if(galleryEl){
-      galleryEl.classList.add("solo");
-      galleryEl.classList.remove("book-solo");
-      galleryEl.classList.remove("art-solo");
-      galleryEl.classList.remove("sculpture-solo");
-    }
-
-    setSoloInfoOpen(false);
-    setSoloOptionPopover(null);
-    setSoloCustomizerOpen(false);
+    activateSoloLayout();
+    setSoloMode("furniture");
     soloSelectedColor = "Red";
     soloSelectedSize = "Medium";
     syncSoloSelections();
@@ -4648,20 +4855,17 @@
 
     const soloFootTitle = document.getElementById("soloFootTitle");
     if(soloFootTitle) soloFootTitle.textContent = p.name.toUpperCase();
+    setSoloText("soloFootDesc", SOLO_DEFAULT_DESC);
 
     document.getElementById("soloTitle").textContent = p.name.toUpperCase();
-    document.getElementById("soloStore").textContent = p.store.name;
-    document.getElementById("spMat").textContent = p.specs.mat;
-    document.getElementById("spDim").textContent = p.specs.dim;
+    setSoloText("soloDescText", SOLO_DEFAULT_DESC);
+    setSoloText("soloInfoText", SOLO_DEFAULT_DESC);
+    setSoloLabels("Material", "Dimensions", "Location");
+    setSoloValues(p.specs.mat, p.specs.dim, p.store.name);
+    setSoloHtml("soloInfoExtra", "");
 
     const soloInfoName = document.getElementById("soloInfoName");
     if(soloInfoName) soloInfoName.textContent = p.name.toUpperCase();
-    const soloInfoLoc = document.getElementById("soloInfoLoc");
-    if(soloInfoLoc) soloInfoLoc.textContent = p.store.name;
-    const soloInfoMat = document.getElementById("soloInfoMat");
-    if(soloInfoMat) soloInfoMat.textContent = p.specs.mat;
-    const soloInfoDim = document.getElementById("soloInfoDim");
-    if(soloInfoDim) soloInfoDim.textContent = p.specs.dim;
 
     document.getElementById("artistName").textContent = p.artist.name;
     document.getElementById("artistRole").textContent = p.artist.role;
@@ -4703,6 +4907,11 @@
 
     const isMobileReset = window.innerWidth < 900;
     map.flyTo({ center:[0,20], zoom:isMobileReset ? 0 : 0.8, pitch:0, bearing:0, duration:2200 });
+
+    activeArt = null;
+    activeSculpture = null;
+    activeBook = null;
+    activeSoloType = "furniture";
   }
 
   safeAdd("btnBack","click",closeSolo);
@@ -4911,15 +5120,6 @@
       updateArtUI();
     });
   }
-  const artAddToCart = document.getElementById("artAddToCart");
-  if(artAddToCart){
-    artAddToCart.addEventListener("click", () => {
-      if(!activeArt) return;
-      const msg = `${activeArt.name} · ${artSelection.service} · ${artSelection.size} · ${artSelection.frame}`;
-      alert(`Added to cart: ${msg}`);
-    });
-  }
-
   const sculptureFinishOptions = document.getElementById("sculptureFinishOptions");
   if(sculptureFinishOptions){
     sculptureFinishOptions.addEventListener("click", (e) => {
@@ -4947,28 +5147,7 @@
       updateSculptureUI();
     });
   }
-  const sculptureAddToCart = document.getElementById("sculptureAddToCart");
-  if(sculptureAddToCart){
-    sculptureAddToCart.addEventListener("click", () => {
-      if(!activeSculpture) return;
-      const msg = `${activeSculpture.name} · ${sculptureSelection.finish} · ${sculptureSelection.size} · ${sculptureSelection.base}`;
-      alert(`Added to cart: ${msg}`);
-    });
-  }
-
-  const bookAccordion = document.querySelector('.book-accordion');
-  if(bookAccordion && bookAccordion.dataset.bound !== "1"){
-    bookAccordion.dataset.bound = "1";
-    bookAccordion.addEventListener('click', (e) => {
-      const item = e.target.closest('.book-accordion-item');
-      if(!item) return;
-      item.classList.toggle('open');
-      const panel = item.nextElementSibling;
-      if(panel && panel.classList.contains('book-accordion-panel')){
-        panel.classList.toggle('open');
-      }
-    });
-  }
+  bindBookAccordion();
 
   safeAdd("soloInfoBtn","click", () => {
     const frame = document.querySelector('#sect-gallery.solo .solo-frame');
@@ -4980,6 +5159,7 @@
   safeAdd("soloInfoClose","click", () => setSoloInfoOpen(false));
 
   safeAdd("soloColorBtn","click", () => {
+    if(activeSoloType !== "furniture") return;
     setSoloInfoOpen(false);
     setSoloCustomizerOpen(false);
     const colorBtn = document.getElementById('soloColorBtn');
@@ -4988,6 +5168,7 @@
   });
 
   safeAdd("soloSizeBtn","click", () => {
+    if(activeSoloType !== "furniture") return;
     setSoloInfoOpen(false);
     setSoloCustomizerOpen(false);
     const sizeBtn = document.getElementById('soloSizeBtn');
@@ -5003,11 +5184,13 @@
     setSoloCustomizerOpen(!frame.classList.contains('customize-open'));
   });
   safeAdd("soloConfigClose","click", () => setSoloCustomizerOpen(false));
+  safeAdd("soloInquiryBtn","click", triggerInquiry);
 
   const soloColorPopover = document.getElementById('soloColorPopover');
   if(soloColorPopover && soloColorPopover.dataset.bound !== "1"){
     soloColorPopover.dataset.bound = "1";
     soloColorPopover.addEventListener('click', (e) => {
+      if(activeSoloType !== "furniture") return;
       const btn = e.target.closest('.solo-suboption');
       if(!btn) return;
       const color = btn.getAttribute('data-color');
@@ -5021,6 +5204,7 @@
   if(soloSizePopover && soloSizePopover.dataset.bound !== "1"){
     soloSizePopover.dataset.bound = "1";
     soloSizePopover.addEventListener('click', (e) => {
+      if(activeSoloType !== "furniture") return;
       const btn = e.target.closest('.solo-suboption');
       if(!btn) return;
       const size = btn.getAttribute('data-size');
@@ -5034,6 +5218,7 @@
   if(soloConfig && soloConfig.dataset.bound !== "1"){
     soloConfig.dataset.bound = "1";
     soloConfig.addEventListener('click', (e) => {
+      if(activeSoloType !== "furniture") return;
       const btn = e.target.closest('.solo-config-option');
       if(!btn) return;
       const color = btn.getAttribute('data-color');
@@ -5149,7 +5334,7 @@
   }
 
   (function init(){
-    // ✅ Default gallery = Furniture
+    // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
 
     // Default active nav = Home
@@ -5164,6 +5349,7 @@
 </script>
 </body>
 </html>
+
 
 
 
