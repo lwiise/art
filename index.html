@@ -1482,7 +1482,7 @@
     left:50%;
     top:50%;
     transform:translate(-50%,-50%) translateY(12px);
-    width:510px;
+    width:663px;
     max-width:calc(100% - 44px);
     padding:16px 16px 14px;
     border-radius:20px;
@@ -1563,6 +1563,37 @@
     color:rgba(0,0,0,0.70);
     margin-top:6px;
   }
+  .solo-inquiry-fields{
+    margin-top:12px;
+    display:grid;
+    gap:8px;
+  }
+  .solo-inquiry-label{
+    font-size:10px;
+    font-weight:950;
+    letter-spacing:0.10em;
+    text-transform:uppercase;
+    color:rgba(0,0,0,0.45);
+  }
+  .solo-inquiry-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:8px;
+  }
+  .solo-inquiry-input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,0.08);
+    border-radius:12px;
+    background:#fff;
+    font-size:12px;
+    font-weight:600;
+    color:#111;
+  }
+  .solo-inquiry-input:focus{
+    outline:none;
+    border-color:#111;
+  }
   .solo-config-body{
     max-height:62vh;
     overflow:auto;
@@ -1594,7 +1625,7 @@
     left:22px;
     top:50%;
     transform:translateY(-50%) translateX(-12px);
-    width:546px;
+    width:710px;
     max-width:calc(100% - 44px);
     padding:16px 16px 14px;
     max-height:70vh;
@@ -2672,6 +2703,7 @@
     .solo-tab-wrap{ flex:1; }
     .solo-popover{ gap:8px; padding:10px; }
     .solo-suboption{ flex:1; text-align:center; padding:12px 10px; font-size:11px; }
+    .solo-inquiry-grid{ grid-template-columns:1fr; }
     .solo-info-card{
       left:16px; right:16px;
       top:auto; bottom:128px;
@@ -3010,11 +3042,10 @@
                         <span class="stars" id="artStars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
                         <span id="artRatingText">4.8 stars from 50+ ratings</span>
                       </div>
-                    </div>
+                  </div>
                     <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
                   </div>
 
-                  <div class="art-price" id="artPrice">$32</div>
                   <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
 
                   <div class="art-section">
@@ -3047,10 +3078,10 @@
                   <div class="art-section">
                     <div class="art-section-title">3- Choose a frame:</div>
                     <div class="art-frame-grid" id="artFrameOptions">
-                      <div class="art-frame-card" data-frame="classic">Classic<br><strong>$121</strong></div>
-                      <div class="art-frame-card" data-frame="premium">Premium<br><strong>$182</strong></div>
-                      <div class="art-frame-card" data-frame="signature">Signature<br><strong>$237</strong></div>
-                      <div class="art-frame-card" data-frame="sale">Sale<br><strong>$107</strong></div>
+                      <div class="art-frame-card" data-frame="classic">Classic</div>
+                      <div class="art-frame-card" data-frame="premium">Premium</div>
+                      <div class="art-frame-card" data-frame="signature">Signature</div>
+                      <div class="art-frame-card" data-frame="sale">Sale</div>
                     </div>
                     <div class="art-frame-rail">
                       <div class="art-frame-swatch" style="background:#111;"></div>
@@ -3068,7 +3099,6 @@
                         <span id="artPrintNote">(Image 12" x 16")</span>
                       </div>
                     </div>
-                    <div class="art-print-price" id="artPrintPrice">$32</div>
                   </div>
                 </div>
 
@@ -3082,11 +3112,10 @@
                         <span id="sculptureRatingText">4.8 stars from 50+ ratings</span>
                       </div>
                       <div class="art-artist" id="sculptureMeta">Marble - Renaissance - 1504</div>
-                    </div>
+                  </div>
                     <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
                   </div>
 
-                  <div class="art-price" id="sculpturePrice">$1200</div>
                   <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
 
                   <div class="art-section">
@@ -3119,10 +3148,10 @@
                   <div class="art-section">
                     <div class="art-section-title">3- Choose a base:</div>
                     <div class="art-frame-grid" id="sculptureBaseOptions">
-                      <div class="art-frame-card" data-base="stone">Stone<br><strong>$180</strong></div>
-                      <div class="art-frame-card" data-base="wood">Wood<br><strong>$120</strong></div>
-                      <div class="art-frame-card" data-base="metal">Metal<br><strong>$150</strong></div>
-                      <div class="art-frame-card" data-base="none">None<br><strong>$0</strong></div>
+                      <div class="art-frame-card" data-base="stone">Stone</div>
+                      <div class="art-frame-card" data-base="wood">Wood</div>
+                      <div class="art-frame-card" data-base="metal">Metal</div>
+                      <div class="art-frame-card" data-base="none">None</div>
                     </div>
                     <div class="art-frame-rail">
                       <div class="art-frame-swatch" style="background:#e7e2dc;"></div>
@@ -3140,7 +3169,6 @@
                         <span id="sculptureSizeNote">(Medium)</span>
                       </div>
                     </div>
-                    <div class="art-print-price" id="sculptureBasePrice">$1200</div>
                   </div>
                 </div>
 
@@ -3165,6 +3193,13 @@
                     </div>
                     <div class="solo-config-summary" id="bookCustomsSummary">Selected: None</div>
                   </div>
+                </div>
+              </div>
+              <div class="solo-inquiry-fields" id="soloInquiryFields" hidden>
+                <div class="solo-inquiry-label">Your details</div>
+                <div class="solo-inquiry-grid">
+                  <input class="solo-inquiry-input" type="text" id="inquiryName" name="inquiryName" placeholder="Your Name" autocomplete="name">
+                  <input class="solo-inquiry-input" type="email" id="inquiryEmail" name="inquiryEmail" placeholder="Your Email" autocomplete="email">
                 </div>
               </div>
               <button class="btn btn-primary solo-inquiry-btn" id="soloInquiryBtn" type="button" hidden>Send Inquiry</button>
@@ -3990,7 +4025,7 @@
   };
 
   const ART_INFO = {
-    payNote:"Pay in 4 interest-free payments of $8.00 with PayPal. Learn more<br>Pay with Affirm on orders over $50. See if you qualify",
+    payNote:"",
     aboutTitle:"About Framed Art",
     aboutItems:[
       "High-quality art prints created with non-toxic, archival inks.",
@@ -4421,12 +4456,15 @@
 
     const inquiryBtn = document.getElementById("soloInquiryBtn");
     if(inquiryBtn) inquiryBtn.hidden = isFurniture;
+    const inquiryFields = document.getElementById("soloInquiryFields");
+    if(inquiryFields) inquiryFields.hidden = isFurniture;
   }
 
   function buildArtInfoHtml(info){
     const items = info.aboutItems.map(item => `<li>${item}</li>`).join("");
+    const payNote = info.payNote ? `<div class="art-pay-note">${info.payNote}</div>` : "";
     return `
-      <div class="art-pay-note">${info.payNote}</div>
+      ${payNote}
       <div class="art-box">
         <h4>${info.aboutTitle}</h4>
         <ul>${items}</ul>
@@ -4546,6 +4584,15 @@
     return "";
   }
 
+  function prefillInquiryFields(){
+    const nameInput = document.querySelector('#ajaxForm input[name="name"]');
+    const emailInput = document.querySelector('#ajaxForm input[name="email"]');
+    const inquiryName = document.getElementById("inquiryName");
+    const inquiryEmail = document.getElementById("inquiryEmail");
+    if(inquiryName && nameInput && inquiryName.value.trim()) nameInput.value = inquiryName.value.trim();
+    if(inquiryEmail && emailInput && inquiryEmail.value.trim()) emailInput.value = inquiryEmail.value.trim();
+  }
+
   function triggerInquiry(){
     const message = buildInquiryMessage();
     if(!message) return;
@@ -4557,6 +4604,7 @@
     if(fs && subject) fs.value = subject;
     const msgField = document.querySelector('textarea[name="message"]');
     if(msgField) msgField.value = message;
+    prefillInquiryFields();
     switchSection('sect-contact');
   }
 
@@ -4930,7 +4978,10 @@
   safeAdd("artBack","click",closeArt);
   safeAdd("sculptureBack","click",closeSculpture);
   safeAdd("btnClose","click",closeSolo);
-  safeAdd("btnContactProduct","click",() => switchSection('sect-contact'));
+  safeAdd("btnContactProduct","click",() => {
+    prefillInquiryFields();
+    switchSection('sect-contact');
+  });
 
   function openBookFilterModal(){
     if(!bookFilterModal) return;
