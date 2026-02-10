@@ -637,6 +637,37 @@
     flex-direction:column;
     gap:18px;
   }
+  .gallery-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .gallery-title{
+    font-size:16px;
+    font-weight:900;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#111;
+  }
+  .gallery-link{
+    border:1px solid #e2e2e2;
+    background:#fff;
+    color:#111;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .gallery-link:hover{
+    background:#111;
+    color:#fff;
+    border-color:#111;
+  }
   .gallery-tabs{
     display:flex;
     gap:10px;
@@ -738,6 +769,125 @@
     font-size:12px;
     color:#8a8a8a;
     margin:0;
+  }
+
+  .artists-head{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .artists-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:22px;
+  }
+  .artist-card{
+    background:#fff;
+    border:1px solid #efefef;
+    border-radius:26px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    cursor:pointer;
+    transition:transform .22s ease, box-shadow .22s ease;
+  }
+  .artist-card:hover{ transform:translateY(-6px); box-shadow:0 18px 40px rgba(0,0,0,0.08); }
+  .artist-card-media{
+    width:100%;
+    aspect-ratio:4 / 3;
+    border-radius:20px;
+    overflow:hidden;
+    background:#f2f2f2;
+  }
+  .artist-card-media img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .artist-card-name{
+    font-size:16px;
+    font-weight:900;
+    letter-spacing:-0.01em;
+    color:#111;
+  }
+  .artist-card-role{
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#777;
+  }
+  .artist-card-cta{
+    margin-top:auto;
+    font-size:10px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-weight:900;
+    color:#111;
+  }
+  .artist-detail-head{ margin-bottom:12px; }
+  .artist-hero{
+    display:grid;
+    grid-template-columns:minmax(220px, 280px) 1fr;
+    gap:24px;
+    align-items:start;
+    margin-bottom:26px;
+  }
+  .artist-hero-media{
+    width:100%;
+    aspect-ratio:1 / 1;
+    border-radius:24px;
+    overflow:hidden;
+    background:#f2f2f2;
+  }
+  .artist-hero-media img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .artist-hero-name{
+    font-size:28px;
+    font-weight:900;
+    letter-spacing:-0.02em;
+    color:#111;
+  }
+  .artist-hero-role{
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#777;
+    margin-top:6px;
+  }
+  .artist-hero-bio{
+    font-size:14px;
+    color:#555;
+    line-height:1.7;
+    margin-top:12px;
+  }
+  .artist-works-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:6px 0 16px;
+  }
+  .artist-works-title{
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    font-weight:900;
+    color:#111;
+  }
+  .artist-works-count{
+    font-size:11px;
+    color:#777;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .artist-works-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    gap:22px;
   }
 
   .book-filter-bar{
@@ -2669,6 +2819,12 @@
     .card.book-card .card-sub{ padding:0 14px 14px; }
     .card.art-card .card-media{ height:170px; }
     .card.sculpture-card .card-media{ height:170px; }
+    .gallery-top{ gap:10px; }
+    .gallery-title{ font-size:13px; }
+    .gallery-link{ font-size:9px; padding:7px 12px; }
+    .artists-grid{ grid-template-columns:1fr; }
+    .artist-hero{ grid-template-columns:1fr; }
+    .artist-hero-media{ max-width:320px; }
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
@@ -2941,6 +3097,10 @@
     <section id="sect-gallery" class="app-section">
       <header class="shop-head">
         <div class="gallery-head">
+          <div class="gallery-top">
+            <div class="gallery-title">Gallery</div>
+            <button class="gallery-link" id="galleryArtistsLink" type="button">Artists</button>
+          </div>
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
             <button class="chip gallery-chip active" data-gallery="furniture">Designs</button>
@@ -3405,6 +3565,40 @@
       </div>
     </section>
 
+    <!-- ARTISTS -->
+    <section id="sect-artists" class="app-section">
+      <div class="section-scroll">
+        <div class="artists-head">
+          <button class="btn-back" id="artistsBackBtn">&larr; Back to Gallery</button>
+          <h1 class="sec-title">Artists</h1>
+          <p class="sec-sub">Explore the creators behind the collection.</p>
+        </div>
+        <div class="artists-grid" id="artistsGrid"></div>
+      </div>
+    </section>
+
+    <!-- ARTIST DETAIL -->
+    <section id="sect-artist-detail" class="app-section">
+      <div class="section-scroll">
+        <div class="artist-detail-head">
+          <button class="btn-back" id="artistDetailBack">&larr; Back to Artists</button>
+        </div>
+        <div class="artist-hero">
+          <div class="artist-hero-media"><img id="artistDetailImg" src="" alt="Artist portrait"></div>
+          <div>
+            <div class="artist-hero-name" id="artistDetailName">Artist</div>
+            <div class="artist-hero-role" id="artistDetailRole">Artist</div>
+            <p class="artist-hero-bio" id="artistDetailBio">Artist summary.</p>
+          </div>
+        </div>
+        <div class="artist-works-head">
+          <div class="artist-works-title">Works</div>
+          <div class="artist-works-count" id="artistWorksCount">0 works</div>
+        </div>
+        <div class="artist-works-grid" id="artistWorksGrid"></div>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
       <div class="section-scroll">
@@ -3551,6 +3745,8 @@
       'sect-about':'navAbout',
       'sect-services':'navServices',
       'sect-gallery':'navGallery',
+      'sect-artists':'navGallery',
+      'sect-artist-detail':'navGallery',
       'sect-contact':'navContact'
     };
     const mNavIdMap = {
@@ -3558,6 +3754,8 @@
       'sect-about':'mNavAbout',
       'sect-services':'mNavServices',
       'sect-gallery':'mNavGallery',
+      'sect-artists':'mNavGallery',
+      'sect-artist-detail':'mNavGallery',
       'sect-contact':'mNavContact'
     };
 
@@ -3591,6 +3789,12 @@
   safeAdd('mNavServices','click',() => switchSection('sect-services'));
   safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
   safeAdd('mNavContact','click',() => switchSection('sect-contact'));
+  safeAdd('galleryArtistsLink','click',() => {
+    renderArtists();
+    switchSection('sect-artists');
+  });
+  safeAdd('artistsBackBtn','click',() => switchSection('sect-gallery'));
+  safeAdd('artistDetailBack','click',() => switchSection('sect-artists'));
 
   const homeSliderTrack = document.querySelector('.home-illustration-track');
   const homeSliderDots = document.getElementById('homeSliderDots');
@@ -4066,6 +4270,80 @@
 
   const ART_ITEMS = ARTWORKS.concat(SCULPTURES);
 
+  function slugifyArtist(name){
+    return (name || "unknown")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  }
+
+  function addArtistWork(map, name, details, work){
+    const safeName = (name || "Unknown Artist").trim() || "Unknown Artist";
+    const id = slugifyArtist(safeName);
+    if(!map.has(id)){
+      map.set(id, {
+        id,
+        name: safeName,
+        role: details.role || "Artist",
+        img: details.img || "",
+        bio: details.bio || "",
+        works: []
+      });
+    }
+    const artist = map.get(id);
+    if((!artist.role || artist.role === "Artist") && details.role) artist.role = details.role;
+    if(!artist.img && details.img) artist.img = details.img;
+    if(!artist.bio && details.bio) artist.bio = details.bio;
+    if(work && !artist.works.some(w => w.id === work.id)) artist.works.push(work);
+  }
+
+  function buildArtists(){
+    const map = new Map();
+    PRODUCTS.forEach(p => {
+      const a = p.artist || {};
+      addArtistWork(map, a.name, { role:a.role, img:a.img, bio:a.bio }, {
+        id:p.id,
+        name:p.name,
+        img:p.img,
+        kind:"Design",
+        data:p
+      });
+    });
+
+    ARTWORKS.forEach(a => {
+      addArtistWork(map, a.artist, { role: a.period ? `${a.period} Artist` : "Artist" }, {
+        id:a.id,
+        name:a.name,
+        img:a.img,
+        kind:"Artwork",
+        data:a
+      });
+    });
+
+    SCULPTURES.forEach(s => {
+      addArtistWork(map, s.artist, { role: s.era ? `${s.era} Sculptor` : "Sculptor" }, {
+        id:s.id,
+        name:s.name,
+        img:s.img,
+        kind:"Sculpture",
+        data:s
+      });
+    });
+
+    return Array.from(map.values()).sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  function getArtistSummary(artist){
+    if(artist.bio) return artist.bio;
+    const types = Array.from(new Set(artist.works.map(w => w.kind)));
+    const picks = artist.works.slice(0, 3).map(w => w.name).join(", ");
+    const typeLine = types.length ? `Featured in ${types.join(" & ")} collections.` : "Featured in the collection.";
+    const worksLine = picks ? `Selected works: ${picks}.` : "";
+    return `${typeLine}${worksLine ? " " + worksLine : ""}`;
+  }
+
+  const ARTISTS = buildArtists();
+
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
   const galleryEmpty = document.getElementById("galleryEmpty");
@@ -4094,6 +4372,16 @@
   const sculptureSortSelect = document.getElementById("sculptureSortSelect");
   const sculptureFilterClear = document.getElementById("sculptureFilterClear");
   const sculptureFilterApply = document.getElementById("sculptureFilterApply");
+  const galleryArtistsLink = document.getElementById("galleryArtistsLink");
+  const artistsBackBtn = document.getElementById("artistsBackBtn");
+  const artistsGrid = document.getElementById("artistsGrid");
+  const artistDetailBack = document.getElementById("artistDetailBack");
+  const artistDetailImg = document.getElementById("artistDetailImg");
+  const artistDetailName = document.getElementById("artistDetailName");
+  const artistDetailRole = document.getElementById("artistDetailRole");
+  const artistDetailBio = document.getElementById("artistDetailBio");
+  const artistWorksGrid = document.getElementById("artistWorksGrid");
+  const artistWorksCount = document.getElementById("artistWorksCount");
 
   let currentFilter = "all";
   let currentGallery = "furniture";
@@ -4214,6 +4502,74 @@
     const list = applySculptureFilters(SCULPTURES);
     renderCards(list, { clickable:true, subLabel:"Sculpture", className:"sculpture-card", onClick:openSculpture });
     updateSculptureFilterSummary();
+  }
+
+  function renderArtists(){
+    if(!artistsGrid) return;
+    artistsGrid.innerHTML = "";
+    ARTISTS.forEach(artist => {
+      const img = artist.img || (artist.works[0] && artist.works[0].img) || "";
+      const card = document.createElement("article");
+      card.className = "artist-card";
+      card.innerHTML = `
+        <div class="artist-card-media"><img src="${img}" alt="${artist.name}"></div>
+        <div class="artist-card-name">${artist.name}</div>
+        <div class="artist-card-role">${artist.role || "Artist"}</div>
+        <div class="artist-card-cta">View profile →</div>
+      `;
+      card.addEventListener("click", () => openArtistDetail(artist.id));
+      artistsGrid.appendChild(card);
+    });
+  }
+
+  function renderArtistWorks(artist){
+    if(!artistWorksGrid) return;
+    artistWorksGrid.innerHTML = "";
+    artist.works.forEach(work => {
+      const el = document.createElement("article");
+      el.className = "card artist-work-card";
+      el.innerHTML = `
+        <div class="card-media"><img src="${work.img}" alt="${work.name}"/></div>
+        <div class="card-name">${work.name}</div>
+        <div class="card-sub">${work.kind}</div>
+      `;
+      el.addEventListener("click", () => openWorkFromArtist(work));
+      artistWorksGrid.appendChild(el);
+    });
+  }
+
+  function openArtistDetail(id){
+    const artist = ARTISTS.find(a => a.id === id);
+    if(!artist) return;
+    const img = artist.img || (artist.works[0] && artist.works[0].img) || "";
+    if(artistDetailImg){
+      artistDetailImg.src = img;
+      artistDetailImg.alt = artist.name;
+    }
+    if(artistDetailName) artistDetailName.textContent = artist.name;
+    if(artistDetailRole) artistDetailRole.textContent = artist.role || "Artist";
+    if(artistDetailBio) artistDetailBio.textContent = getArtistSummary(artist);
+    if(artistWorksCount) artistWorksCount.textContent = `${artist.works.length} works`;
+    renderArtistWorks(artist);
+    switchSection("sect-artist-detail");
+  }
+
+  function openWorkFromArtist(work){
+    switchSection("sect-gallery");
+    if(work.kind === "Design"){
+      setGallery("furniture");
+      openSolo(work.data);
+      return;
+    }
+    if(work.kind === "Artwork"){
+      setGallery("art");
+      openArt(work.data);
+      return;
+    }
+    if(work.kind === "Sculpture"){
+      setGallery("art");
+      openSculpture(work.data);
+    }
   }
 
   function getArtSortLabel(value){
@@ -5398,6 +5754,7 @@
   (function init(){
     // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
+    renderArtists();
 
     // Default active nav = Home
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
