@@ -1597,32 +1597,17 @@
     display:flex;
     flex-direction:column;
   }
-  #sect-gallery.solo .solo-frame-head{
-    position:absolute;
-    top:18px;
-    left:22px;
-    right:22px;
-    z-index:10;
+  .back-nav{
+    margin:4px 0 12px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:16px;
-    pointer-events:none;
   }
-
-  .back-nav{ margin:4px 0 12px; }
   .btn-back{
     background:none; border:none; padding:0;
     color:#9a9a9a; font-size:13px; font-weight:700;
     cursor:pointer; display:inline-flex; align-items:center; gap:8px;
-  }
-
-  .solo-name{
-    margin:0;
-    font-size:20px;
-    font-weight:900;
-    letter-spacing:-0.02em;
-    color:#111;
   }
 
   .solo-tabs-bar{
@@ -1632,6 +1617,12 @@
     margin:0;
     padding:12px 22px 18px;
     pointer-events:auto;
+  }
+  .solo-tabs-bar.top{
+    width:auto;
+    padding:0;
+    margin-left:auto;
+    justify-content:flex-end;
   }
 
   .solo-media-container{
@@ -1691,20 +1682,20 @@
   .solo-bottom-tabs{ pointer-events:auto; }
   .solo-bottom-tabs-inner{
     display:flex;
-    gap:8px;
-    padding:8px;
+    gap:12px;
+    padding:12px;
     border-radius:999px;
     background:#bdbdbd;
   }
   .solo-bottom-tab{
     border:none;
     cursor:pointer;
-    padding:10px 18px;
+    padding:15px 27px;
     border-radius:999px;
     font-weight:900;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    font-size:11px;
+    font-size:16px;
     color:rgba(255,255,255,0.90);
     background:rgba(255,255,255,0.18);
     transition:all .2s ease;
@@ -3007,14 +2998,15 @@
     .art-right-media img{ height:180px; }
 
     /* SOLO frame mobile */
-    #sect-gallery.solo .solo-frame-head{ top:14px; left:16px; right:16px; }
     #sect-gallery.solo .solo-frame-foot{
       padding:14px 16px;
       flex-direction:column;
       align-items:stretch;
       gap:12px;
     }
-    .solo-tabs-bar{ padding:8px 16px 12px; }
+    .back-nav{ flex-direction:column; align-items:flex-start; }
+    .solo-tabs-bar{ padding:8px 0 0; }
+    .solo-tabs-bar.top{ width:100%; justify-content:flex-start; }
     .media-tabs{ padding:4px; gap:4px; }
     .media-tab{ padding:6px 10px; font-size:8px; letter-spacing:0.05em; }
     .solo-foot-right{ width:100%; align-items:stretch; }
@@ -3312,14 +3304,13 @@
         <div class="grid" id="grid"></div>
 
         <div class="solo-wrap" id="soloWrap">
-          <div class="back-nav"><button class="btn-back" id="btnBack">&larr; Back to Collection</button></div>
+          <div class="back-nav">
+            <button class="btn-back" id="btnBack">&larr; Back to Collection</button>
+            <div class="solo-tabs-bar top"><div id="soloTabs"></div></div>
+          </div>
 
           <div class="solo-frame">
-            <div class="solo-frame-head">
-              <div class="solo-name" id="soloName">PRODUCT</div>
-            </div>
             <div class="solo-media-container" id="soloMedia"></div>
-            <div class="solo-tabs-bar"><div id="soloTabs"></div></div>
 
             <aside class="solo-info-card" id="soloInfoCard" aria-hidden="true">
               <button class="solo-info-close" type="button" id="soloInfoClose" aria-label="Close info">&times;</button>
@@ -3957,9 +3948,10 @@
     const mNavEl = document.getElementById(mNavIdMap[id]);
     if(mNavEl) mNavEl.classList.add('active');
 
-    if(id === 'sect-home'){
-      map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
-    }
+    if(rotationFrame){ cancelAnimationFrame(rotationFrame); rotationFrame=null; }
+    if(currentMarker){ currentMarker.remove(); currentMarker=null; }
+    hideMap3D();
+    map.flyTo({ center:[0,20], zoom:startZoom, pitch:0, bearing:0, duration:1800 });
 
     if(id === 'sect-services'){
       requestAnimationFrame(() => { setupProcessAnimation(); });
