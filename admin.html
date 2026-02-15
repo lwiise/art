@@ -4012,12 +4012,15 @@
 
           <div class="admin-auth" id="adminAuthCard">
             <div class="admin-card-title">Admin Access</div>
-            <p class="admin-note">Sign in with your admin email to unlock product management.</p>
+            <p class="admin-note">Sign in with your admin email and password to unlock product management.</p>
             <div class="admin-grid">
               <div class="form-group">
                 <input type="email" class="form-input" id="adminEmail" placeholder="Admin Email" value="anaskaroti@gmail.com" />
               </div>
-              <button class="btn-submit admin-auth-btn" id="adminSendMagicBtn" type="button">Send Magic Link</button>
+              <div class="form-group">
+                <input type="password" class="form-input" id="adminPassword" placeholder="Admin Password" autocomplete="current-password" />
+              </div>
+              <button class="btn-submit admin-auth-btn" id="adminLoginBtn" type="button">Login</button>
             </div>
             <div class="admin-status" id="adminAuthStatus">Not signed in</div>
           </div>
@@ -4376,26 +4379,38 @@
     }
     await deleteAdminProduct(adminSelectedId);
   });
-  safeAdd('adminSendMagicBtn','click',async () => {
+  safeAdd('adminLoginBtn','click',async () => {
     if(!supabaseClient){
       setAdminAuthStatus("Supabase client not available", true);
       return;
     }
     const email = getAdminInputValue(adminEmail) || DEFAULT_ADMIN_EMAIL;
-    const { error } = await supabaseClient.auth.signInWithOtp({
-      email,
-      options:{ emailRedirectTo: window.location.href }
-    });
-    if(error){
-      setAdminAuthStatus(`Login link failed: ${error.message}`, true);
+    const password = getAdminInputValue(adminPassword);
+    if(!password){
+      setAdminAuthStatus("Enter your password", true);
       return;
     }
-    setAdminAuthStatus("Magic link sent. Open your email to continue.", false);
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if(error){
+      setAdminAuthStatus(`Login failed: ${error.message}`, true);
+      return;
+    }
+    setAdminAuthStatus("Logged in", false);
   });
   safeAdd('adminLogoutBtn','click',async () => {
     if(!supabaseClient) return;
     await supabaseClient.auth.signOut();
     clearAdminForm();
+  });
+  safeAdd('adminEmail','keydown',(e) => {
+    if(e.key !== "Enter") return;
+    const btn = document.getElementById("adminLoginBtn");
+    if(btn) btn.click();
+  });
+  safeAdd('adminPassword','keydown',(e) => {
+    if(e.key !== "Enter") return;
+    const btn = document.getElementById("adminLoginBtn");
+    if(btn) btn.click();
   });
 
   const adminGalleryTypeEl = document.getElementById("adminGalleryType");
@@ -5032,7 +5047,8 @@
   const adminAuthCard = document.getElementById("adminAuthCard");
   const adminPanel = document.getElementById("adminPanel");
   const adminEmail = document.getElementById("adminEmail");
-  const adminSendMagicBtn = document.getElementById("adminSendMagicBtn");
+  const adminPassword = document.getElementById("adminPassword");
+  const adminLoginBtn = document.getElementById("adminLoginBtn");
   const adminAuthStatus = document.getElementById("adminAuthStatus");
   const adminRefreshBtn = document.getElementById("adminRefreshBtn");
   const adminSeedBtn = document.getElementById("adminSeedBtn");
