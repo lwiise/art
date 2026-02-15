@@ -2757,6 +2757,172 @@
   }
   #formSuccess{ display:none; border-radius:14px; margin-top:14px; background:#f0f0f0; color:#333; padding:18px; }
 
+  .admin-wrap{
+    width:100%;
+    max-width:1320px;
+    margin:0 auto;
+  }
+  .admin-head{ margin-bottom:16px; }
+  .admin-auth,
+  .admin-panel,
+  .admin-list-card,
+  .admin-form-card{
+    border:1px solid #ececec;
+    border-radius:24px;
+    background:#fff;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+  }
+  .admin-auth{
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .admin-card-title{
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#111;
+    margin-bottom:10px;
+  }
+  .admin-note{
+    margin:0 0 12px;
+    font-size:12px;
+    color:#666;
+  }
+  .admin-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .admin-grid.two{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .admin-grid.three{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+  .admin-auth-btn{ max-width:220px; }
+  .admin-status{
+    margin-top:10px;
+    font-size:12px;
+    color:#555;
+  }
+  .admin-panel{ padding:16px; }
+  .admin-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .admin-toolbar-left,
+  .admin-toolbar-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .admin-mini-btn{
+    padding:9px 12px;
+    border-radius:12px;
+    border:1px solid #ddd;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    cursor:pointer;
+    background:#fff;
+  }
+  .admin-user{
+    font-size:11px;
+    color:#666;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:800;
+  }
+  .admin-layout{
+    display:grid;
+    grid-template-columns:340px minmax(0, 1fr);
+    gap:14px;
+  }
+  .admin-list-card,
+  .admin-form-card{
+    padding:14px;
+  }
+  .admin-list-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .admin-filter-row{ margin-bottom:10px; }
+  .admin-list{
+    max-height:70vh;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .admin-item{
+    border:1px solid #ededed;
+    border-radius:14px;
+    padding:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    background:#fbfbfb;
+  }
+  .admin-item.active{
+    border-color:#111;
+    background:#fff;
+  }
+  .admin-item-name{
+    font-size:12px;
+    font-weight:900;
+    color:#111;
+  }
+  .admin-item-meta{
+    font-size:10px;
+    color:#777;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
+  .admin-item-actions{
+    display:flex;
+    gap:6px;
+  }
+  .admin-item-btn{
+    border:1px solid #ddd;
+    background:#fff;
+    border-radius:10px;
+    padding:6px 8px;
+    font-size:10px;
+    cursor:pointer;
+  }
+  .admin-form{ margin-top:6px; }
+  .admin-type-grid{
+    margin-top:10px;
+    border:1px solid #efefef;
+    border-radius:16px;
+    padding:10px;
+  }
+  .admin-type-title{
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    font-weight:900;
+    color:#666;
+    margin-bottom:8px;
+  }
+  .admin-actions{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .admin-danger{
+    border-color:#d45454;
+    color:#b03333;
+  }
+
   .modal-overlay{
     position:fixed; inset:0;
     background:rgba(0,0,0,0.45);
@@ -2980,6 +3146,11 @@
     .artist-hero-media{ max-width:320px; }
     .artist-meta-grid{ grid-template-columns:1fr; }
     .artist-products-grid{ grid-template-columns:1fr; }
+    .admin-layout{ grid-template-columns:1fr; }
+    .admin-grid.two,
+    .admin-grid.three{ grid-template-columns:1fr; }
+    .admin-actions{ flex-direction:column; }
+    .admin-auth-btn{ max-width:none; width:100%; }
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
@@ -3063,6 +3234,7 @@
       <div class="nav-item" id="navServices">Services</div>
       <div class="nav-item active" id="navGallery">Gallery</div>
       <div class="nav-item" id="navContact">Contact Us</div>
+      <div class="nav-item" id="navAdmin">Admin</div>
     </nav>
 
     <nav class="mobile-nav" id="mobileNav">
@@ -3071,6 +3243,7 @@
       <div class="nav-item" id="mNavServices">Services</div>
       <div class="nav-item active" id="mNavGallery">Gallery</div>
       <div class="nav-item" id="mNavContact">Contact</div>
+      <div class="nav-item" id="mNavAdmin">Admin</div>
     </nav>
   </div>
 
@@ -3783,6 +3956,158 @@
       </div>
     </section>
 
+    <!-- ADMIN -->
+    <section id="sect-admin" class="app-section">
+      <div class="section-scroll">
+        <div class="admin-wrap">
+          <div class="admin-head">
+            <h1 class="sec-title">Admin Panel</h1>
+            <p class="sec-sub">Manage products, upload images/models, and keep filters aligned with Books, Art, Sculptures, and Designs.</p>
+          </div>
+
+          <div class="admin-auth" id="adminAuthCard">
+            <div class="admin-card-title">Admin Access</div>
+            <p class="admin-note">Sign in with your admin email to unlock product management.</p>
+            <div class="admin-grid">
+              <div class="form-group">
+                <input type="email" class="form-input" id="adminEmail" placeholder="Admin Email" value="anaskaroti@gmail.com" />
+              </div>
+              <button class="btn-submit admin-auth-btn" id="adminSendMagicBtn" type="button">Send Magic Link</button>
+            </div>
+            <div class="admin-status" id="adminAuthStatus">Not signed in</div>
+          </div>
+
+          <div class="admin-panel" id="adminPanel" hidden>
+            <div class="admin-toolbar">
+              <div class="admin-toolbar-left">
+                <button class="btn btn-ghost admin-mini-btn" id="adminRefreshBtn" type="button">Refresh</button>
+                <button class="btn btn-ghost admin-mini-btn" id="adminSeedBtn" type="button">Seed Current Products</button>
+              </div>
+              <div class="admin-toolbar-right">
+                <span class="admin-user" id="adminUserEmail">Signed in</span>
+                <button class="btn btn-ghost admin-mini-btn" id="adminLogoutBtn" type="button">Logout</button>
+              </div>
+            </div>
+
+            <div class="admin-layout">
+              <aside class="admin-list-card">
+                <div class="admin-list-head">
+                  <div class="admin-card-title">Products</div>
+                  <button class="btn btn-ghost admin-mini-btn" id="adminNewProductBtn" type="button">New Product</button>
+                </div>
+                <div class="admin-filter-row">
+                  <select id="adminTypeFilter" class="form-input">
+                    <option value="all">All Types</option>
+                    <option value="furniture">Designs</option>
+                    <option value="books">Books</option>
+                    <option value="art">Art</option>
+                    <option value="sculpture">Sculpture</option>
+                  </select>
+                </div>
+                <div class="admin-list" id="adminProductList"></div>
+              </aside>
+
+              <section class="admin-form-card">
+                <div class="admin-card-title">Product Editor</div>
+                <div class="admin-form" id="adminProductForm">
+                  <input type="hidden" id="adminProductId" />
+                  <div class="admin-grid two">
+                    <div class="form-group"><input class="form-input" id="adminName" placeholder="Product Name" /></div>
+                    <div class="form-group">
+                      <select id="adminGalleryType" class="form-input">
+                        <option value="furniture">Designs</option>
+                        <option value="books">Books</option>
+                        <option value="art">Art</option>
+                        <option value="sculpture">Sculpture</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="admin-grid two">
+                    <div class="form-group"><input class="form-input" id="adminCategory" placeholder="Category (cabinet, sideboard, ...)" /></div>
+                    <div class="form-group"><input class="form-input" id="adminSortOrder" type="number" placeholder="Sort Order" value="0" /></div>
+                  </div>
+
+                  <div class="admin-grid three">
+                    <div class="form-group"><input class="form-input" id="adminArtistName" placeholder="Artist Name" /></div>
+                    <div class="form-group"><input class="form-input" id="adminArtistRole" placeholder="Artist Role" /></div>
+                    <div class="form-group"><input class="form-input" id="adminArtistImageUrl" placeholder="Artist Image URL" /></div>
+                  </div>
+                  <div class="form-group"><textarea class="form-input" id="adminArtistBio" placeholder="Artist Bio" rows="3"></textarea></div>
+
+                  <div class="admin-grid two">
+                    <div class="form-group"><input class="form-input" id="adminCoverImageUrl" placeholder="Cover Image URL" /></div>
+                    <div class="form-group"><input class="form-input" id="adminModelUrl" placeholder="3D Model URL (.glb/.gltf)" /></div>
+                  </div>
+                  <div class="admin-grid two">
+                    <div class="form-group"><input class="form-input" id="adminCoverUpload" type="file" accept="image/*" /></div>
+                    <div class="form-group"><input class="form-input" id="adminModelUpload" type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json" /></div>
+                  </div>
+
+                  <div class="form-group">
+                    <textarea class="form-input" id="adminImagesInput" placeholder="Extra image URLs (one per line)" rows="4"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <input class="form-input" id="adminImagesUpload" type="file" accept="image/*" multiple />
+                  </div>
+
+                  <div class="admin-type-grid" id="adminBooksFields">
+                    <div class="admin-type-title">Book Fields</div>
+                    <div class="admin-grid three">
+                      <div class="form-group"><input class="form-input" id="adminTheme" placeholder="Theme" /></div>
+                      <div class="form-group"><input class="form-input" id="adminColor" placeholder="Color" /></div>
+                      <div class="form-group"><input class="form-input" id="adminSize" placeholder="Size" /></div>
+                    </div>
+                    <div class="admin-grid two">
+                      <div class="form-group"><input class="form-input" id="adminTag" placeholder="Tag" /></div>
+                      <div class="form-group"><input class="form-input" id="adminKicker" placeholder="Kicker" /></div>
+                    </div>
+                  </div>
+
+                  <div class="admin-type-grid" id="adminFurnitureFields">
+                    <div class="admin-type-title">Design Fields</div>
+                    <div class="admin-grid two">
+                      <div class="form-group"><input class="form-input" id="adminMaterial" placeholder="Material" /></div>
+                      <div class="form-group"><input class="form-input" id="adminDimensions" placeholder="Dimensions (e.g. 120x60x90)" /></div>
+                    </div>
+                    <div class="admin-grid three">
+                      <div class="form-group"><input class="form-input" id="adminStoreName" placeholder="Store Name" /></div>
+                      <div class="form-group"><input class="form-input" id="adminStoreLng" type="number" step="0.000001" placeholder="Store Longitude" /></div>
+                      <div class="form-group"><input class="form-input" id="adminStoreLat" type="number" step="0.000001" placeholder="Store Latitude" /></div>
+                    </div>
+                  </div>
+
+                  <div class="admin-type-grid" id="adminArtFields">
+                    <div class="admin-type-title">Art/Sculpture Fields</div>
+                    <div class="admin-grid three">
+                      <div class="form-group"><input class="form-input" id="adminMedium" placeholder="Medium" /></div>
+                      <div class="form-group"><input class="form-input" id="adminPeriod" placeholder="Period" /></div>
+                      <div class="form-group"><input class="form-input" id="adminArtMaterial" placeholder="Material" /></div>
+                    </div>
+                    <div class="admin-grid three">
+                      <div class="form-group"><input class="form-input" id="adminEra" placeholder="Era" /></div>
+                      <div class="form-group"><input class="form-input" id="adminYear" type="number" placeholder="Year" /></div>
+                      <div class="form-group"><input class="form-input" id="adminRating" type="number" step="0.1" placeholder="Rating" /></div>
+                    </div>
+                    <div class="admin-grid two">
+                      <div class="form-group"><input class="form-input" id="adminRatingCount" placeholder="Rating Count (e.g. 50+)" /></div>
+                      <div class="form-group"><input class="form-input" id="adminBasePrice" type="number" placeholder="Base Price" /></div>
+                    </div>
+                  </div>
+
+                  <div class="admin-actions">
+                    <button class="btn-submit" id="adminSaveBtn" type="button">Save Product</button>
+                    <button class="btn btn-ghost admin-danger" id="adminDeleteBtn" type="button">Delete Product</button>
+                  </div>
+                  <div class="admin-status" id="adminSaveStatus">Ready</div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
       <div class="section-scroll">
@@ -3860,11 +4185,18 @@
 </div>
 
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
 
 <script>
   const MAPBOX_TOKEN = "pk.eyJ1IjoiYW5hc2thcm90aSIsImEiOiJjbWhqcHgwcmMwbWM0MmxwZ2V5Z2x5OTN0In0.bpOf-4BsljExZdYZUak_pw";
   const USER_STYLE = "mapbox://styles/anaskaroti/cmhuiic1f00ft01qucn91gk6e";
+  const SUPABASE_URL = "https://ynlbfuifmemekyixkpdw.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubGJmdWlmbWVtZWt5aXhrcGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNjA4MzksImV4cCI6MjA4NjczNjgzOX0.1-plxceE3gIPZQ7qo245PKeTMV6lXa1H1ExZ0qMalsc";
+  const DEFAULT_ADMIN_EMAIL = "anaskaroti@gmail.com";
+  const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
   mapboxgl.accessToken = MAPBOX_TOKEN;
   const isMobile = window.innerWidth < 900;
@@ -3931,7 +4263,8 @@
       'sect-gallery':'navGallery',
       'sect-artists':'navGallery',
       'sect-artist-detail':'navGallery',
-      'sect-contact':'navContact'
+      'sect-contact':'navContact',
+      'sect-admin':'navAdmin'
     };
     const mNavIdMap = {
       'sect-home':'mNavHome',
@@ -3940,7 +4273,8 @@
       'sect-gallery':'mNavGallery',
       'sect-artists':'mNavGallery',
       'sect-artist-detail':'mNavGallery',
-      'sect-contact':'mNavContact'
+      'sect-contact':'mNavContact',
+      'sect-admin':'mNavAdmin'
     };
 
     const navEl = document.getElementById(navIdMap[id]);
@@ -3968,18 +4302,61 @@
   safeAdd('navServices','click',() => switchSection('sect-services'));
   safeAdd('navGallery','click',() => switchSection('sect-gallery'));
   safeAdd('navContact','click',() => switchSection('sect-contact'));
+  safeAdd('navAdmin','click',() => switchSection('sect-admin'));
 
   safeAdd('mNavHome','click',() => switchSection('sect-home'));
   safeAdd('mNavAbout','click',() => switchSection('sect-about'));
   safeAdd('mNavServices','click',() => switchSection('sect-services'));
   safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
   safeAdd('mNavContact','click',() => switchSection('sect-contact'));
+  safeAdd('mNavAdmin','click',() => switchSection('sect-admin'));
   safeAdd('galleryArtistsLink','click',() => {
     renderArtists();
     switchSection('sect-artists');
   });
   safeAdd('artistsBackBtn','click',() => switchSection('sect-gallery'));
   safeAdd('artistDetailBack','click',() => switchSection('sect-artists'));
+  safeAdd('adminNewProductBtn','click',() => clearAdminForm());
+  safeAdd('adminRefreshBtn','click',async () => {
+    await loadAdminRows();
+    await loadCatalogFromSupabase();
+    rerenderVisibleCollections();
+  });
+  safeAdd('adminSeedBtn','click',seedSupabaseFromFallback);
+  safeAdd('adminSaveBtn','click',saveAdminProduct);
+  safeAdd('adminDeleteBtn','click',async () => {
+    if(!adminSelectedId){
+      setAdminSaveStatus("Select a product first", true);
+      return;
+    }
+    await deleteAdminProduct(adminSelectedId);
+  });
+  safeAdd('adminSendMagicBtn','click',async () => {
+    if(!supabaseClient){
+      setAdminAuthStatus("Supabase client not available", true);
+      return;
+    }
+    const email = getAdminInputValue(adminEmail) || DEFAULT_ADMIN_EMAIL;
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options:{ emailRedirectTo: window.location.href }
+    });
+    if(error){
+      setAdminAuthStatus(`Login link failed: ${error.message}`, true);
+      return;
+    }
+    setAdminAuthStatus("Magic link sent. Open your email to continue.", false);
+  });
+  safeAdd('adminLogoutBtn','click',async () => {
+    if(!supabaseClient) return;
+    await supabaseClient.auth.signOut();
+    clearAdminForm();
+  });
+
+  const adminGalleryTypeEl = document.getElementById("adminGalleryType");
+  if(adminGalleryTypeEl) adminGalleryTypeEl.addEventListener("change", setAdminFieldVisibility);
+  const adminTypeFilterEl = document.getElementById("adminTypeFilter");
+  if(adminTypeFilterEl) adminTypeFilterEl.addEventListener("change", renderAdminProductList);
 
   const homeSliderTrack = document.querySelector('.home-illustration-track');
   const homeSliderDots = document.getElementById('homeSliderDots');
@@ -4353,7 +4730,7 @@
   }
 
   // ✅ 12 products (kept)
-  const PRODUCTS = [
+  let PRODUCTS = [
     { id:"item-1", name:"Arch Cabinet", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a23d0fd8b7e2bc457_Screenshot_2025-11-23_141726-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(5).glb", specs:{ mat:"Velvet & Wood", dim:"120x60x90" }, store:{ name:"Milan Design District", coords:[9.1900,45.4642] }, artist:{ name:"Alessandro Rossi", role:"Art Director, Milano", img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80", bio:"Alessandro combines classical Italian joinery with bold, modern geometric forms." } },
     { id:"item-2", name:"Geometric Side", category:"sideboard", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a7e9f217180e18c6d_Screenshot_2025-11-23_142545-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20%289%29.glb", specs:{ mat:"Lacquered Wood", dim:"180x50x200" }, store:{ name:"Paris Le Marais", coords:[2.3522,48.8566] }, artist:{ name:"Claire Dubois", role:"Sculptor, Paris", img:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80", bio:"Claire challenges the perception of stability with her organic, tree-like structures." } },
     { id:"item-3", name:"Art Deco Tall", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6923267a3f4cd0cdf6848da0_Screenshot_2025-11-23_142423-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/base%20(7).glb", specs:{ mat:"Marble & Brass", dim:"220x80x95" }, store:{ name:"New York SoHo", coords:[-74.006,40.7128] }, artist:{ name:"Marcus Thorne", role:"Industrial Designer, NY", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Marcus revives 1920s Art Deco aesthetics for the modern Manhattan loft." } },
@@ -4368,7 +4745,7 @@
     { id:"item-12", name:"Crimson Vanity", category:"cabinet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69248620cbc59348dc423f83_Screenshot_2025-11-24_171401-removebg-preview.png", model:"https://raw.githubusercontent.com/lwiise/3d-models/main/compressed_1764071194478_base%20(10).glb", specs:{ mat:"Red Velvet & Gold", dim:"100x50x150" }, store:{ name:"Seoul Gangnam", coords:[127.027,37.497] }, artist:{ name:"Min-Jun Kim", role:"Fashion Designer, Seoul", img:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80", bio:"Min-Jun treats furniture like haute couture, focusing on texture and drama." } }
   ];
 
-  const BOOKS = [
+  let BOOKS = [
     { id:"book-1", name:"Hajj and the Arts of Pilgrimage", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba2585301af28c70de99_hajj-and-the-arts-of-pilgrimage-assouline-2.jpg", theme:"Pilgrimage", color:"Warm", size:"Large", price:"$1,400 USD", priceValue:1400, tag:"Back in Stock", kicker:"The Ultimate Collection" },
     { id:"book-2", name:"St. Catherine's Monastery: Behind Sacred Doors", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25efadf9246061f732_st-catherine-s-monastery-behind-sacred-doors-assouline-1.jpg", theme:"Heritage", color:"Cool", size:"Classic", price:"$980 USD", priceValue:980, tag:"New Arrival", kicker:"Sacred Places Series" },
     { id:"book-3", name:"Makkah", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/697cba25d89ff47bf803d306_Makkah-IC_01_8fee0b8d-7690-4cfc-aed6-21495a0022f9.webp", theme:"Pilgrimage", color:"Warm", size:"Large", price:"$1,250 USD", priceValue:1250, tag:"Collector's Edition", kicker:"The Ultimate Collection" },
@@ -4435,7 +4812,7 @@
     ]
   };
 
-  const ARTWORKS = [
+  let ARTWORKS = [
     { id:"art-1", type:"art", sub:"Artwork", name:"Praying Girl (19th Century)", artist:"Roberto Ferruzzi", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d125a462d348c95595c_roberto-ferruzzi-praying-girl-italian-painting-of-19th-century_u-l-ptiifl0.jpg", rating:4.8, ratingCount:"50+", basePrice:32, year:1890, period:"19th Century", medium:"Oil on Canvas" },
     { id:"art-2", type:"art", sub:"Artwork", name:"Wanderer Above the Sea of Fog (1818)", artist:"Caspar David Friedrich", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d123128617c5399b765_caspar-david-friedrich-the-wanderer-above-the-sea-of-fog-1818_u-l-o29rl0.jpg", rating:4.9, ratingCount:"60+", basePrice:36, year:1818, period:"Romanticism", medium:"Oil on Canvas" },
     { id:"art-3", type:"art", sub:"Artwork", name:"Starry Night Over the Rhone (c. 1888)", artist:"Vincent van Gogh", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d1278b4e01616f679ea_vincent-van-gogh-starry-night-over-the-rhone-c-1888_u-l-o4jl10.jpg", rating:4.7, ratingCount:"40+", basePrice:34, year:1888, period:"Post-Impressionism", medium:"Oil on Canvas" },
@@ -4444,7 +4821,7 @@
     { id:"art-6", type:"art", sub:"Artwork", name:"Impression, Sunrise (1872)", artist:"Claude Monet", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69808d121c9587dfd8644b43_claude-monet-impression-sunrise-impression-soleil-levan-1872_u-l-ptohbt0.jpg", rating:4.7, ratingCount:"45+", basePrice:33, year:1872, period:"Impressionism", medium:"Oil on Canvas" }
   ];
 
-  const SCULPTURES = [
+  let SCULPTURES = [
     { id:"sculpt-1", type:"sculpture", sub:"Sculpture", name:"David", artist:"Michelangelo Buonarroti", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c1857e82c35452c8e_michelangelo-buonarroti-david_u-l-puqrgp0.jpg", rating:4.9, ratingCount:"90+", basePrice:1200, year:1504, era:"Renaissance", material:"Marble", period:"Renaissance", medium:"Marble" },
     { id:"sculpt-2", type:"sculpture", sub:"Sculpture", name:"Marcus Aurelius", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c614592d086fd92fa_marcus-aurelius-statue_u-l-q1074ct0.jpg", rating:4.7, ratingCount:"60+", basePrice:980, year:175, era:"Roman", material:"Bronze", period:"Roman", medium:"Bronze" },
     { id:"sculpt-3", type:"sculpture", sub:"Sculpture", name:"Plato at the Hellenic Academy", artist:"Jon Hicks", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967c4e4b28f77296cd98_jon-hicks-plato-statue-outside-the-hellenic-academy_u-l-pzrr0a0.jpg", rating:4.6, ratingCount:"40+", basePrice:860, year:1886, era:"Classical", material:"Marble", period:"Classical", medium:"Marble" },
@@ -4453,7 +4830,7 @@
     { id:"sculpt-6", type:"sculpture", sub:"Sculpture", name:"Buste de Rome Casquée", artist:"Unknown Roman", img:"https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/6980967ce3345ac63325b131_buste-de-rome-casquee_u-l-q1kypts0.jpg", rating:4.5, ratingCount:"35+", basePrice:920, year:100, era:"Roman", material:"Marble", period:"Roman", medium:"Marble" }
   ];
 
-  const ART_ITEMS = ARTWORKS.concat(SCULPTURES);
+  let ART_ITEMS = ARTWORKS.concat(SCULPTURES);
 
   function slugifyArtist(name){
     return (name || "unknown")
@@ -4551,7 +4928,17 @@
     return `${typeLine}${worksLine ? " " + worksLine : ""}`;
   }
 
-  const ARTISTS = buildArtists();
+  let ARTISTS = buildArtists();
+  const deepClone = (value) => JSON.parse(JSON.stringify(value));
+  const FALLBACK_PRODUCTS = deepClone(PRODUCTS);
+  const FALLBACK_BOOKS = deepClone(BOOKS);
+  const FALLBACK_ARTWORKS = deepClone(ARTWORKS);
+  const FALLBACK_SCULPTURES = deepClone(SCULPTURES);
+
+  function refreshDerivedCollections(){
+    ART_ITEMS = ARTWORKS.concat(SCULPTURES);
+    ARTISTS = buildArtists();
+  }
 
   const grid = document.getElementById("grid");
   const galleryTabs = document.getElementById("galleryTabs");
@@ -4597,6 +4984,57 @@
   const artistWorksGrid = document.getElementById("artistWorksGrid");
   const artistWorksCount = document.getElementById("artistWorksCount");
   const artistWorksCountLabel = document.getElementById("artistWorksCountLabel");
+  const adminAuthCard = document.getElementById("adminAuthCard");
+  const adminPanel = document.getElementById("adminPanel");
+  const adminEmail = document.getElementById("adminEmail");
+  const adminSendMagicBtn = document.getElementById("adminSendMagicBtn");
+  const adminAuthStatus = document.getElementById("adminAuthStatus");
+  const adminRefreshBtn = document.getElementById("adminRefreshBtn");
+  const adminSeedBtn = document.getElementById("adminSeedBtn");
+  const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+  const adminUserEmail = document.getElementById("adminUserEmail");
+  const adminTypeFilter = document.getElementById("adminTypeFilter");
+  const adminProductList = document.getElementById("adminProductList");
+  const adminNewProductBtn = document.getElementById("adminNewProductBtn");
+  const adminProductId = document.getElementById("adminProductId");
+  const adminName = document.getElementById("adminName");
+  const adminGalleryType = document.getElementById("adminGalleryType");
+  const adminCategory = document.getElementById("adminCategory");
+  const adminSortOrder = document.getElementById("adminSortOrder");
+  const adminArtistName = document.getElementById("adminArtistName");
+  const adminArtistRole = document.getElementById("adminArtistRole");
+  const adminArtistImageUrl = document.getElementById("adminArtistImageUrl");
+  const adminArtistBio = document.getElementById("adminArtistBio");
+  const adminCoverImageUrl = document.getElementById("adminCoverImageUrl");
+  const adminModelUrl = document.getElementById("adminModelUrl");
+  const adminCoverUpload = document.getElementById("adminCoverUpload");
+  const adminModelUpload = document.getElementById("adminModelUpload");
+  const adminImagesInput = document.getElementById("adminImagesInput");
+  const adminImagesUpload = document.getElementById("adminImagesUpload");
+  const adminTheme = document.getElementById("adminTheme");
+  const adminColor = document.getElementById("adminColor");
+  const adminSize = document.getElementById("adminSize");
+  const adminTag = document.getElementById("adminTag");
+  const adminKicker = document.getElementById("adminKicker");
+  const adminMaterial = document.getElementById("adminMaterial");
+  const adminDimensions = document.getElementById("adminDimensions");
+  const adminStoreName = document.getElementById("adminStoreName");
+  const adminStoreLng = document.getElementById("adminStoreLng");
+  const adminStoreLat = document.getElementById("adminStoreLat");
+  const adminMedium = document.getElementById("adminMedium");
+  const adminPeriod = document.getElementById("adminPeriod");
+  const adminArtMaterial = document.getElementById("adminArtMaterial");
+  const adminEra = document.getElementById("adminEra");
+  const adminYear = document.getElementById("adminYear");
+  const adminRating = document.getElementById("adminRating");
+  const adminRatingCount = document.getElementById("adminRatingCount");
+  const adminBasePrice = document.getElementById("adminBasePrice");
+  const adminBooksFields = document.getElementById("adminBooksFields");
+  const adminFurnitureFields = document.getElementById("adminFurnitureFields");
+  const adminArtFields = document.getElementById("adminArtFields");
+  const adminSaveBtn = document.getElementById("adminSaveBtn");
+  const adminDeleteBtn = document.getElementById("adminDeleteBtn");
+  const adminSaveStatus = document.getElementById("adminSaveStatus");
 
   let currentFilter = "all";
   let currentGallery = "furniture";
@@ -4619,6 +5057,708 @@
     eras: new Set(),
     materials: new Set()
   };
+  const ADMIN_BUCKET = "product-assets";
+  let adminSession = null;
+  let adminAuthorized = false;
+  let adminRows = [];
+  let adminSelectedId = null;
+
+  function toOptionalNumber(value){
+    if(value === null || value === undefined) return null;
+    const raw = String(value).trim();
+    if(!raw) return null;
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : null;
+  }
+
+  function generateUuid(){
+    if(window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === "x" ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  function parseMediaImagesValue(value){
+    if(Array.isArray(value)) return value.filter(Boolean).map(v => String(v).trim()).filter(Boolean);
+    if(typeof value === "string"){
+      const trimmed = value.trim();
+      if(!trimmed) return [];
+      if(trimmed.startsWith("[")){
+        try{
+          const parsed = JSON.parse(trimmed);
+          if(Array.isArray(parsed)) return parsed.filter(Boolean).map(v => String(v).trim()).filter(Boolean);
+        }catch(e){}
+      }
+      return trimmed.split(/\r?\n/).map(v => v.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  function uniqueUrlList(list){
+    const seen = new Set();
+    const out = [];
+    (list || []).forEach(item => {
+      const value = String(item || "").trim();
+      if(!value) return;
+      if(seen.has(value)) return;
+      seen.add(value);
+      out.push(value);
+    });
+    return out;
+  }
+
+  function mapProductRow(row){
+    if(!row || !row.gallery_type) return null;
+    const id = row.legacy_id || row.id;
+    const cover = row.image_url || "";
+    const extras = parseMediaImagesValue(row.media_images);
+    const images = uniqueUrlList([cover].concat(extras));
+    const artistObj = {
+      name: row.artist_name || "Unknown",
+      role: row.artist_role || "Artist",
+      img: row.artist_image_url || cover || "",
+      bio: row.artist_bio || ""
+    };
+
+    if(row.gallery_type === "furniture"){
+      return {
+        bucket: "furniture",
+        item: {
+          id,
+          name: row.name || "Untitled",
+          category: row.category || "decor",
+          img: cover || "",
+          images,
+          model: row.model_url || "",
+          specs: {
+            mat: row.material || "--",
+            dim: row.dimensions || "--"
+          },
+          store: {
+            name: row.store_name || "Gallery",
+            coords: [
+              toOptionalNumber(row.store_lng) ?? 0,
+              toOptionalNumber(row.store_lat) ?? 20
+            ]
+          },
+          artist: artistObj
+        }
+      };
+    }
+
+    if(row.gallery_type === "books"){
+      return {
+        bucket: "books",
+        item: {
+          id,
+          name: row.name || "Untitled",
+          img: cover || "",
+          images,
+          theme: row.theme || "General",
+          color: row.color || "Neutral",
+          size: row.size || "Classic",
+          price: "",
+          priceValue: toOptionalNumber(row.base_price) ?? 0,
+          tag: row.tag || "",
+          kicker: row.kicker || ""
+        }
+      };
+    }
+
+    if(row.gallery_type === "art"){
+      return {
+        bucket: "art",
+        item: {
+          id,
+          type: "art",
+          sub: "Artwork",
+          name: row.name || "Untitled",
+          artist: row.artist_name || "Unknown",
+          img: cover || "",
+          images,
+          model: row.model_url || "",
+          rating: toOptionalNumber(row.rating) ?? 5,
+          ratingCount: row.rating_count || "50+",
+          basePrice: toOptionalNumber(row.base_price) ?? 32,
+          year: toOptionalNumber(row.year) ?? null,
+          period: row.period || "--",
+          medium: row.medium || row.material || "--"
+        }
+      };
+    }
+
+    if(row.gallery_type === "sculpture"){
+      return {
+        bucket: "sculpture",
+        item: {
+          id,
+          type: "sculpture",
+          sub: "Sculpture",
+          name: row.name || "Untitled",
+          artist: row.artist_name || "Unknown",
+          img: cover || "",
+          images,
+          model: row.model_url || "",
+          rating: toOptionalNumber(row.rating) ?? 5,
+          ratingCount: row.rating_count || "50+",
+          basePrice: toOptionalNumber(row.base_price) ?? 1200,
+          year: toOptionalNumber(row.year) ?? null,
+          era: row.era || row.period || "--",
+          period: row.period || row.era || "--",
+          material: row.material || row.medium || "--",
+          medium: row.medium || row.material || "--"
+        }
+      };
+    }
+
+    return null;
+  }
+
+  function resetToFallbackCollections(){
+    PRODUCTS = deepClone(FALLBACK_PRODUCTS);
+    BOOKS = deepClone(FALLBACK_BOOKS);
+    ARTWORKS = deepClone(FALLBACK_ARTWORKS);
+    SCULPTURES = deepClone(FALLBACK_SCULPTURES);
+    refreshDerivedCollections();
+  }
+
+  function applyDatabaseRows(rows){
+    if(!Array.isArray(rows) || rows.length === 0){
+      resetToFallbackCollections();
+      return;
+    }
+    const furniture = [];
+    const books = [];
+    const artworks = [];
+    const sculptures = [];
+    rows.forEach(row => {
+      const mapped = mapProductRow(row);
+      if(!mapped) return;
+      if(mapped.bucket === "furniture") furniture.push(mapped.item);
+      if(mapped.bucket === "books") books.push(mapped.item);
+      if(mapped.bucket === "art") artworks.push(mapped.item);
+      if(mapped.bucket === "sculpture") sculptures.push(mapped.item);
+    });
+    PRODUCTS = furniture;
+    BOOKS = books;
+    ARTWORKS = artworks;
+    SCULPTURES = sculptures;
+    refreshDerivedCollections();
+  }
+
+  function rerenderVisibleCollections(){
+    if(currentGallery === "furniture") renderFurniture();
+    if(currentGallery === "books") renderBooks();
+    if(currentGallery === "art") renderArt();
+    if(currentGallery === "designs" && galleryEmpty){
+      const titleEl = galleryEmpty.querySelector(".gallery-empty-title");
+      if(titleEl) titleEl.textContent = "Photography collection coming soon";
+    }
+    renderArtists();
+  }
+
+  async function loadCatalogFromSupabase(){
+    if(!supabaseClient) return false;
+    const { data, error } = await supabaseClient
+      .from("products")
+      .select("*")
+      .eq("status", "active")
+      .order("sort_order", { ascending:true })
+      .order("created_at", { ascending:true });
+    if(error){
+      console.warn("Supabase load failed:", error.message);
+      return false;
+    }
+    applyDatabaseRows(data || []);
+    return true;
+  }
+
+  function setAdminAuthStatus(text, isError){
+    if(!adminAuthStatus) return;
+    adminAuthStatus.textContent = text;
+    adminAuthStatus.style.color = isError ? "#b03333" : "#555";
+  }
+
+  function setAdminSaveStatus(text, isError){
+    if(!adminSaveStatus) return;
+    adminSaveStatus.textContent = text;
+    adminSaveStatus.style.color = isError ? "#b03333" : "#555";
+  }
+
+  async function checkAdminAuthorization(session){
+    const email = ((session && session.user && session.user.email) || "").toLowerCase();
+    if(!email) return false;
+    if(email === DEFAULT_ADMIN_EMAIL.toLowerCase()) return true;
+    if(!supabaseClient) return false;
+    try{
+      const { data, error } = await supabaseClient
+        .from("admin_users")
+        .select("email")
+        .eq("email", email)
+        .maybeSingle();
+      if(error){
+        console.warn("Admin table check skipped:", error.message);
+        return false;
+      }
+      return !!data;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function setAdminFieldVisibility(){
+    const type = adminGalleryType ? adminGalleryType.value : "furniture";
+    if(adminBooksFields) adminBooksFields.hidden = type !== "books";
+    if(adminFurnitureFields) adminFurnitureFields.hidden = type !== "furniture";
+    if(adminArtFields) adminArtFields.hidden = !(type === "art" || type === "sculpture");
+  }
+
+  function clearAdminForm(){
+    if(adminProductId) adminProductId.value = "";
+    if(adminName) adminName.value = "";
+    if(adminCategory) adminCategory.value = "";
+    if(adminSortOrder) adminSortOrder.value = "0";
+    if(adminArtistName) adminArtistName.value = "";
+    if(adminArtistRole) adminArtistRole.value = "";
+    if(adminArtistImageUrl) adminArtistImageUrl.value = "";
+    if(adminArtistBio) adminArtistBio.value = "";
+    if(adminCoverImageUrl) adminCoverImageUrl.value = "";
+    if(adminModelUrl) adminModelUrl.value = "";
+    if(adminImagesInput) adminImagesInput.value = "";
+    if(adminTheme) adminTheme.value = "";
+    if(adminColor) adminColor.value = "";
+    if(adminSize) adminSize.value = "";
+    if(adminTag) adminTag.value = "";
+    if(adminKicker) adminKicker.value = "";
+    if(adminMaterial) adminMaterial.value = "";
+    if(adminDimensions) adminDimensions.value = "";
+    if(adminStoreName) adminStoreName.value = "";
+    if(adminStoreLng) adminStoreLng.value = "";
+    if(adminStoreLat) adminStoreLat.value = "";
+    if(adminMedium) adminMedium.value = "";
+    if(adminPeriod) adminPeriod.value = "";
+    if(adminArtMaterial) adminArtMaterial.value = "";
+    if(adminEra) adminEra.value = "";
+    if(adminYear) adminYear.value = "";
+    if(adminRating) adminRating.value = "";
+    if(adminRatingCount) adminRatingCount.value = "";
+    if(adminBasePrice) adminBasePrice.value = "";
+    if(adminCoverUpload) adminCoverUpload.value = "";
+    if(adminImagesUpload) adminImagesUpload.value = "";
+    if(adminModelUpload) adminModelUpload.value = "";
+    adminSelectedId = null;
+    if(adminGalleryType) adminGalleryType.value = "furniture";
+    setAdminFieldVisibility();
+    setAdminSaveStatus("Ready", false);
+  }
+
+  function fillAdminForm(record){
+    if(!record) return;
+    adminSelectedId = record.id;
+    if(adminProductId) adminProductId.value = record.id || "";
+    if(adminGalleryType) adminGalleryType.value = record.gallery_type || "furniture";
+    if(adminName) adminName.value = record.name || "";
+    if(adminCategory) adminCategory.value = record.category || "";
+    if(adminSortOrder) adminSortOrder.value = String(record.sort_order || 0);
+    if(adminArtistName) adminArtistName.value = record.artist_name || "";
+    if(adminArtistRole) adminArtistRole.value = record.artist_role || "";
+    if(adminArtistImageUrl) adminArtistImageUrl.value = record.artist_image_url || "";
+    if(adminArtistBio) adminArtistBio.value = record.artist_bio || "";
+    if(adminCoverImageUrl) adminCoverImageUrl.value = record.image_url || "";
+    if(adminModelUrl) adminModelUrl.value = record.model_url || "";
+    if(adminImagesInput) adminImagesInput.value = parseMediaImagesValue(record.media_images).join("\n");
+    if(adminTheme) adminTheme.value = record.theme || "";
+    if(adminColor) adminColor.value = record.color || "";
+    if(adminSize) adminSize.value = record.size || "";
+    if(adminTag) adminTag.value = record.tag || "";
+    if(adminKicker) adminKicker.value = record.kicker || "";
+    if(adminMaterial) adminMaterial.value = record.material || "";
+    if(adminDimensions) adminDimensions.value = record.dimensions || "";
+    if(adminStoreName) adminStoreName.value = record.store_name || "";
+    if(adminStoreLng) adminStoreLng.value = record.store_lng ?? "";
+    if(adminStoreLat) adminStoreLat.value = record.store_lat ?? "";
+    if(adminMedium) adminMedium.value = record.medium || "";
+    if(adminPeriod) adminPeriod.value = record.period || "";
+    if(adminArtMaterial) adminArtMaterial.value = record.material || "";
+    if(adminEra) adminEra.value = record.era || "";
+    if(adminYear) adminYear.value = record.year ?? "";
+    if(adminRating) adminRating.value = record.rating ?? "";
+    if(adminRatingCount) adminRatingCount.value = record.rating_count || "";
+    if(adminBasePrice) adminBasePrice.value = record.base_price ?? "";
+    setAdminFieldVisibility();
+    setAdminSaveStatus("Editing selected product", false);
+  }
+
+  function buildAdminListItem(record){
+    const item = document.createElement("div");
+    item.className = "admin-item" + (adminSelectedId === record.id ? " active" : "");
+
+    const left = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "admin-item-name";
+    name.textContent = record.name || "Untitled";
+    const meta = document.createElement("div");
+    meta.className = "admin-item-meta";
+    meta.textContent = `${record.gallery_type || "type"} · ${record.status || "active"}`;
+    left.appendChild(name);
+    left.appendChild(meta);
+
+    const actions = document.createElement("div");
+    actions.className = "admin-item-actions";
+    const editBtn = document.createElement("button");
+    editBtn.className = "admin-item-btn";
+    editBtn.type = "button";
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fillAdminForm(record);
+      renderAdminProductList();
+    });
+    const delBtn = document.createElement("button");
+    delBtn.className = "admin-item-btn";
+    delBtn.type = "button";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await deleteAdminProduct(record.id);
+    });
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    item.appendChild(left);
+    item.appendChild(actions);
+    item.addEventListener("click", () => {
+      fillAdminForm(record);
+      renderAdminProductList();
+    });
+    return item;
+  }
+
+  function renderAdminProductList(){
+    if(!adminProductList) return;
+    adminProductList.innerHTML = "";
+    const typeFilter = adminTypeFilter ? adminTypeFilter.value : "all";
+    const list = typeFilter === "all"
+      ? adminRows
+      : adminRows.filter(row => row.gallery_type === typeFilter);
+    list.forEach(record => adminProductList.appendChild(buildAdminListItem(record)));
+  }
+
+  async function loadAdminRows(){
+    if(!supabaseClient || !adminAuthorized) return;
+    const { data, error } = await supabaseClient
+      .from("products")
+      .select("*")
+      .order("sort_order", { ascending:true })
+      .order("created_at", { ascending:true });
+    if(error){
+      setAdminSaveStatus(`Load failed: ${error.message}`, true);
+      return;
+    }
+    adminRows = data || [];
+    renderAdminProductList();
+  }
+
+  async function uploadAsset(file, folder, productId){
+    if(!supabaseClient || !file) return "";
+    const cleanName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `${folder}/${productId}/${Date.now()}-${cleanName}`;
+    const { error } = await supabaseClient.storage.from(ADMIN_BUCKET).upload(path, file, { upsert:true });
+    if(error) throw error;
+    const { data } = supabaseClient.storage.from(ADMIN_BUCKET).getPublicUrl(path);
+    return (data && data.publicUrl) ? data.publicUrl : "";
+  }
+
+  function getAdminInputValue(el){
+    return el ? String(el.value || "").trim() : "";
+  }
+
+  function buildAdminPayload(existing){
+    const nowType = getAdminInputValue(adminGalleryType) || "furniture";
+    const id = (existing && existing.id) || getAdminInputValue(adminProductId) || generateUuid();
+    const legacyId = (existing && existing.legacy_id) || id;
+    const payload = {
+      id,
+      legacy_id: legacyId,
+      gallery_type: nowType,
+      status: "active",
+      sort_order: toOptionalNumber(getAdminInputValue(adminSortOrder)) ?? 0,
+      name: getAdminInputValue(adminName),
+      category: getAdminInputValue(adminCategory) || null,
+      artist_name: getAdminInputValue(adminArtistName) || null,
+      artist_role: getAdminInputValue(adminArtistRole) || null,
+      artist_image_url: getAdminInputValue(adminArtistImageUrl) || null,
+      artist_bio: getAdminInputValue(adminArtistBio) || null,
+      image_url: getAdminInputValue(adminCoverImageUrl) || null,
+      model_url: getAdminInputValue(adminModelUrl) || null,
+      media_images: uniqueUrlList(parseMediaImagesValue(getAdminInputValue(adminImagesInput))),
+      theme: null,
+      color: null,
+      size: null,
+      tag: null,
+      kicker: null,
+      material: null,
+      dimensions: null,
+      store_name: null,
+      store_lng: null,
+      store_lat: null,
+      medium: null,
+      period: null,
+      era: null,
+      year: null,
+      rating: null,
+      rating_count: null,
+      base_price: null
+    };
+
+    if(nowType === "books"){
+      payload.theme = getAdminInputValue(adminTheme) || null;
+      payload.color = getAdminInputValue(adminColor) || null;
+      payload.size = getAdminInputValue(adminSize) || null;
+      payload.tag = getAdminInputValue(adminTag) || null;
+      payload.kicker = getAdminInputValue(adminKicker) || null;
+      payload.base_price = toOptionalNumber(getAdminInputValue(adminBasePrice));
+    }
+
+    if(nowType === "furniture"){
+      payload.material = getAdminInputValue(adminMaterial) || null;
+      payload.dimensions = getAdminInputValue(adminDimensions) || null;
+      payload.store_name = getAdminInputValue(adminStoreName) || null;
+      payload.store_lng = toOptionalNumber(getAdminInputValue(adminStoreLng));
+      payload.store_lat = toOptionalNumber(getAdminInputValue(adminStoreLat));
+    }
+
+    if(nowType === "art" || nowType === "sculpture"){
+      payload.medium = getAdminInputValue(adminMedium) || null;
+      payload.period = getAdminInputValue(adminPeriod) || null;
+      payload.material = getAdminInputValue(adminArtMaterial) || null;
+      payload.era = getAdminInputValue(adminEra) || null;
+      payload.year = toOptionalNumber(getAdminInputValue(adminYear));
+      payload.rating = toOptionalNumber(getAdminInputValue(adminRating));
+      payload.rating_count = getAdminInputValue(adminRatingCount) || null;
+      payload.base_price = toOptionalNumber(getAdminInputValue(adminBasePrice));
+    }
+
+    return payload;
+  }
+
+  async function saveAdminProduct(){
+    if(!supabaseClient || !adminAuthorized){
+      setAdminSaveStatus("Admin access required", true);
+      return;
+    }
+    const current = adminRows.find(row => row.id === adminSelectedId) || null;
+    const payload = buildAdminPayload(current);
+    if(!payload.name){
+      setAdminSaveStatus("Product name is required", true);
+      return;
+    }
+
+    try{
+      setAdminSaveStatus("Uploading assets...", false);
+      if(adminCoverUpload && adminCoverUpload.files && adminCoverUpload.files[0]){
+        payload.image_url = await uploadAsset(adminCoverUpload.files[0], "images", payload.id);
+      }
+      if(adminModelUpload && adminModelUpload.files && adminModelUpload.files[0]){
+        payload.model_url = await uploadAsset(adminModelUpload.files[0], "models", payload.id);
+      }
+      if(adminImagesUpload && adminImagesUpload.files && adminImagesUpload.files.length){
+        const uploaded = [];
+        const files = Array.from(adminImagesUpload.files);
+        for(const file of files){
+          const url = await uploadAsset(file, "gallery", payload.id);
+          if(url) uploaded.push(url);
+        }
+        payload.media_images = uniqueUrlList((payload.media_images || []).concat(uploaded));
+      }
+    }catch(e){
+      setAdminSaveStatus(`Upload failed: ${e.message || e}`, true);
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .upsert(payload, { onConflict:"id" })
+      .select("*")
+      .single();
+    if(error){
+      setAdminSaveStatus(`Save failed: ${error.message}`, true);
+      return;
+    }
+    adminSelectedId = data.id;
+    setAdminSaveStatus("Saved", false);
+    await loadAdminRows();
+    await loadCatalogFromSupabase();
+    rerenderVisibleCollections();
+    fillAdminForm(data);
+  }
+
+  async function deleteAdminProduct(id){
+    if(!supabaseClient || !adminAuthorized || !id) return;
+    const allow = window.confirm("Delete this product?");
+    if(!allow) return;
+    const { error } = await supabaseClient.from("products").delete().eq("id", id);
+    if(error){
+      setAdminSaveStatus(`Delete failed: ${error.message}`, true);
+      return;
+    }
+    if(adminSelectedId === id) clearAdminForm();
+    setAdminSaveStatus("Deleted", false);
+    await loadAdminRows();
+    await loadCatalogFromSupabase();
+    rerenderVisibleCollections();
+  }
+
+  function buildSeedRows(){
+    const rows = [];
+    FALLBACK_PRODUCTS.forEach((p, idx) => {
+      rows.push({
+        legacy_id: p.id,
+        gallery_type: "furniture",
+        status: "active",
+        sort_order: idx,
+        name: p.name,
+        category: p.category || null,
+        artist_name: p.artist && p.artist.name ? p.artist.name : null,
+        artist_role: p.artist && p.artist.role ? p.artist.role : null,
+        artist_image_url: p.artist && p.artist.img ? p.artist.img : null,
+        artist_bio: p.artist && p.artist.bio ? p.artist.bio : null,
+        image_url: p.img || null,
+        model_url: p.model || null,
+        media_images: uniqueUrlList(p.images || []),
+        material: p.specs && p.specs.mat ? p.specs.mat : null,
+        dimensions: p.specs && p.specs.dim ? p.specs.dim : null,
+        store_name: p.store && p.store.name ? p.store.name : null,
+        store_lng: p.store && p.store.coords ? p.store.coords[0] : null,
+        store_lat: p.store && p.store.coords ? p.store.coords[1] : null
+      });
+    });
+
+    FALLBACK_BOOKS.forEach((b, idx) => {
+      rows.push({
+        legacy_id: b.id,
+        gallery_type: "books",
+        status: "active",
+        sort_order: idx,
+        name: b.name,
+        image_url: b.img || null,
+        media_images: uniqueUrlList(b.images || []),
+        theme: b.theme || null,
+        color: b.color || null,
+        size: b.size || null,
+        tag: b.tag || null,
+        kicker: b.kicker || null,
+        base_price: toOptionalNumber(b.priceValue)
+      });
+    });
+
+    FALLBACK_ARTWORKS.forEach((a, idx) => {
+      rows.push({
+        legacy_id: a.id,
+        gallery_type: "art",
+        status: "active",
+        sort_order: idx,
+        name: a.name,
+        artist_name: a.artist || null,
+        image_url: a.img || null,
+        model_url: a.model || null,
+        media_images: uniqueUrlList(a.images || []),
+        medium: a.medium || null,
+        period: a.period || null,
+        year: toOptionalNumber(a.year),
+        rating: toOptionalNumber(a.rating),
+        rating_count: a.ratingCount || null,
+        base_price: toOptionalNumber(a.basePrice)
+      });
+    });
+
+    FALLBACK_SCULPTURES.forEach((s, idx) => {
+      rows.push({
+        legacy_id: s.id,
+        gallery_type: "sculpture",
+        status: "active",
+        sort_order: idx,
+        name: s.name,
+        artist_name: s.artist || null,
+        image_url: s.img || null,
+        model_url: s.model || null,
+        media_images: uniqueUrlList(s.images || []),
+        medium: s.medium || null,
+        period: s.period || null,
+        era: s.era || null,
+        material: s.material || null,
+        year: toOptionalNumber(s.year),
+        rating: toOptionalNumber(s.rating),
+        rating_count: s.ratingCount || null,
+        base_price: toOptionalNumber(s.basePrice)
+      });
+    });
+
+    return rows;
+  }
+
+  async function seedSupabaseFromFallback(){
+    if(!supabaseClient || !adminAuthorized){
+      setAdminSaveStatus("Admin access required", true);
+      return;
+    }
+    const rows = buildSeedRows();
+    if(!rows.length){
+      setAdminSaveStatus("No seed data found", true);
+      return;
+    }
+    setAdminSaveStatus("Seeding products...", false);
+    const { error } = await supabaseClient.from("products").upsert(rows, { onConflict:"legacy_id" });
+    if(error){
+      setAdminSaveStatus(`Seed failed: ${error.message}`, true);
+      return;
+    }
+    setAdminSaveStatus("Seed completed", false);
+    await loadAdminRows();
+    await loadCatalogFromSupabase();
+    rerenderVisibleCollections();
+  }
+
+  function updateAdminViewState(){
+    if(adminUserEmail){
+      const email = adminSession && adminSession.user ? adminSession.user.email : "";
+      adminUserEmail.textContent = email || "Not signed in";
+    }
+    if(adminAuthCard) adminAuthCard.hidden = !!adminSession && adminAuthorized;
+    if(adminPanel) adminPanel.hidden = !adminAuthorized;
+  }
+
+  async function handleAdminSession(session){
+    adminSession = session || null;
+    adminAuthorized = await checkAdminAuthorization(adminSession);
+    if(!adminSession){
+      setAdminAuthStatus("Not signed in", false);
+      updateAdminViewState();
+      return;
+    }
+    if(!adminAuthorized){
+      setAdminAuthStatus("Signed in but not authorized as admin", true);
+      updateAdminViewState();
+      return;
+    }
+    setAdminAuthStatus("Authenticated", false);
+    updateAdminViewState();
+    await loadAdminRows();
+  }
+
+  async function initSupabaseAuth(){
+    if(!supabaseClient){
+      setAdminAuthStatus("Supabase client not available", true);
+      return;
+    }
+    const { data } = await supabaseClient.auth.getSession();
+    await handleAdminSession(data ? data.session : null);
+    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      await handleAdminSession(session);
+    });
+  }
 
   function renderCards(list, options){
     if(!grid) return;
@@ -5320,7 +6460,7 @@
     const fs = document.getElementById("formSubject");
     if(fs) fs.value = "Inquiry: " + (b.name || "Book");
 
-    renderActiveMedia({ ...b, images:[b.img] }, 'images');
+    renderActiveMedia({ ...b, images:(b.images && b.images.length ? b.images : [b.img]) }, 'images');
   }
 
   function closeBook(){
@@ -5416,7 +6556,7 @@
     if(fs) fs.value = "Inquiry: " + (a.name || "Artwork");
 
     updateArtUI();
-    renderActiveMedia({ ...a, images:[a.img] }, 'images');
+    renderActiveMedia({ ...a, images:(a.images && a.images.length ? a.images : [a.img]) }, 'images');
   }
 
   function closeArt(){
@@ -5505,7 +6645,7 @@
     if(fs) fs.value = "Inquiry: " + (s.name || "Sculpture");
 
     updateSculptureUI();
-    renderActiveMedia({ ...s, images:[s.img] }, 'images');
+    renderActiveMedia({ ...s, images:(s.images && s.images.length ? s.images : [s.img]) }, 'images');
   }
 
   function closeSculpture(){
@@ -6006,10 +7146,16 @@
     requestAnimationFrame(tick);
   }
 
-  (function init(){
+  (async function init(){
     // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
     renderArtists();
+    setAdminFieldVisibility();
+    clearAdminForm();
+    updateAdminViewState();
+    await loadCatalogFromSupabase();
+    rerenderVisibleCollections();
+    await initSupabaseAuth();
 
     // Default active nav = Home
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
