@@ -4246,57 +4246,73 @@
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  mapboxgl.accessToken = MAPBOX_TOKEN;
+  const isAdminOnlyPage = document.body.classList.contains("admin-page");
   const isMobile = window.innerWidth < 900;
   const startZoom = isMobile ? 0 : 0.8;
-
-  const map = new mapboxgl.Map({
-    container: "map",
-    style: USER_STYLE,
-    center: [0, 20],
-    zoom: startZoom,
-    pitch: 0,
-    projection: 'globe'
+  const createMapStub = () => ({
+    on: () => {},
+    once: () => {},
+    flyTo: () => {},
+    getBearing: () => 0,
+    getStyle: () => ({ layers: [] }),
+    getLayer: () => null,
+    getSource: () => null,
+    setFog: () => {},
+    addLayer: () => {}
   });
+  let map = createMapStub();
 
-  map.on('style.load', () => {
-    try {
-      map.setFog({
-        'color': 'rgb(255, 255, 255)',
-        'high-color': 'rgb(200, 200, 200)',
-        'space-color': 'rgb(0, 0, 0)',
-        'star-intensity': 0.6
-      });
-    } catch(e){}
+  if(!isAdminOnlyPage){
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    map = new mapboxgl.Map({
+      container: "map",
+      style: USER_STYLE,
+      center: [0, 20],
+      zoom: startZoom,
+      pitch: 0,
+      projection: 'globe'
+    });
 
-    const layers = map.getStyle().layers || [];
-    let labelLayerId;
-    for (const layer of layers) {
-      if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
-        labelLayerId = layer.id;
-        break;
-      }
-    }
-
-    if (!map.getLayer('3d-buildings-custom')) {
-      try{
-        map.addLayer({
-          'id': '3d-buildings-custom',
-          'source': 'composite',
-          'source-layer': 'building',
-          'filter': ['==', 'extrude', 'true'],
-          'type': 'fill-extrusion',
-          'minzoom': 15,
-          'paint': {
-            'fill-extrusion-color': '#aaa',
-            'fill-extrusion-height': ['get', 'height'],
-            'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 0.6
-          }
-        }, labelLayerId);
+    map.on('style.load', () => {
+      try {
+        map.setFog({
+          'color': 'rgb(255, 255, 255)',
+          'high-color': 'rgb(200, 200, 200)',
+          'space-color': 'rgb(0, 0, 0)',
+          'star-intensity': 0.6
+        });
       } catch(e){}
-    }
-  });
+
+      const layers = (map.getStyle() && map.getStyle().layers) || [];
+      let labelLayerId;
+      for (const layer of layers) {
+        if (layer.type === 'symbol' && layer.layout && layer.layout['text-field']) {
+          labelLayerId = layer.id;
+          break;
+        }
+      }
+
+      const hasCompositeSource = !!map.getSource('composite');
+      if (hasCompositeSource && !map.getLayer('3d-buildings-custom')) {
+        try{
+          map.addLayer({
+            'id': '3d-buildings-custom',
+            'source': 'composite',
+            'source-layer': 'building',
+            'filter': ['==', 'extrude', 'true'],
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+              'fill-extrusion-color': '#aaa',
+              'fill-extrusion-height': ['get', 'height'],
+              'fill-extrusion-base': ['get', 'min_height'],
+              'fill-extrusion-opacity': 0.6
+            }
+          }, labelLayerId);
+        } catch(e){}
+      }
+    });
+  }
 
   window.switchSection = function(id){
     document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active-section'));
