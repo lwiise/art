@@ -5774,20 +5774,39 @@
       return;
     }
 
+    const upsertProduct = (timeoutMs, timeoutMessage) => withTimeout(
+      supabaseClient
+        .from("products")
+        .upsert(payload, { onConflict:"id" })
+        .select("*")
+        .single(),
+      timeoutMs,
+      timeoutMessage
+    );
+
     let saveResult;
     try{
-      saveResult = await withTimeout(
-        supabaseClient
-          .from("products")
-          .upsert(payload, { onConflict:"id" })
-          .select("*")
-          .single(),
-        30000,
-        "Save timed out. Check Supabase connection and try again."
+      saveResult = await upsertProduct(
+        45000,
+        "Save timed out. Supabase may be waking up. Retrying..."
       );
     }catch(e){
-      setAdminSaveStatus(`Save failed: ${e.message || e}`, true);
-      return;
+      const firstMsg = String(e && e.message ? e.message : e);
+      if(firstMsg.toLowerCase().includes("timed out")){
+        setAdminSaveStatus("Waking Supabase... retrying save.", false);
+        try{
+          saveResult = await upsertProduct(
+            120000,
+            "Save timed out after retry. Check Supabase project status and network."
+          );
+        }catch(e2){
+          setAdminSaveStatus(`Save failed: ${e2.message || e2}`, true);
+          return;
+        }
+      }else{
+        setAdminSaveStatus(`Save failed: ${firstMsg}`, true);
+        return;
+      }
     }
 
     const { data, error } = saveResult || {};
@@ -5802,12 +5821,12 @@
       }
       return;
     }
-    adminSelectedId = data.id;
+    adminSelectedId = (data && data.id) ? data.id : payload.id;
     setAdminSaveStatus("Saved", false);
     await loadAdminRows();
     await loadCatalogFromSupabase();
     rerenderVisibleCollections();
-    fillAdminForm(data);
+    fillAdminForm(data || payload);
   }
 
   async function deleteAdminProduct(id){
