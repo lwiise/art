@@ -4406,16 +4406,33 @@
       setAdminAuthStatus("Enter your password", true);
       return;
     }
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if(error){
       setAdminAuthStatus(`Login failed: ${error.message}`, true);
       return;
     }
+    await handleAdminSession(data ? data.session : null);
     setAdminAuthStatus("Logged in", false);
   });
   safeAdd('adminLogoutBtn','click',async () => {
     if(!supabaseClient) return;
-    await supabaseClient.auth.signOut();
+    let { error } = await supabaseClient.auth.signOut({ scope:"global" });
+    if(error){
+      const fallback = await supabaseClient.auth.signOut({ scope:"local" });
+      error = fallback.error || null;
+    }
+    if(error){
+      setAdminAuthStatus(`Logout failed: ${error.message}`, true);
+      return;
+    }
+    adminSession = null;
+    adminAuthorized = false;
+    adminRows = [];
+    adminSelectedId = null;
+    renderAdminProductList();
+    updateAdminViewState();
+    setAdminAuthStatus("Signed out", false);
+    if(adminPassword) adminPassword.value = "";
     clearAdminForm();
   });
   safeAdd('adminEmail','keydown',(e) => {
@@ -5531,7 +5548,12 @@
       .order("sort_order", { ascending:true })
       .order("created_at", { ascending:true });
     if(error){
-      setAdminSaveStatus(`Load failed: ${error.message}`, true);
+      const msg = String(error.message || "");
+      if(msg.toLowerCase().includes("does not exist")){
+        setAdminSaveStatus("Load failed: 'products' table missing. Run supabase/schema.sql.", true);
+      }else{
+        setAdminSaveStatus(`Load failed: ${msg}`, true);
+      }
       return;
     }
     adminRows = data || [];
@@ -5543,7 +5565,16 @@
     const cleanName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
     const path = `${folder}/${productId}/${Date.now()}-${cleanName}`;
     const { error } = await supabaseClient.storage.from(ADMIN_BUCKET).upload(path, file, { upsert:true });
-    if(error) throw error;
+    if(error){
+      const msg = String(error.message || error || "");
+      if(msg.toLowerCase().includes("bucket") || msg.toLowerCase().includes("not found")){
+        throw new Error(`Storage bucket '${ADMIN_BUCKET}' is missing. Run supabase/schema.sql in SQL editor.`);
+      }
+      if(msg.toLowerCase().includes("row-level security") || msg.toLowerCase().includes("permission")){
+        throw new Error(`Storage permission denied. Add your email to public.admin_users and run supabase/schema.sql policies.`);
+      }
+      throw new Error(msg || "Storage upload failed");
+    }
     const { data } = supabaseClient.storage.from(ADMIN_BUCKET).getPublicUrl(path);
     return (data && data.publicUrl) ? data.publicUrl : "";
   }
@@ -5661,7 +5692,14 @@
       .select("*")
       .single();
     if(error){
-      setAdminSaveStatus(`Save failed: ${error.message}`, true);
+      const msg = String(error.message || "");
+      if(msg.toLowerCase().includes("row-level security")){
+        setAdminSaveStatus("Save failed: permission denied. Add your email to public.admin_users.", true);
+      }else if(msg.toLowerCase().includes("does not exist")){
+        setAdminSaveStatus("Save failed: 'products' table missing. Run supabase/schema.sql.", true);
+      }else{
+        setAdminSaveStatus(`Save failed: ${msg}`, true);
+      }
       return;
     }
     adminSelectedId = data.id;
