@@ -1439,45 +1439,6 @@
     background:#f7f7f7;
     font-size:14px;
   }
-  .book-filter-group{
-    border-bottom:1px solid #e9e9e9;
-  }
-  .book-filter-toggle{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:none;
-    border:none;
-    padding:16px 0;
-    font-size:13px;
-    font-weight:800;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    cursor:pointer;
-  }
-  .book-filter-toggle span{
-    transition:transform .2s ease;
-  }
-  .book-filter-toggle.open span{
-    transform:rotate(180deg);
-  }
-  .book-filter-options{
-    display:none;
-    padding-bottom:16px;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .book-filter-options.open{
-    display:flex;
-  }
-  .book-filter-options label{
-    font-size:12px;
-    color:#444;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
   .book-filter-actions{
     display:flex;
     align-items:center;
@@ -3596,40 +3557,37 @@
             </select>
           </div>
 
-          <div class="book-filter-group">
-            <button class="book-filter-toggle" type="button" data-target="bookFilterThemes">
-              Themes <span>▾</span>
-            </button>
-            <div class="book-filter-options" id="bookFilterThemes">
-              <label><input type="checkbox" value="Heritage"> Heritage</label>
-              <label><input type="checkbox" value="Pilgrimage"> Pilgrimage</label>
-              <label><input type="checkbox" value="Architecture"> Architecture</label>
-              <label><input type="checkbox" value="Travel"> Travel</label>
-              <label><input type="checkbox" value="Culture"> Culture</label>
-            </div>
+          <div class="book-filter-row">
+            <label for="bookThemeSelect">Themes:</label>
+            <select id="bookThemeSelect">
+              <option value="">All Themes</option>
+              <option value="Heritage">Heritage</option>
+              <option value="Pilgrimage">Pilgrimage</option>
+              <option value="Architecture">Architecture</option>
+              <option value="Travel">Travel</option>
+              <option value="Culture">Culture</option>
+            </select>
           </div>
 
-          <div class="book-filter-group">
-            <button class="book-filter-toggle" type="button" data-target="bookFilterColors">
-              Color <span>▾</span>
-            </button>
-            <div class="book-filter-options" id="bookFilterColors">
-              <label><input type="checkbox" value="Warm"> Warm</label>
-              <label><input type="checkbox" value="Cool"> Cool</label>
-              <label><input type="checkbox" value="Neutral"> Neutral</label>
-              <label><input type="checkbox" value="Bold"> Bold</label>
-            </div>
+          <div class="book-filter-row">
+            <label for="bookColorSelect">Color:</label>
+            <select id="bookColorSelect">
+              <option value="">All Colors</option>
+              <option value="Warm">Warm</option>
+              <option value="Cool">Cool</option>
+              <option value="Neutral">Neutral</option>
+              <option value="Bold">Bold</option>
+            </select>
           </div>
 
-          <div class="book-filter-group">
-            <button class="book-filter-toggle" type="button" data-target="bookFilterSizes">
-              Size <span>▾</span>
-            </button>
-            <div class="book-filter-options" id="bookFilterSizes">
-              <label><input type="checkbox" value="Compact"> Compact</label>
-              <label><input type="checkbox" value="Classic"> Classic</label>
-              <label><input type="checkbox" value="Large"> Large</label>
-            </div>
+          <div class="book-filter-row">
+            <label for="bookSizeSelect">Size:</label>
+            <select id="bookSizeSelect">
+              <option value="">All Sizes</option>
+              <option value="Compact">Compact</option>
+              <option value="Classic">Classic</option>
+              <option value="Large">Large</option>
+            </select>
           </div>
 
           <div class="book-filter-actions">
@@ -4578,6 +4536,9 @@
   const bookFilterModal = document.getElementById("bookFilterModal");
   const bookFilterClose = document.getElementById("bookFilterClose");
   const bookSortSelect = document.getElementById("bookSortSelect");
+  const bookThemeSelect = document.getElementById("bookThemeSelect");
+  const bookColorSelect = document.getElementById("bookColorSelect");
+  const bookSizeSelect = document.getElementById("bookSizeSelect");
   const bookFilterClear = document.getElementById("bookFilterClear");
   const bookFilterApply = document.getElementById("bookFilterApply");
   const artFilterBar = document.getElementById("artFilterBar");
@@ -5826,6 +5787,11 @@
     return new Set(Array.from(wrap.querySelectorAll("input:checked")).map(i => i.value));
   }
 
+  function selectValueSet(selectEl){
+    if(!selectEl || !selectEl.value) return new Set();
+    return new Set([selectEl.value]);
+  }
+
   if(bookFilterBtn) bookFilterBtn.addEventListener("click", openBookFilterModal);
   if(bookFilterClose) bookFilterClose.addEventListener("click", closeBookFilterModal);
   if(bookFilterModal){
@@ -5834,23 +5800,12 @@
     });
   }
 
-  document.querySelectorAll(".book-filter-toggle").forEach(btn => {
-    if(btn.dataset.bound === "1") return;
-    btn.dataset.bound = "1";
-    btn.addEventListener("click", () => {
-      btn.classList.toggle("open");
-      const targetId = btn.getAttribute("data-target");
-      const panel = targetId ? document.getElementById(targetId) : null;
-      if(panel) panel.classList.toggle("open");
-    });
-  });
-
   if(bookFilterClear){
     bookFilterClear.addEventListener("click", () => {
       if(bookSortSelect) bookSortSelect.value = "featured";
-      if(bookFilterModal){
-        bookFilterModal.querySelectorAll("input[type='checkbox']").forEach(cb => { cb.checked = false; });
-      }
+      if(bookThemeSelect) bookThemeSelect.value = "";
+      if(bookColorSelect) bookColorSelect.value = "";
+      if(bookSizeSelect) bookSizeSelect.value = "";
       bookFilterState.sort = "featured";
       bookFilterState.themes = new Set();
       bookFilterState.colors = new Set();
@@ -5862,9 +5817,9 @@
   if(bookFilterApply){
     bookFilterApply.addEventListener("click", () => {
       bookFilterState.sort = bookSortSelect ? bookSortSelect.value : "featured";
-      bookFilterState.themes = collectFilterSet("bookFilterThemes");
-      bookFilterState.colors = collectFilterSet("bookFilterColors");
-      bookFilterState.sizes = collectFilterSet("bookFilterSizes");
+      bookFilterState.themes = selectValueSet(bookThemeSelect);
+      bookFilterState.colors = selectValueSet(bookColorSelect);
+      bookFilterState.sizes = selectValueSet(bookSizeSelect);
       renderBooks();
       closeBookFilterModal();
     });
