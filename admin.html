@@ -4007,7 +4007,7 @@
           <div class="admin-head">
             <a class="btn btn-ghost admin-mini-btn" href="index.html">← Back to Website</a>
             <h1 class="sec-title">Admin Panel</h1>
-            <p class="sec-sub">Manage products, upload images/models, and keep filters aligned with Books, Art, Sculptures, and Designs.</p>
+            <p class="sec-sub">Manage products, upload images/models, and keep filters aligned with Art, Designs, Books, and Sculptures.</p>
           </div>
 
           <div class="admin-auth" id="adminAuthCard">
@@ -4045,10 +4045,10 @@
                 </div>
                 <div class="admin-filter-row">
                   <select id="adminTypeFilter" class="form-input">
-                    <option value="all">All Types</option>
+                    <option value="all">All Categories</option>
+                    <option value="art">Art</option>
                     <option value="furniture">Designs</option>
                     <option value="books">Books</option>
-                    <option value="art">Art</option>
                     <option value="sculpture">Sculpture</option>
                   </select>
                 </div>
@@ -4063,9 +4063,17 @@
                     <div class="form-group"><input class="form-input" id="adminName" placeholder="Product Name" /></div>
                     <div class="form-group">
                       <select id="adminGalleryType" class="form-input">
+                        <option value="art">Art</option>
                         <option value="furniture">Designs</option>
                         <option value="books">Books</option>
-                        <option value="art">Art</option>
+                        <option value="sculpture">Sculpture</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="admin-grid two" id="adminArtTypeRow" hidden>
+                    <div class="form-group">
+                      <select id="adminArtType" class="form-input">
+                        <option value="art">Artwork</option>
                         <option value="sculpture">Sculpture</option>
                       </select>
                     </div>
@@ -5093,6 +5101,8 @@
   const adminProductId = document.getElementById("adminProductId");
   const adminName = document.getElementById("adminName");
   const adminGalleryType = document.getElementById("adminGalleryType");
+  const adminArtType = document.getElementById("adminArtType");
+  const adminArtTypeRow = document.getElementById("adminArtTypeRow");
   const adminCategory = document.getElementById("adminCategory");
   const adminSortOrder = document.getElementById("adminSortOrder");
   const adminArtistName = document.getElementById("adminArtistName");
@@ -5163,6 +5173,20 @@
     if(!raw) return null;
     const num = Number(raw);
     return Number.isFinite(num) ? num : null;
+  }
+
+  async function withTimeout(promise, ms, message){
+    let timer = null;
+    try{
+      return await Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(message)), ms);
+        })
+      ]);
+    } finally {
+      if(timer) clearTimeout(timer);
+    }
   }
 
   function generateUuid(){
@@ -5402,11 +5426,20 @@
     }
   }
 
+  function getAdminCategoryLabel(type){
+    if(type === "furniture") return "Designs";
+    if(type === "books") return "Books";
+    if(type === "art") return "Art";
+    if(type === "sculpture") return "Sculpture";
+    return type || "Type";
+  }
+
   function setAdminFieldVisibility(){
     const type = adminGalleryType ? adminGalleryType.value : "furniture";
     if(adminBooksFields) adminBooksFields.hidden = type !== "books";
     if(adminFurnitureFields) adminFurnitureFields.hidden = type !== "furniture";
     if(adminArtFields) adminArtFields.hidden = !(type === "art" || type === "sculpture");
+    if(adminArtTypeRow) adminArtTypeRow.hidden = type !== "art";
   }
 
   function clearAdminForm(){
@@ -5444,6 +5477,7 @@
     if(adminModelUpload) adminModelUpload.value = "";
     adminSelectedId = null;
     if(adminGalleryType) adminGalleryType.value = "furniture";
+    if(adminArtType) adminArtType.value = "art";
     setAdminFieldVisibility();
     setAdminSaveStatus("Ready", false);
   }
@@ -5452,7 +5486,9 @@
     if(!record) return;
     adminSelectedId = record.id;
     if(adminProductId) adminProductId.value = record.id || "";
-    if(adminGalleryType) adminGalleryType.value = record.gallery_type || "furniture";
+    const recType = record.gallery_type || "furniture";
+    if(adminGalleryType) adminGalleryType.value = recType === "sculpture" ? "art" : recType;
+    if(adminArtType) adminArtType.value = recType === "sculpture" ? "sculpture" : "art";
     if(adminName) adminName.value = record.name || "";
     if(adminCategory) adminCategory.value = record.category || "";
     if(adminSortOrder) adminSortOrder.value = String(record.sort_order || 0);
@@ -5495,7 +5531,7 @@
     name.textContent = record.name || "Untitled";
     const meta = document.createElement("div");
     meta.className = "admin-item-meta";
-    meta.textContent = `${record.gallery_type || "type"} · ${record.status || "active"}`;
+    meta.textContent = `${getAdminCategoryLabel(record.gallery_type)} · ${(record.status || "active").toUpperCase()}`;
     left.appendChild(name);
     left.appendChild(meta);
 
@@ -5536,7 +5572,9 @@
     const typeFilter = adminTypeFilter ? adminTypeFilter.value : "all";
     const list = typeFilter === "all"
       ? adminRows
-      : adminRows.filter(row => row.gallery_type === typeFilter);
+      : (typeFilter === "art"
+        ? adminRows.filter(row => row.gallery_type === "art" || row.gallery_type === "sculpture")
+        : adminRows.filter(row => row.gallery_type === typeFilter));
     list.forEach(record => adminProductList.appendChild(buildAdminListItem(record)));
   }
 
@@ -5564,7 +5602,11 @@
     if(!supabaseClient || !file) return "";
     const cleanName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
     const path = `${folder}/${productId}/${Date.now()}-${cleanName}`;
-    const { error } = await supabaseClient.storage.from(ADMIN_BUCKET).upload(path, file, { upsert:true });
+    const { error } = await withTimeout(
+      supabaseClient.storage.from(ADMIN_BUCKET).upload(path, file, { upsert:true }),
+      45000,
+      "Upload timed out. Check your network or file size and try again."
+    );
     if(error){
       const msg = String(error.message || error || "");
       if(msg.toLowerCase().includes("bucket") || msg.toLowerCase().includes("not found")){
@@ -5584,7 +5626,10 @@
   }
 
   function buildAdminPayload(existing){
-    const nowType = getAdminInputValue(adminGalleryType) || "furniture";
+    const selectedType = getAdminInputValue(adminGalleryType) || "furniture";
+    const nowType = selectedType === "art"
+      ? ((getAdminInputValue(adminArtType) === "sculpture") ? "sculpture" : "art")
+      : selectedType;
     const id = (existing && existing.id) || getAdminInputValue(adminProductId) || generateUuid();
     const legacyId = (existing && existing.legacy_id) || id;
     const payload = {
@@ -5663,9 +5708,13 @@
       setAdminSaveStatus("Product name is required", true);
       return;
     }
+    const hasUploads =
+      !!(adminCoverUpload && adminCoverUpload.files && adminCoverUpload.files[0]) ||
+      !!(adminModelUpload && adminModelUpload.files && adminModelUpload.files[0]) ||
+      !!(adminImagesUpload && adminImagesUpload.files && adminImagesUpload.files.length);
+    setAdminSaveStatus(hasUploads ? "Uploading assets..." : "Saving product...", false);
 
     try{
-      setAdminSaveStatus("Uploading assets...", false);
       if(adminCoverUpload && adminCoverUpload.files && adminCoverUpload.files[0]){
         payload.image_url = await uploadAsset(adminCoverUpload.files[0], "images", payload.id);
       }
@@ -5686,11 +5735,23 @@
       return;
     }
 
-    const { data, error } = await supabaseClient
-      .from("products")
-      .upsert(payload, { onConflict:"id" })
-      .select("*")
-      .single();
+    let saveResult;
+    try{
+      saveResult = await withTimeout(
+        supabaseClient
+          .from("products")
+          .upsert(payload, { onConflict:"id" })
+          .select("*")
+          .single(),
+        30000,
+        "Save timed out. Check Supabase connection and try again."
+      );
+    }catch(e){
+      setAdminSaveStatus(`Save failed: ${e.message || e}`, true);
+      return;
+    }
+
+    const { data, error } = saveResult || {};
     if(error){
       const msg = String(error.message || "");
       if(msg.toLowerCase().includes("row-level security")){
