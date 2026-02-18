@@ -3829,44 +3829,123 @@
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
   const SITE_SECTION_KEYS = [
-    "home_welcome",
-    "home_tagline",
-    "home_banner_title",
-    "home_banner_button",
-    "about_title",
-    "about_lead",
-    "about_sublead",
-    "services_title",
-    "services_sub",
-    "process_title",
-    "process_sub",
-    "gallery_title",
-    "gallery_artists_button",
-    "contact_title",
-    "contact_sub",
-    "footer_note",
-    "footer_contact",
-    "footer_copy"
+    "home_welcome","home_tagline","home_banner_title","home_banner_button",
+    "home_slide_1_image","home_slide_2_image","home_slide_3_image",
+    "about_title","about_lead","about_sublead",
+    "about_card_1_meta","about_card_1_title","about_card_1_desc","about_card_1_image",
+    "about_card_2_meta","about_card_2_title","about_card_2_desc","about_card_2_image",
+    "about_card_3_meta","about_card_3_title","about_card_3_desc","about_card_3_image",
+    "services_title","services_sub",
+    "service_1_icon","service_1_title","service_1_desc",
+    "service_2_icon","service_2_title","service_2_desc",
+    "service_3_icon","service_3_title","service_3_desc",
+    "service_4_icon","service_4_title","service_4_desc",
+    "service_5_icon","service_5_title","service_5_desc",
+    "service_6_icon","service_6_title","service_6_desc",
+    "service_7_icon","service_7_title","service_7_desc",
+    "service_8_icon","service_8_title","service_8_desc",
+    "service_9_icon","service_9_title","service_9_desc",
+    "service_10_icon","service_10_title","service_10_desc",
+    "service_11_icon","service_11_title","service_11_desc",
+    "service_12_icon","service_12_title","service_12_desc",
+    "process_title","process_sub",
+    "process_step_1_kicker","process_step_1_title","process_step_1_desc","process_step_1_illus",
+    "process_step_2_kicker","process_step_2_title","process_step_2_desc","process_step_2_illus",
+    "process_step_3_kicker","process_step_3_title","process_step_3_desc","process_step_3_illus",
+    "process_step_4_kicker","process_step_4_title","process_step_4_desc","process_step_4_illus",
+    "process_step_5_kicker","process_step_5_title","process_step_5_desc","process_step_5_illus",
+    "process_step_6_kicker","process_step_6_title","process_step_6_desc","process_step_6_illus",
+    "process_step_7_kicker","process_step_7_title","process_step_7_desc","process_step_7_illus",
+    "process_step_8_kicker","process_step_8_title","process_step_8_desc","process_step_8_illus",
+    "gallery_title","gallery_artists_button",
+    "gallery_tab_art","gallery_tab_designs","gallery_tab_books","gallery_tab_photography",
+    "gallery_filter_all","gallery_filter_cabinets","gallery_filter_sideboards","gallery_filter_decor",
+    "contact_title","contact_sub",
+    "contact_form_name_placeholder","contact_form_email_placeholder","contact_form_subject_placeholder","contact_form_message_placeholder","contact_form_button",
+    "footer_brand","footer_note","footer_contact_title","footer_contact","footer_nav_title","footer_social_title",
+    "footer_nav_home","footer_nav_about","footer_nav_services","footer_nav_gallery","footer_nav_contact",
+    "footer_social_1","footer_social_2","footer_social_3","footer_social_4","footer_copy"
   ];
   const DEFAULT_SITE_CONTENT = {
     home_welcome: "Welcome to",
     home_tagline: "The New Marketplace for Exceptional Art",
     home_banner_title: "Original Art For Sale",
     home_banner_button: "Browse Collection",
+    home_slide_1_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/694d22cb1f8ea86c4b6f1402_Gemini_Generated_Image_jt70lgjt70lgjt70.png",
+    home_slide_2_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/694d22cb19f13d59d8e873bb_Gemini_Generated_Image_jpmt2ljpmt2ljpmt.png",
+    home_slide_3_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/694d22ca91a13a0bfec82bb6_Gemini_Generated_Image_94ixz894ixz894ix.png",
     about_title: "About FNN",
-    about_lead: "FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    about_lead: "FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists-connecting creative expression with audiences and institutions.",
     about_sublead: "Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the GCC.",
+    about_card_1_meta: "ARTS & CULTURE",
+    about_card_1_title: "Curated Platforms and Exhibitions",
+    about_card_1_desc: "Presenting original works by local and international artists, alongside commissioned installations and gallery-style programs exploring identity, place, and modern culture.",
+    about_card_1_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69512ec8aee7d6fa05969c14_Gemini_Generated_Image_qy4vwpqy4vwpqy4v.png",
+    about_card_2_meta: "CREATIVE INFRASTRUCTURE",
+    about_card_2_title: "Art Content Center and Partnerships",
+    about_card_2_desc: "Operating as the NDCC for art creation and archiving. Collaborating with cultural entities to integrate art into public spaces, extending the physical experience through digital platforms.",
+    about_card_2_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69512ec791fd7e92338b007c_Gemini_Generated_Image_vtikswvtikswvtik.png",
+    about_card_3_meta: "MEDIA & CULTURAL IMPACT",
+    about_card_3_title: "Cultural Narrative and Engagement",
+    about_card_3_desc: "Shaping Saudi Arabia's contemporary art narrative and creating accessible, elevated art experiences to connect diverse audiences with creative expression.",
+    about_card_3_image: "https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69512ec6c106b34fd4b6d7a4_Gemini_Generated_Image_h6blrlh6blrlh6bl.png",
     services_title: "Services",
-    services_sub: "A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.",
+    services_sub: "A complete pipeline-from creative direction to installation-built for quality, clarity, and impact.",
+    service_1_icon: "◎", service_1_title: "Creative Planning", service_1_desc: "Sculptural and contemporary art planning-translating culture into form.",
+    service_2_icon: "✎", service_2_title: "Original design", service_2_desc: "Original concepts inspired by renowned artists and professional teams.",
+    service_3_icon: "▤", service_3_title: "Excellent structure", service_3_desc: "Qualification-led analysis-ensuring stability, safety, and longevity.",
+    service_4_icon: "✶", service_4_title: "Crafted with ingenuity", service_4_desc: "Refined execution where detail, patience, and intent define the final work.",
+    service_5_icon: "⌂", service_5_title: "Professional installation", service_5_desc: "Integrated workflows for safe, precise, and reliable delivery on site.",
+    service_6_icon: "⌁", service_6_title: "Refurbishment & Restoration", service_6_desc: "Renovation and care-bringing works back to life with expert teams.",
+    service_7_icon: "▢", service_7_title: "Art rental", service_7_desc: "Rental services for sculptures and artworks-supporting programs & projects.",
+    service_8_icon: "⌖", service_8_title: "Site survey", service_8_desc: "On-site inspection and coordination-aligning implementation to vision.",
+    service_9_icon: "◇", service_9_title: "Curatorial services", service_9_desc: "Research, selection, and presentation strategy for exhibitions and collections.",
+    service_10_icon: "🎧", service_10_title: "Art Consultant", service_10_desc: "Concept proposals, guidance, and recommendations tailored to your space.",
+    service_11_icon: "◔", service_11_title: "Art broker", service_11_desc: "Market services connecting institutions, collectors, and artists-locally and globally.",
+    service_12_icon: "⧉", service_12_title: "Artistic Supervisor", service_12_desc: "Quality monitoring, materials review, and execution supervision end-to-end.",
     process_title: "Our process",
-    process_sub: "8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.",
+    process_sub: "8 clear steps-from discovery to delivery-designed to keep quality high and execution smooth.",
+    process_step_1_kicker: "Step 1", process_step_1_title: "Discovery & Direction", process_step_1_desc: "Define goals, context, constraints, and the cultural story you want the work to carry.", process_step_1_illus: "Illustration",
+    process_step_2_kicker: "Step 2", process_step_2_title: "Concept & References", process_step_2_desc: "Moodboards, precedents, and initial concepts aligned with the site and audience.", process_step_2_illus: "Illustration",
+    process_step_3_kicker: "Step 3", process_step_3_title: "Design Development", process_step_3_desc: "Refine form, materials, scale, and presentation details with clear approvals.", process_step_3_illus: "Illustration",
+    process_step_4_kicker: "Step 4", process_step_4_title: "Engineering Review", process_step_4_desc: "Structural checks, safety planning, and feasibility for production & installation.", process_step_4_illus: "Illustration",
+    process_step_5_kicker: "Step 5", process_step_5_title: "Production Planning", process_step_5_desc: "Scheduling, sourcing, and documentation to keep quality consistent.", process_step_5_illus: "Illustration",
+    process_step_6_kicker: "Step 6", process_step_6_title: "Fabrication & Build", process_step_6_desc: "Craft, finishing, and quality checks-executed with high attention to detail.", process_step_6_illus: "Illustration",
+    process_step_7_kicker: "Step 7", process_step_7_title: "Installation & On-site", process_step_7_desc: "Professional installation, safety protocol, and site coordination.", process_step_7_illus: "Illustration",
+    process_step_8_kicker: "Step 8", process_step_8_title: "Handover & Care", process_step_8_desc: "Final delivery, documentation, and care recommendations for longevity.", process_step_8_illus: "Illustration",
     gallery_title: "Gallery",
     gallery_artists_button: "Artists",
+    gallery_tab_art: "Art",
+    gallery_tab_designs: "Designs",
+    gallery_tab_books: "Books",
+    gallery_tab_photography: "Photography",
+    gallery_filter_all: "ALL",
+    gallery_filter_cabinets: "Cabinets",
+    gallery_filter_sideboards: "Sideboards",
+    gallery_filter_decor: "Decor",
     contact_title: "Get in Touch",
     contact_sub: "Interested in a piece? Let us know.",
-    footer_note: "A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    contact_form_name_placeholder: "Your Name",
+    contact_form_email_placeholder: "Your Email",
+    contact_form_subject_placeholder: "Subject",
+    contact_form_message_placeholder: "Message...",
+    contact_form_button: "Send Inquiry",
+    footer_brand: "FNN ART",
+    footer_note: "A modern art platform specializing in the presentation of original artworks by selected artists-connecting creative expression with audiences and institutions.",
+    footer_contact_title: "Contact us",
     footer_contact: "anaskaroti@gmail.com",
-    footer_copy: "© 2025 FNN ART. All rights reserved."
+    footer_nav_title: "Navigation",
+    footer_social_title: "Follow us",
+    footer_nav_home: "Home",
+    footer_nav_about: "About",
+    footer_nav_services: "Services",
+    footer_nav_gallery: "Gallery",
+    footer_nav_contact: "Contact",
+    footer_social_1: "@fnn",
+    footer_social_2: "@fnn",
+    footer_social_3: "@fnn",
+    footer_social_4: "@fnn",
+    footer_copy: "(c) 2025 FNN ART. All rights reserved."
   };
   let siteContentState = Object.assign({}, DEFAULT_SITE_CONTENT);
 
@@ -3907,8 +3986,94 @@
     setTextById("galleryArtistsLink", merged.gallery_artists_button);
     setTextById("contactSectionTitleText", merged.contact_title);
     setTextById("contactSectionSubText", merged.contact_sub);
+    const homeSlides = document.querySelectorAll(".home-illustration-track .home-illustration");
+    if(homeSlides[0] && merged.home_slide_1_image) homeSlides[0].src = merged.home_slide_1_image;
+    if(homeSlides[1] && merged.home_slide_2_image) homeSlides[1].src = merged.home_slide_2_image;
+    if(homeSlides[2] && merged.home_slide_3_image) homeSlides[2].src = merged.home_slide_3_image;
+    const aboutCards = document.querySelectorAll(".about-grid .about-card");
+    for(let i = 1; i <= 3; i++){
+      const card = aboutCards[i - 1];
+      if(!card) continue;
+      const meta = card.querySelector(".about-card-meta");
+      const title = card.querySelector(".about-card-title");
+      const desc = card.querySelector(".about-card-desc");
+      const img = card.querySelector(".about-card-media img");
+      if(meta) meta.textContent = merged[`about_card_${i}_meta`] || "";
+      if(title) title.textContent = merged[`about_card_${i}_title`] || "";
+      if(desc) desc.textContent = merged[`about_card_${i}_desc`] || "";
+      if(img && merged[`about_card_${i}_image`]) img.src = merged[`about_card_${i}_image`];
+    }
+    const serviceCards = document.querySelectorAll("#servicesGrid .svc-card");
+    for(let i = 1; i <= 12; i++){
+      const card = serviceCards[i - 1];
+      if(!card) continue;
+      const icon = card.querySelector(".svc-ico");
+      const title = card.querySelector(".svc-title");
+      const desc = card.querySelector(".svc-desc");
+      if(icon) icon.textContent = merged[`service_${i}_icon`] || "";
+      if(title) title.textContent = merged[`service_${i}_title`] || "";
+      if(desc) desc.textContent = merged[`service_${i}_desc`] || "";
+    }
+    const processSteps = document.querySelectorAll("#procItems .proc-step");
+    for(let i = 1; i <= 8; i++){
+      const step = processSteps[i - 1];
+      if(!step) continue;
+      const kicker = step.querySelector(".proc-kicker");
+      const title = step.querySelector(".proc-title");
+      const desc = step.querySelector(".proc-desc");
+      const illus = step.querySelector(".proc-illus");
+      if(kicker) kicker.textContent = merged[`process_step_${i}_kicker`] || "";
+      if(title) title.textContent = merged[`process_step_${i}_title`] || "";
+      if(desc) desc.textContent = merged[`process_step_${i}_desc`] || "";
+      if(illus) illus.textContent = merged[`process_step_${i}_illus`] || "";
+    }
+    const galleryArt = document.querySelector('#galleryTabs .gallery-chip[data-gallery="art"]');
+    const galleryDesigns = document.querySelector('#galleryTabs .gallery-chip[data-gallery="furniture"]');
+    const galleryBooks = document.querySelector('#galleryTabs .gallery-chip[data-gallery="books"]');
+    const galleryPhoto = document.querySelector('#galleryTabs .gallery-chip[data-gallery="designs"]');
+    if(galleryArt) galleryArt.textContent = merged.gallery_tab_art;
+    if(galleryDesigns) galleryDesigns.textContent = merged.gallery_tab_designs;
+    if(galleryBooks) galleryBooks.textContent = merged.gallery_tab_books;
+    if(galleryPhoto) galleryPhoto.textContent = merged.gallery_tab_photography;
+    const filterAll = document.querySelector('#filters .chip[data-filter="all"]');
+    const filterCabinet = document.querySelector('#filters .chip[data-filter="cabinet"]');
+    const filterSideboard = document.querySelector('#filters .chip[data-filter="sideboard"]');
+    const filterDecor = document.querySelector('#filters .chip[data-filter="decor"]');
+    if(filterAll) filterAll.textContent = merged.gallery_filter_all;
+    if(filterCabinet) filterCabinet.textContent = merged.gallery_filter_cabinets;
+    if(filterSideboard) filterSideboard.textContent = merged.gallery_filter_sideboards;
+    if(filterDecor) filterDecor.textContent = merged.gallery_filter_decor;
+    const formName = document.querySelector('#ajaxForm input[name="name"]');
+    const formEmail = document.querySelector('#ajaxForm input[name="email"]');
+    const formSubject = document.querySelector('#ajaxForm input[name="subject"]');
+    const formMessage = document.querySelector('#ajaxForm textarea[name="message"]');
+    if(formName) formName.placeholder = merged.contact_form_name_placeholder || "";
+    if(formEmail) formEmail.placeholder = merged.contact_form_email_placeholder || "";
+    if(formSubject) formSubject.placeholder = merged.contact_form_subject_placeholder || "";
+    if(formMessage) formMessage.placeholder = merged.contact_form_message_placeholder || "";
+    setTextById("formSubmitBtn", merged.contact_form_button);
+    const footerBrand = document.querySelector(".site-footer .ft-brand");
+    if(footerBrand) footerBrand.textContent = merged.footer_brand || "";
     setTextById("footerNoteText", merged.footer_note);
     setMultilineHtmlById("footerContactText", merged.footer_contact);
+    const footerTitles = document.querySelectorAll(".site-footer .ft-title");
+    if(footerTitles[0]) footerTitles[0].textContent = merged.footer_contact_title || "";
+    if(footerTitles[1]) footerTitles[1].textContent = merged.footer_nav_title || "";
+    if(footerTitles[2]) footerTitles[2].textContent = merged.footer_social_title || "";
+    const footerNavLinks = document.querySelectorAll(".site-footer .ft-links a");
+    if(footerNavLinks[0]) footerNavLinks[0].textContent = merged.footer_nav_home || "";
+    if(footerNavLinks[1]) footerNavLinks[1].textContent = merged.footer_nav_about || "";
+    if(footerNavLinks[2]) footerNavLinks[2].textContent = merged.footer_nav_services || "";
+    if(footerNavLinks[3]) footerNavLinks[3].textContent = merged.footer_nav_gallery || "";
+    if(footerNavLinks[4]) footerNavLinks[4].textContent = merged.footer_nav_contact || "";
+    const footerSocial = document.querySelectorAll(".site-footer .ft-social a");
+    const socialIcons = ["◎","f","in","▶"];
+    for(let i = 0; i < 4; i++){
+      const link = footerSocial[i];
+      if(!link) continue;
+      const text = merged[`footer_social_${i + 1}`] || "";
+      link.innerHTML = `<span class="ft-ic">${socialIcons[i]}</span>${escapeHtml(text)}`;
+    }
     setTextById("footerCopyText", merged.footer_copy);
   }
 
@@ -3926,7 +4091,9 @@
     (data || []).forEach((row) => {
       const key = String(row.section_key || "").trim();
       if(!SITE_SECTION_KEYS.includes(key)) return;
-      next[key] = String(row.content || "");
+      const value = String(row.content || "").trim();
+      if(!value) return;
+      next[key] = value;
     });
     applySiteContent(next);
     return true;
