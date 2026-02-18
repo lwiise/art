@@ -2854,8 +2854,8 @@
   }
   .admin-filter-row{ margin-bottom:10px; }
   .admin-list{
-    max-height:70vh;
-    overflow:auto;
+    max-height:none;
+    overflow:visible;
     display:flex;
     flex-direction:column;
     gap:8px;
@@ -2924,11 +2924,11 @@
   }
   .admin-section-card{
     margin-top:14px;
-    padding:14px;
-    border:1px solid #ececec;
-    border-radius:24px;
-    background:#fff;
-    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+    padding:0;
+    border:none;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
   }
   .admin-section-grid{
     display:grid;
@@ -2950,15 +2950,15 @@
     margin-top:10px;
   }
   .admin-sections-nav{
-    border:1px solid #ededed;
-    border-radius:14px;
-    background:#fbfbfb;
+    border:1px solid #e8e8e8;
+    border-radius:16px;
+    background:#fff;
     padding:8px;
     display:flex;
     flex-direction:column;
     gap:6px;
-    max-height:70vh;
-    overflow:auto;
+    max-height:none;
+    overflow:visible;
   }
   .admin-sections-tab{
     width:100%;
@@ -2979,12 +2979,12 @@
     color:#fff;
   }
   .admin-sections-panels{
-    border:1px solid #ededed;
-    border-radius:14px;
-    background:#fbfbfb;
-    padding:10px;
-    max-height:70vh;
-    overflow:auto;
+    border:none;
+    border-radius:0;
+    background:transparent;
+    padding:0;
+    max-height:none;
+    overflow:visible;
   }
   .admin-sections-panel{
     display:none;
