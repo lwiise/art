@@ -2922,6 +2922,27 @@
     border-color:#d45454;
     color:#b03333;
   }
+  .admin-section-card{
+    margin-top:14px;
+    padding:14px;
+    border:1px solid #ececec;
+    border-radius:24px;
+    background:#fff;
+    box-shadow:0 14px 34px rgba(0,0,0,0.06);
+  }
+  .admin-section-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .admin-section-actions{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .admin-section-actions .btn-submit{
+    max-width:240px;
+  }
   body.admin-page{
     overflow:auto;
     align-items:stretch;
@@ -3195,6 +3216,9 @@
     .admin-grid.three{ grid-template-columns:1fr; }
     .admin-actions{ flex-direction:column; }
     .admin-auth-btn{ max-width:none; width:100%; }
+    .admin-section-grid{ grid-template-columns:1fr; }
+    .admin-section-actions{ flex-direction:column; }
+    .admin-section-actions .btn-submit{ max-width:none; }
 
     .book-frame{ padding:16px; }
     .book-layout{ grid-template-columns:1fr; gap:18px; }
@@ -3298,21 +3322,21 @@
       <div class="section-scroll">
         <div class="home-screen">
           <div class="home-top">
-            <small>Welcome to</small>
+            <small id="homeWelcomeText">Welcome to</small>
             <img
               class="home-logo"
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69442b591074614cc12c66e3_IMAGE.png"
               alt="FNN ART"
             />
-            <div class="home-tagline">The New Marketplace for Exceptional Art</div>
+            <div class="home-tagline" id="homeTaglineText">The New Marketplace for Exceptional Art</div>
           </div>
 
           <div class="home-main">
             <div class="home-banner">
               <h3 class="home-banner-title">
-                <span>Original Art For Sale</span>
+                <span id="homeBannerTitleText">Original Art For Sale</span>
               </h3>
-              <button class="home-banner-btn" type="button" onclick="switchSection('sect-gallery')">Browse Collection</button>
+              <button class="home-banner-btn" type="button" id="homeBannerButtonText" onclick="switchSection('sect-gallery')">Browse Collection</button>
             </div>
 
             <div class="home-illustration-wrap">
@@ -3366,13 +3390,13 @@
     <section id="sect-about" class="app-section">
       <div class="section-scroll">
         <div class="about-wrap">
-          <h1 class="sec-title">About FNN</h1>
+          <h1 class="sec-title" id="aboutSectionTitleText">About FNN</h1>
 
-          <p class="about-lead">
+          <p class="about-lead" id="aboutLeadText">
             FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists&mdash;connecting creative expression with audiences and institutions.
           </p>
 
-          <p class="about-sublead">
+          <p class="about-sublead" id="aboutSubleadText">
             Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the GCC.
           </p>
 
@@ -3417,8 +3441,8 @@
     <!-- SERVICES -->
     <section id="sect-services" class="app-section">
       <div class="section-scroll">
-        <h1 class="sec-title">Services</h1>
-        <p class="sec-sub">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
+        <h1 class="sec-title" id="servicesSectionTitleText">Services</h1>
+        <p class="sec-sub" id="servicesSectionSubText">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
 
         <div class="services-wrap">
           <div class="services-grid" id="servicesGrid">
@@ -3440,8 +3464,8 @@
 
           <div class="process" id="processBlock">
             <div class="process-head">
-              <h2>Our process</h2>
-              <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
+              <h2 id="processTitleText">Our process</h2>
+              <p id="processSubText">8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
             </div>
 
             <div class="process-grid" id="processGrid">
@@ -3471,7 +3495,7 @@
       <header class="shop-head">
         <div class="gallery-head">
           <div class="gallery-top">
-            <div class="gallery-title">Gallery</div>
+            <div class="gallery-title" id="gallerySectionTitleText">Gallery</div>
             <button class="gallery-link" id="galleryArtistsLink" type="button">Artists</button>
           </div>
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
@@ -4191,6 +4215,65 @@
                 </div>
               </section>
             </div>
+
+            <section class="admin-section-card">
+              <div class="admin-card-title">Website Sections</div>
+              <p class="admin-note">Edit text for Home, About, Services, Gallery, Contact, and Footer.</p>
+
+              <div class="admin-type-grid">
+                <div class="admin-type-title">Home Section</div>
+                <div class="admin-section-grid">
+                  <div class="form-group"><input class="form-input" id="adminSiteHomeWelcome" placeholder="Home welcome text" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteHomeTagline" placeholder="Home tagline" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteHomeBannerTitle" placeholder="Home banner title" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteHomeBannerButton" placeholder="Home banner button label" /></div>
+                </div>
+              </div>
+
+              <div class="admin-type-grid">
+                <div class="admin-type-title">About Section</div>
+                <div class="admin-grid">
+                  <div class="form-group"><input class="form-input" id="adminSiteAboutTitle" placeholder="About section title" /></div>
+                  <div class="form-group"><textarea class="form-input" id="adminSiteAboutLead" placeholder="About lead text" rows="3"></textarea></div>
+                  <div class="form-group"><textarea class="form-input" id="adminSiteAboutSublead" placeholder="About second paragraph" rows="4"></textarea></div>
+                </div>
+              </div>
+
+              <div class="admin-type-grid">
+                <div class="admin-type-title">Services Section</div>
+                <div class="admin-grid">
+                  <div class="form-group"><input class="form-input" id="adminSiteServicesTitle" placeholder="Services section title" /></div>
+                  <div class="form-group"><textarea class="form-input" id="adminSiteServicesSub" placeholder="Services intro text" rows="2"></textarea></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteProcessTitle" placeholder="Process title" /></div>
+                  <div class="form-group"><textarea class="form-input" id="adminSiteProcessSub" placeholder="Process subtitle text" rows="2"></textarea></div>
+                </div>
+              </div>
+
+              <div class="admin-type-grid">
+                <div class="admin-type-title">Gallery & Contact</div>
+                <div class="admin-section-grid">
+                  <div class="form-group"><input class="form-input" id="adminSiteGalleryTitle" placeholder="Gallery title" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteGalleryArtistsButton" placeholder="Gallery artists button label" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteContactTitle" placeholder="Contact section title" /></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteContactSub" placeholder="Contact section subtitle" /></div>
+                </div>
+              </div>
+
+              <div class="admin-type-grid">
+                <div class="admin-type-title">Footer</div>
+                <div class="admin-grid">
+                  <div class="form-group"><textarea class="form-input" id="adminSiteFooterNote" placeholder="Footer note text" rows="3"></textarea></div>
+                  <div class="form-group"><textarea class="form-input" id="adminSiteFooterContact" placeholder="Footer contact text (new line supported)" rows="2"></textarea></div>
+                  <div class="form-group"><input class="form-input" id="adminSiteFooterCopy" placeholder="Footer copyright text" /></div>
+                </div>
+              </div>
+
+              <div class="admin-section-actions">
+                <button class="btn-submit" id="adminSectionSaveBtn" type="button">Save Section Content</button>
+                <button class="btn btn-ghost admin-mini-btn" id="adminSectionResetBtn" type="button">Reset Defaults</button>
+              </div>
+              <div class="admin-status" id="adminSectionStatus">Ready</div>
+            </section>
           </div>
         </div>
       </div>
@@ -4199,8 +4282,8 @@
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
       <div class="section-scroll">
-        <h1 class="sec-title">Get in Touch</h1>
-        <p class="sec-sub">Interested in a piece? Let us know.</p>
+        <h1 class="sec-title" id="contactSectionTitleText">Get in Touch</h1>
+        <p class="sec-sub" id="contactSectionSubText">Interested in a piece? Let us know.</p>
 
         <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST" novalidate>
           <input type="hidden" name="_captcha" value="false">
@@ -4219,7 +4302,7 @@
         <footer class="site-footer">
           <div class="ft-top">
             <div class="ft-brand">FNN ART</div>
-            <div class="ft-note">
+            <div class="ft-note" id="footerNoteText">
               A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
             </div>
           </div>
@@ -4227,7 +4310,7 @@
           <div class="ft-grid">
             <div>
               <div class="ft-title">Contact us</div>
-              <div class="ft-text">
+              <div class="ft-text" id="footerContactText">
                 anaskaroti@gmail.com<br>
               </div>
             </div>
@@ -4250,7 +4333,7 @@
             </div>
           </div>
 
-          <div class="ft-copy">© 2025 FNN ART. All rights reserved.</div>
+          <div class="ft-copy" id="footerCopyText">© 2025 FNN ART. All rights reserved.</div>
         </footer>
       </div>
     </section>
@@ -4285,6 +4368,112 @@
   const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
+  const SITE_SECTION_KEYS = [
+    "home_welcome",
+    "home_tagline",
+    "home_banner_title",
+    "home_banner_button",
+    "about_title",
+    "about_lead",
+    "about_sublead",
+    "services_title",
+    "services_sub",
+    "process_title",
+    "process_sub",
+    "gallery_title",
+    "gallery_artists_button",
+    "contact_title",
+    "contact_sub",
+    "footer_note",
+    "footer_contact",
+    "footer_copy"
+  ];
+  const DEFAULT_SITE_CONTENT = {
+    home_welcome: "Welcome to",
+    home_tagline: "The New Marketplace for Exceptional Art",
+    home_banner_title: "Original Art For Sale",
+    home_banner_button: "Browse Collection",
+    about_title: "About FNN",
+    about_lead: "FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    about_sublead: "Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the GCC.",
+    services_title: "Services",
+    services_sub: "A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.",
+    process_title: "Our process",
+    process_sub: "8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.",
+    gallery_title: "Gallery",
+    gallery_artists_button: "Artists",
+    contact_title: "Get in Touch",
+    contact_sub: "Interested in a piece? Let us know.",
+    footer_note: "A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    footer_contact: "anaskaroti@gmail.com",
+    footer_copy: "© 2025 FNN ART. All rights reserved."
+  };
+  let siteContentState = Object.assign({}, DEFAULT_SITE_CONTENT);
+  let siteContentLoadError = "";
+
+  function escapeHtml(value){
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function setTextById(id, value){
+    const el = document.getElementById(id);
+    if(el) el.textContent = value || "";
+  }
+
+  function setMultilineHtmlById(id, value){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const lines = String(value || "").split(/\r?\n/).filter(Boolean);
+    el.innerHTML = lines.length ? lines.map(escapeHtml).join("<br>") : "";
+  }
+
+  function applySiteContent(content){
+    const merged = Object.assign({}, DEFAULT_SITE_CONTENT, content || {});
+    siteContentState = merged;
+    setTextById("homeWelcomeText", merged.home_welcome);
+    setTextById("homeTaglineText", merged.home_tagline);
+    setTextById("homeBannerTitleText", merged.home_banner_title);
+    setTextById("homeBannerButtonText", merged.home_banner_button);
+    setTextById("aboutSectionTitleText", merged.about_title);
+    setTextById("aboutLeadText", merged.about_lead);
+    setTextById("aboutSubleadText", merged.about_sublead);
+    setTextById("servicesSectionTitleText", merged.services_title);
+    setTextById("servicesSectionSubText", merged.services_sub);
+    setTextById("processTitleText", merged.process_title);
+    setTextById("processSubText", merged.process_sub);
+    setTextById("gallerySectionTitleText", merged.gallery_title);
+    setTextById("galleryArtistsLink", merged.gallery_artists_button);
+    setTextById("contactSectionTitleText", merged.contact_title);
+    setTextById("contactSectionSubText", merged.contact_sub);
+    setTextById("footerNoteText", merged.footer_note);
+    setMultilineHtmlById("footerContactText", merged.footer_contact);
+    setTextById("footerCopyText", merged.footer_copy);
+  }
+
+  async function loadSiteContentFromSupabase(){
+    applySiteContent(DEFAULT_SITE_CONTENT);
+    siteContentLoadError = "";
+    if(!supabaseClient) return false;
+    const { data, error } = await supabaseClient
+      .from("site_sections")
+      .select("section_key, content");
+    if(error){
+      siteContentLoadError = String(error.message || "Unknown error");
+      console.warn("Site content load skipped:", error.message);
+      return false;
+    }
+    const next = Object.assign({}, DEFAULT_SITE_CONTENT);
+    (data || []).forEach((row) => {
+      const key = String(row.section_key || "").trim();
+      if(!SITE_SECTION_KEYS.includes(key)) return;
+      next[key] = String(row.content || "");
+    });
+    applySiteContent(next);
+    return true;
+  }
 
   const isAdminOnlyPage = document.body.classList.contains("admin-page");
   const isMobile = window.innerWidth < 900;
@@ -4425,6 +4614,7 @@
     await loadAdminRows();
     await loadCatalogFromSupabase();
     rerenderVisibleCollections();
+    if(adminAuthorized) await loadAdminSiteContent();
   });
   safeAdd('adminSeedBtn','click',seedSupabaseFromFallback);
   safeAdd('adminSaveBtn','click',saveAdminProduct);
@@ -4434,6 +4624,12 @@
       return;
     }
     await deleteAdminProduct(adminSelectedId);
+  });
+  safeAdd('adminSectionSaveBtn','click',saveAdminSiteContent);
+  safeAdd('adminSectionResetBtn','click',() => {
+    fillAdminSiteContentForm(DEFAULT_SITE_CONTENT);
+    applySiteContent(DEFAULT_SITE_CONTENT);
+    setAdminSectionStatus("Form reset to defaults (not saved yet)", false);
   });
   safeAdd('adminLoginBtn','click',async () => {
     if(!supabaseClient){
@@ -4474,6 +4670,8 @@
     setAdminAuthStatus("Signed out", false);
     if(adminPassword) adminPassword.value = "";
     clearAdminForm();
+    fillAdminSiteContentForm(siteContentState);
+    setAdminSectionStatus("Sign in as admin to edit sections", false);
   });
   safeAdd('adminEmail','keydown',(e) => {
     if(e.key !== "Enter") return;
@@ -5172,6 +5370,29 @@
   const adminSaveBtn = document.getElementById("adminSaveBtn");
   const adminDeleteBtn = document.getElementById("adminDeleteBtn");
   const adminSaveStatus = document.getElementById("adminSaveStatus");
+  const adminSectionSaveBtn = document.getElementById("adminSectionSaveBtn");
+  const adminSectionResetBtn = document.getElementById("adminSectionResetBtn");
+  const adminSectionStatus = document.getElementById("adminSectionStatus");
+  const adminSiteFields = {
+    home_welcome: document.getElementById("adminSiteHomeWelcome"),
+    home_tagline: document.getElementById("adminSiteHomeTagline"),
+    home_banner_title: document.getElementById("adminSiteHomeBannerTitle"),
+    home_banner_button: document.getElementById("adminSiteHomeBannerButton"),
+    about_title: document.getElementById("adminSiteAboutTitle"),
+    about_lead: document.getElementById("adminSiteAboutLead"),
+    about_sublead: document.getElementById("adminSiteAboutSublead"),
+    services_title: document.getElementById("adminSiteServicesTitle"),
+    services_sub: document.getElementById("adminSiteServicesSub"),
+    process_title: document.getElementById("adminSiteProcessTitle"),
+    process_sub: document.getElementById("adminSiteProcessSub"),
+    gallery_title: document.getElementById("adminSiteGalleryTitle"),
+    gallery_artists_button: document.getElementById("adminSiteGalleryArtistsButton"),
+    contact_title: document.getElementById("adminSiteContactTitle"),
+    contact_sub: document.getElementById("adminSiteContactSub"),
+    footer_note: document.getElementById("adminSiteFooterNote"),
+    footer_contact: document.getElementById("adminSiteFooterContact"),
+    footer_copy: document.getElementById("adminSiteFooterCopy")
+  };
 
   let currentFilter = "all";
   let currentGallery = "furniture";
@@ -5436,6 +5657,78 @@
     if(!adminSaveStatus) return;
     adminSaveStatus.textContent = text;
     adminSaveStatus.style.color = isError ? "#b03333" : "#555";
+  }
+
+  function setAdminSectionStatus(text, isError){
+    if(!adminSectionStatus) return;
+    adminSectionStatus.textContent = text;
+    adminSectionStatus.style.color = isError ? "#b03333" : "#555";
+  }
+
+  function fillAdminSiteContentForm(content){
+    const merged = Object.assign({}, DEFAULT_SITE_CONTENT, content || {});
+    SITE_SECTION_KEYS.forEach((key) => {
+      const field = adminSiteFields[key];
+      if(field) field.value = String(merged[key] || "");
+    });
+  }
+
+  function readAdminSiteContentForm(){
+    const next = {};
+    SITE_SECTION_KEYS.forEach((key) => {
+      const field = adminSiteFields[key];
+      const value = field ? String(field.value || "").trim() : "";
+      next[key] = value || DEFAULT_SITE_CONTENT[key] || "";
+    });
+    return next;
+  }
+
+  async function loadAdminSiteContent(){
+    const loaded = await loadSiteContentFromSupabase();
+    fillAdminSiteContentForm(siteContentState);
+    if(loaded){
+      setAdminSectionStatus("Section content loaded", false);
+      return;
+    }
+    if(!siteContentLoadError){
+      setAdminSectionStatus("Using default section text", false);
+      return;
+    }
+    if(siteContentLoadError.toLowerCase().includes("does not exist")){
+      setAdminSectionStatus("Section table missing. Run supabase/schema.sql to enable section editing.", true);
+      return;
+    }
+    setAdminSectionStatus(`Section load skipped: ${siteContentLoadError}`, true);
+  }
+
+  async function saveAdminSiteContent(){
+    if(!supabaseClient || !adminAuthorized){
+      setAdminSectionStatus("Admin access required", true);
+      return;
+    }
+    const content = readAdminSiteContentForm();
+    const rows = SITE_SECTION_KEYS.map((key) => ({
+      section_key: key,
+      content: String(content[key] || "")
+    }));
+    setAdminSectionStatus("Saving section content...", false);
+    const { error } = await supabaseClient
+      .from("site_sections")
+      .upsert(rows, { onConflict:"section_key" });
+    if(error){
+      const msg = String(error.message || "");
+      if(msg.toLowerCase().includes("row-level security")){
+        setAdminSectionStatus("Save failed: permission denied. Add your email to public.admin_users.", true);
+      }else if(msg.toLowerCase().includes("does not exist")){
+        setAdminSectionStatus("Save failed: 'site_sections' table missing. Run supabase/schema.sql.", true);
+      }else{
+        setAdminSectionStatus(`Save failed: ${msg}`, true);
+      }
+      return;
+    }
+    applySiteContent(content);
+    fillAdminSiteContentForm(content);
+    setAdminSectionStatus("Section content saved", false);
   }
 
   async function checkAdminAuthorization(session){
@@ -5969,17 +6262,20 @@
     adminAuthorized = await checkAdminAuthorization(adminSession);
     if(!adminSession){
       setAdminAuthStatus("Not signed in", false);
+      setAdminSectionStatus("Sign in as admin to edit sections", false);
       updateAdminViewState();
       return;
     }
     if(!adminAuthorized){
       setAdminAuthStatus("Signed in but not authorized as admin", true);
+      setAdminSectionStatus("Admin authorization required to edit sections", true);
       updateAdminViewState();
       return;
     }
     setAdminAuthStatus("Authenticated", false);
     updateAdminViewState();
     await loadAdminRows();
+    await loadAdminSiteContent();
   }
 
   async function initSupabaseAuth(){
@@ -7383,7 +7679,11 @@
   (async function init(){
     setAdminFieldVisibility();
     clearAdminForm();
+    fillAdminSiteContentForm(DEFAULT_SITE_CONTENT);
+    setAdminSectionStatus("Ready", false);
     updateAdminViewState();
+    await loadSiteContentFromSupabase();
+    fillAdminSiteContentForm(siteContentState);
     await loadCatalogFromSupabase();
     await initSupabaseAuth();
     switchSection("sect-admin");

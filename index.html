@@ -3041,21 +3041,21 @@
       <div class="section-scroll">
         <div class="home-screen">
           <div class="home-top">
-            <small>Welcome to</small>
+            <small id="homeWelcomeText">Welcome to</small>
             <img
               class="home-logo"
               src="https://cdn.prod.website-files.com/6915e045b3e3d5a1e709a05d/69442b591074614cc12c66e3_IMAGE.png"
               alt="FNN ART"
             />
-            <div class="home-tagline">The New Marketplace for Exceptional Art</div>
+            <div class="home-tagline" id="homeTaglineText">The New Marketplace for Exceptional Art</div>
           </div>
 
           <div class="home-main">
             <div class="home-banner">
               <h3 class="home-banner-title">
-                <span>Original Art For Sale</span>
+                <span id="homeBannerTitleText">Original Art For Sale</span>
               </h3>
-              <button class="home-banner-btn" type="button" onclick="switchSection('sect-gallery')">Browse Collection</button>
+              <button class="home-banner-btn" type="button" id="homeBannerButtonText" onclick="switchSection('sect-gallery')">Browse Collection</button>
             </div>
 
             <div class="home-illustration-wrap">
@@ -3109,13 +3109,13 @@
     <section id="sect-about" class="app-section">
       <div class="section-scroll">
         <div class="about-wrap">
-          <h1 class="sec-title">About FNN</h1>
+          <h1 class="sec-title" id="aboutSectionTitleText">About FNN</h1>
 
-          <p class="about-lead">
+          <p class="about-lead" id="aboutLeadText">
             FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists&mdash;connecting creative expression with audiences and institutions.
           </p>
 
-          <p class="about-sublead">
+          <p class="about-sublead" id="aboutSubleadText">
             Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the GCC.
           </p>
 
@@ -3160,8 +3160,8 @@
     <!-- SERVICES -->
     <section id="sect-services" class="app-section">
       <div class="section-scroll">
-        <h1 class="sec-title">Services</h1>
-        <p class="sec-sub">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
+        <h1 class="sec-title" id="servicesSectionTitleText">Services</h1>
+        <p class="sec-sub" id="servicesSectionSubText">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
 
         <div class="services-wrap">
           <div class="services-grid" id="servicesGrid">
@@ -3183,8 +3183,8 @@
 
           <div class="process" id="processBlock">
             <div class="process-head">
-              <h2>Our process</h2>
-              <p>8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
+              <h2 id="processTitleText">Our process</h2>
+              <p id="processSubText">8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.</p>
             </div>
 
             <div class="process-grid" id="processGrid">
@@ -3214,7 +3214,7 @@
       <header class="shop-head">
         <div class="gallery-head">
           <div class="gallery-top">
-            <div class="gallery-title">Gallery</div>
+            <div class="gallery-title" id="gallerySectionTitleText">Gallery</div>
             <button class="gallery-link" id="galleryArtistsLink" type="button">Artists</button>
           </div>
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
@@ -3743,8 +3743,8 @@
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
       <div class="section-scroll">
-        <h1 class="sec-title">Get in Touch</h1>
-        <p class="sec-sub">Interested in a piece? Let us know.</p>
+        <h1 class="sec-title" id="contactSectionTitleText">Get in Touch</h1>
+        <p class="sec-sub" id="contactSectionSubText">Interested in a piece? Let us know.</p>
 
         <form id="ajaxForm" action="https://formsubmit.co/anaskaroti@gmail.com" method="POST" novalidate>
           <input type="hidden" name="_captcha" value="false">
@@ -3763,7 +3763,7 @@
         <footer class="site-footer">
           <div class="ft-top">
             <div class="ft-brand">FNN ART</div>
-            <div class="ft-note">
+            <div class="ft-note" id="footerNoteText">
               A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.
             </div>
           </div>
@@ -3771,7 +3771,7 @@
           <div class="ft-grid">
             <div>
               <div class="ft-title">Contact us</div>
-              <div class="ft-text">
+              <div class="ft-text" id="footerContactText">
                 anaskaroti@gmail.com<br>
               </div>
             </div>
@@ -3794,7 +3794,7 @@
             </div>
           </div>
 
-          <div class="ft-copy">© 2025 FNN ART. All rights reserved.</div>
+          <div class="ft-copy" id="footerCopyText">© 2025 FNN ART. All rights reserved.</div>
         </footer>
       </div>
     </section>
@@ -3828,6 +3828,109 @@
   const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
+  const SITE_SECTION_KEYS = [
+    "home_welcome",
+    "home_tagline",
+    "home_banner_title",
+    "home_banner_button",
+    "about_title",
+    "about_lead",
+    "about_sublead",
+    "services_title",
+    "services_sub",
+    "process_title",
+    "process_sub",
+    "gallery_title",
+    "gallery_artists_button",
+    "contact_title",
+    "contact_sub",
+    "footer_note",
+    "footer_contact",
+    "footer_copy"
+  ];
+  const DEFAULT_SITE_CONTENT = {
+    home_welcome: "Welcome to",
+    home_tagline: "The New Marketplace for Exceptional Art",
+    home_banner_title: "Original Art For Sale",
+    home_banner_button: "Browse Collection",
+    about_title: "About FNN",
+    about_lead: "FNN is a modern marketplace art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    about_sublead: "Its mission is to elevate art as a cultural value and creative identity by providing a professional environment that honors both the artist and the artwork, while connecting creative expression with audiences and art institutions. FNN aspires to become the Art Content Center (NDCC) for the art scene in the GCC.",
+    services_title: "Services",
+    services_sub: "A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.",
+    process_title: "Our process",
+    process_sub: "8 clear steps—from discovery to delivery—designed to keep quality high and execution smooth.",
+    gallery_title: "Gallery",
+    gallery_artists_button: "Artists",
+    contact_title: "Get in Touch",
+    contact_sub: "Interested in a piece? Let us know.",
+    footer_note: "A modern art platform specializing in the presentation of original artworks by selected artists—connecting creative expression with audiences and institutions.",
+    footer_contact: "anaskaroti@gmail.com",
+    footer_copy: "© 2025 FNN ART. All rights reserved."
+  };
+  let siteContentState = Object.assign({}, DEFAULT_SITE_CONTENT);
+
+  function escapeHtml(value){
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function setTextById(id, value){
+    const el = document.getElementById(id);
+    if(el) el.textContent = value || "";
+  }
+
+  function setMultilineHtmlById(id, value){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const lines = String(value || "").split(/\r?\n/).filter(Boolean);
+    el.innerHTML = lines.length ? lines.map(escapeHtml).join("<br>") : "";
+  }
+
+  function applySiteContent(content){
+    const merged = Object.assign({}, DEFAULT_SITE_CONTENT, content || {});
+    siteContentState = merged;
+    setTextById("homeWelcomeText", merged.home_welcome);
+    setTextById("homeTaglineText", merged.home_tagline);
+    setTextById("homeBannerTitleText", merged.home_banner_title);
+    setTextById("homeBannerButtonText", merged.home_banner_button);
+    setTextById("aboutSectionTitleText", merged.about_title);
+    setTextById("aboutLeadText", merged.about_lead);
+    setTextById("aboutSubleadText", merged.about_sublead);
+    setTextById("servicesSectionTitleText", merged.services_title);
+    setTextById("servicesSectionSubText", merged.services_sub);
+    setTextById("processTitleText", merged.process_title);
+    setTextById("processSubText", merged.process_sub);
+    setTextById("gallerySectionTitleText", merged.gallery_title);
+    setTextById("galleryArtistsLink", merged.gallery_artists_button);
+    setTextById("contactSectionTitleText", merged.contact_title);
+    setTextById("contactSectionSubText", merged.contact_sub);
+    setTextById("footerNoteText", merged.footer_note);
+    setMultilineHtmlById("footerContactText", merged.footer_contact);
+    setTextById("footerCopyText", merged.footer_copy);
+  }
+
+  async function loadSiteContentFromSupabase(){
+    applySiteContent(DEFAULT_SITE_CONTENT);
+    if(!supabaseClient) return false;
+    const { data, error } = await supabaseClient
+      .from("site_sections")
+      .select("section_key, content");
+    if(error){
+      console.warn("Site content load skipped:", error.message);
+      return false;
+    }
+    const next = Object.assign({}, DEFAULT_SITE_CONTENT);
+    (data || []).forEach((row) => {
+      const key = String(row.section_key || "").trim();
+      if(!SITE_SECTION_KEYS.includes(key)) return;
+      next[key] = String(row.content || "");
+    });
+    applySiteContent(next);
+    return true;
+  }
 
   mapboxgl.accessToken = MAPBOX_TOKEN;
   const isMobile = window.innerWidth < 900;
@@ -6181,6 +6284,7 @@
     // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
     renderArtists();
+    await loadSiteContentFromSupabase();
     await loadCatalogFromSupabase();
     rerenderVisibleCollections();
 
