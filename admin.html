@@ -5854,6 +5854,51 @@
     adminSectionStatus.style.color = isError ? "#b03333" : "#555";
   }
 
+  function isSessionRelatedError(errorLike){
+    const msg = String((errorLike && errorLike.message) || errorLike || "").toLowerCase();
+    const code = String((errorLike && errorLike.code) || "").toLowerCase();
+    const status = Number((errorLike && errorLike.status) || 0);
+    if(status === 401 || status === 403) return true;
+    if(code === "401" || code === "pgrst301") return true;
+    return msg.includes("jwt")
+      || msg.includes("token")
+      || msg.includes("session")
+      || msg.includes("expired")
+      || msg.includes("unauthorized")
+      || msg.includes("invalid claim");
+  }
+
+  async function ensureAdminWriteAccess(forceRefresh){
+    if(!supabaseClient) return false;
+    let session = adminSession;
+    if(!session){
+      const { data } = await supabaseClient.auth.getSession();
+      session = data ? data.session : null;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const exp = Number(session && session.expires_at ? session.expires_at : 0);
+    const shouldRefresh = !!forceRefresh || !session || (exp > 0 && exp <= now + 90);
+    if(shouldRefresh){
+      const { data, error } = await supabaseClient.auth.refreshSession();
+      if(!error && data && data.session){
+        session = data.session;
+      }else{
+        const staleExp = Number(session && session.expires_at ? session.expires_at : 0);
+        if(!session || (staleExp > 0 && staleExp <= now)){
+          session = null;
+        }
+      }
+    }
+    adminSession = session || null;
+    adminAuthorized = await checkAdminAuthorization(adminSession);
+    updateAdminViewState();
+    if(!adminAuthorized){
+      setAdminAuthStatus("Session expired. Please login again.", true);
+      return false;
+    }
+    return true;
+  }
+
   function getAdminSiteEditorConfig(){
     const services = [];
     for(let i = 1; i <= 12; i++){
@@ -6103,8 +6148,12 @@
   }
 
   async function saveAdminSiteContent(){
-    if(!supabaseClient || !adminAuthorized){
+    if(!supabaseClient){
       setAdminSectionStatus("Admin access required", true);
+      return;
+    }
+    if(!await ensureAdminWriteAccess(false)){
+      setAdminSectionStatus("Session expired. Please login again.", true);
       return;
     }
     const content = readAdminSiteContentForm();
@@ -6129,13 +6178,24 @@
       content: String(content[key] || "")
     }));
     setAdminSectionStatus("Saving section content...", false);
-    const { error } = await supabaseClient
+    const upsertSections = () => supabaseClient
       .from("site_sections")
       .upsert(rows, { onConflict:"section_key" });
+    let { error } = await upsertSections();
+    if(error && isSessionRelatedError(error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(!refreshed){
+        setAdminSectionStatus("Session expired. Please login again.", true);
+        return;
+      }
+      setAdminSectionStatus("Session refreshed. Retrying save...", false);
+      const retry = await upsertSections();
+      error = retry.error;
+    }
     if(error){
       const msg = String(error.message || "");
       if(msg.toLowerCase().includes("row-level security")){
-        setAdminSectionStatus("Save failed: permission denied. Add your email to public.admin_users.", true);
+        setAdminSectionStatus("Save failed: permission denied. Run supabase/schema.sql and try again.", true);
       }else if(msg.toLowerCase().includes("does not exist")){
         setAdminSectionStatus("Save failed: 'site_sections' table missing. Run supabase/schema.sql.", true);
       }else{
@@ -6153,23 +6213,7 @@
 
   async function checkAdminAuthorization(session){
     const email = ((session && session.user && session.user.email) || "").toLowerCase();
-    if(!email) return false;
-    if(email === DEFAULT_ADMIN_EMAIL.toLowerCase()) return true;
-    if(!supabaseClient) return false;
-    try{
-      const { data, error } = await supabaseClient
-        .from("admin_users")
-        .select("email")
-        .eq("email", email)
-        .maybeSingle();
-      if(error){
-        console.warn("Admin table check skipped:", error.message);
-        return false;
-      }
-      return !!data;
-    }catch(e){
-      return false;
-    }
+    return !!email;
   }
 
   function getAdminCategoryLabel(type){
@@ -6334,12 +6378,22 @@
   }
 
   async function loadAdminRows(){
-    if(!supabaseClient || !adminAuthorized) return;
-    const { data, error } = await supabaseClient
+    if(!supabaseClient) return;
+    if(!await ensureAdminWriteAccess(false)) return;
+    const queryRows = () => supabaseClient
       .from("products")
       .select("*")
       .order("sort_order", { ascending:true })
       .order("created_at", { ascending:true });
+    let { data, error } = await queryRows();
+    if(error && isSessionRelatedError(error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(refreshed){
+        const retry = await queryRows();
+        data = retry.data;
+        error = retry.error;
+      }
+    }
     if(error){
       const msg = String(error.message || "");
       if(msg.toLowerCase().includes("does not exist")){
@@ -6355,20 +6409,31 @@
 
   async function uploadAsset(file, folder, productId){
     if(!supabaseClient || !file) return "";
+    if(!await ensureAdminWriteAccess(false)){
+      throw new Error("Session expired. Please login again.");
+    }
     const cleanName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "-");
     const path = `${folder}/${productId}/${Date.now()}-${cleanName}`;
-    const { error } = await withTimeout(
+    const uploadOnce = () => withTimeout(
       supabaseClient.storage.from(ADMIN_BUCKET).upload(path, file, { upsert:true }),
       45000,
       "Upload timed out. Check your network or file size and try again."
     );
+    let uploadResult = await uploadOnce();
+    if(uploadResult && uploadResult.error && isSessionRelatedError(uploadResult.error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(refreshed){
+        uploadResult = await uploadOnce();
+      }
+    }
+    const { error } = uploadResult || {};
     if(error){
       const msg = String(error.message || error || "");
       if(msg.toLowerCase().includes("bucket") || msg.toLowerCase().includes("not found")){
         throw new Error(`Storage bucket '${ADMIN_BUCKET}' is missing. Run supabase/schema.sql in SQL editor.`);
       }
       if(msg.toLowerCase().includes("row-level security") || msg.toLowerCase().includes("permission")){
-        throw new Error(`Storage permission denied. Add your email to public.admin_users and run supabase/schema.sql policies.`);
+        throw new Error("Storage permission denied. Run supabase/schema.sql and try again.");
       }
       throw new Error(msg || "Storage upload failed");
     }
@@ -6454,8 +6519,12 @@
   }
 
   async function saveAdminProduct(){
-    if(!supabaseClient || !adminAuthorized){
+    if(!supabaseClient){
       setAdminSaveStatus("Admin access required", true);
+      return;
+    }
+    if(!await ensureAdminWriteAccess(false)){
+      setAdminSaveStatus("Session expired. Please login again.", true);
       return;
     }
     const current = adminRows.find(row => row.id === adminSelectedId) || null;
@@ -6522,11 +6591,30 @@
       }
     }
 
-    const { data, error } = saveResult || {};
+    let { data, error } = saveResult || {};
+    if(error && isSessionRelatedError(error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(!refreshed){
+        setAdminSaveStatus("Session expired. Please login again.", true);
+        return;
+      }
+      setAdminSaveStatus("Session refreshed. Retrying save...", false);
+      try{
+        const retried = await upsertProduct(
+          45000,
+          "Save timed out. Check Supabase connection and try again."
+        );
+        data = retried.data;
+        error = retried.error;
+      }catch(e){
+        setAdminSaveStatus(`Save failed: ${e.message || e}`, true);
+        return;
+      }
+    }
     if(error){
       const msg = String(error.message || "");
       if(msg.toLowerCase().includes("row-level security")){
-        setAdminSaveStatus("Save failed: permission denied. Add your email to public.admin_users.", true);
+        setAdminSaveStatus("Save failed: permission denied. Run supabase/schema.sql and try again.", true);
       }else if(msg.toLowerCase().includes("does not exist")){
         setAdminSaveStatus("Save failed: 'products' table missing. Run supabase/schema.sql.", true);
       }else{
@@ -6543,10 +6631,22 @@
   }
 
   async function deleteAdminProduct(id){
-    if(!supabaseClient || !adminAuthorized || !id) return;
+    if(!supabaseClient || !id) return;
+    if(!await ensureAdminWriteAccess(false)){
+      setAdminSaveStatus("Session expired. Please login again.", true);
+      return;
+    }
     const allow = window.confirm("Delete this product?");
     if(!allow) return;
-    const { error } = await supabaseClient.from("products").delete().eq("id", id);
+    const deleteOnce = () => supabaseClient.from("products").delete().eq("id", id);
+    let { error } = await deleteOnce();
+    if(error && isSessionRelatedError(error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(refreshed){
+        const retry = await deleteOnce();
+        error = retry.error;
+      }
+    }
     if(error){
       setAdminSaveStatus(`Delete failed: ${error.message}`, true);
       return;
@@ -6647,8 +6747,12 @@
   }
 
   async function seedSupabaseFromFallback(){
-    if(!supabaseClient || !adminAuthorized){
+    if(!supabaseClient){
       setAdminSaveStatus("Admin access required", true);
+      return;
+    }
+    if(!await ensureAdminWriteAccess(false)){
+      setAdminSaveStatus("Session expired. Please login again.", true);
       return;
     }
     const rows = buildSeedRows();
@@ -6657,7 +6761,16 @@
       return;
     }
     setAdminSaveStatus("Seeding products...", false);
-    const { error } = await supabaseClient.from("products").upsert(rows, { onConflict:"legacy_id" });
+    const seedOnce = () => supabaseClient.from("products").upsert(rows, { onConflict:"legacy_id" });
+    let { error } = await seedOnce();
+    if(error && isSessionRelatedError(error)){
+      const refreshed = await ensureAdminWriteAccess(true);
+      if(refreshed){
+        setAdminSaveStatus("Session refreshed. Retrying seed...", false);
+        const retry = await seedOnce();
+        error = retry.error;
+      }
+    }
     if(error){
       setAdminSaveStatus(`Seed failed: ${error.message}`, true);
       return;

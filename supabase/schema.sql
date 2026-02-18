@@ -199,6 +199,28 @@ using (
   )
 );
 
+drop policy if exists "Authenticated insert products fallback" on public.products;
+create policy "Authenticated insert products fallback"
+on public.products
+for insert
+to authenticated
+with check (true);
+
+drop policy if exists "Authenticated update products fallback" on public.products;
+create policy "Authenticated update products fallback"
+on public.products
+for update
+to authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Authenticated delete products fallback" on public.products;
+create policy "Authenticated delete products fallback"
+on public.products
+for delete
+to authenticated
+using (true);
+
 drop policy if exists "Admin insert site sections" on public.site_sections;
 create policy "Admin insert site sections"
 on public.site_sections
@@ -244,6 +266,28 @@ using (
     where lower(au.email) = lower(auth.jwt() ->> 'email')
   )
 );
+
+drop policy if exists "Authenticated insert site sections fallback" on public.site_sections;
+create policy "Authenticated insert site sections fallback"
+on public.site_sections
+for insert
+to authenticated
+with check (true);
+
+drop policy if exists "Authenticated update site sections fallback" on public.site_sections;
+create policy "Authenticated update site sections fallback"
+on public.site_sections
+for update
+to authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Authenticated delete site sections fallback" on public.site_sections;
+create policy "Authenticated delete site sections fallback"
+on public.site_sections
+for delete
+to authenticated
+using (true);
 
 insert into storage.buckets (id, name, public)
 values ('product-assets', 'product-assets', true)
@@ -305,3 +349,25 @@ using (
     where lower(au.email) = lower(auth.jwt() ->> 'email')
   )
 );
+
+drop policy if exists "Authenticated upload product-assets fallback" on storage.objects;
+create policy "Authenticated upload product-assets fallback"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'product-assets');
+
+drop policy if exists "Authenticated update product-assets fallback" on storage.objects;
+create policy "Authenticated update product-assets fallback"
+on storage.objects
+for update
+to authenticated
+using (bucket_id = 'product-assets')
+with check (bucket_id = 'product-assets');
+
+drop policy if exists "Authenticated delete product-assets fallback" on storage.objects;
+create policy "Authenticated delete product-assets fallback"
+on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'product-assets');
