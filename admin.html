@@ -4137,7 +4137,7 @@
               </div>
             </div>
 
-            <div class="admin-layout">
+            <div class="admin-layout" id="adminProductsLayout">
               <aside class="admin-list-card">
                 <div class="admin-list-head">
                   <div class="admin-card-title">Products</div>
@@ -4293,8 +4293,8 @@
             </div>
 
             <section class="admin-section-card">
-              <div class="admin-card-title">Website Sections</div>
-              <p class="admin-note">Edit all section blocks (including images) from the side menu.</p>
+              <div class="admin-card-title">Admin Sections</div>
+              <p class="admin-note">Use the side menu to switch between Products and all website section blocks.</p>
 
               <div class="admin-sections-layout">
                 <aside class="admin-sections-nav" id="adminSectionNav"></aside>
@@ -5527,6 +5527,7 @@
   const adminRefreshBtn = document.getElementById("adminRefreshBtn");
   const adminSeedBtn = document.getElementById("adminSeedBtn");
   const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+  const adminProductsLayout = document.getElementById("adminProductsLayout");
   const adminUserEmail = document.getElementById("adminUserEmail");
   const adminTypeFilter = document.getElementById("adminTypeFilter");
   const adminProductList = document.getElementById("adminProductList");
@@ -5987,8 +5988,27 @@
     adminSectionTabs = [];
     Object.keys(adminSiteFields).forEach((key) => { delete adminSiteFields[key]; });
     Object.keys(adminSiteUploads).forEach((key) => { delete adminSiteUploads[key]; });
+    if(adminProductsLayout){
+      const productsBtn = document.createElement("button");
+      productsBtn.type = "button";
+      productsBtn.className = "admin-sections-tab";
+      productsBtn.textContent = "Products";
+      productsBtn.addEventListener("click", () => setAdminSectionTab("products"));
+      adminSectionNav.appendChild(productsBtn);
+
+      const productsPanel = document.createElement("div");
+      productsPanel.className = "admin-sections-panel";
+      productsPanel.dataset.tab = "products";
+      const productsHead = document.createElement("div");
+      productsHead.className = "admin-sections-panel-head";
+      productsHead.textContent = "Product Management";
+      productsPanel.appendChild(productsHead);
+      productsPanel.appendChild(adminProductsLayout);
+      adminSectionPanels.appendChild(productsPanel);
+      adminSectionTabs.push({ id: "products", button: productsBtn, panel: productsPanel });
+    }
     const config = getAdminSiteEditorConfig();
-    config.forEach((tab, idx) => {
+    config.forEach((tab) => {
       const navBtn = document.createElement("button");
       navBtn.type = "button";
       navBtn.className = "admin-sections-tab";
@@ -6039,8 +6059,11 @@
       });
       adminSectionPanels.appendChild(panel);
       adminSectionTabs.push({ id: tab.id, button: navBtn, panel });
-      if(idx === 0) setAdminSectionTab(tab.id);
     });
+    if(adminSectionTabs.length){
+      const hasProducts = adminSectionTabs.some((tab) => tab.id === "products");
+      setAdminSectionTab(hasProducts ? "products" : adminSectionTabs[0].id);
+    }
   }
 
   function fillAdminSiteContentForm(content){
