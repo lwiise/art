@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= isAdmin ? "Admin Panel" : "User Panel" %> - <%= panelUser.name %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;"><%= isAdmin ? "Admin Panel" : "User Panel" %></h1>
+        <p class="muted small" style="margin:6px 0 0;">
+          Manage products and all website sections in one workspace.
+          <% if (!isAdmin) { %>
+            Your changes are submitted as pending edits for admin approval.
+          <% } %>
+        </p>
+      </div>
+      <div class="actions">
+        <% if (isAdmin) { %>
+          <a href="/admin/users"><button type="button">Users</button></a>
+          <a href="/admin/edits"><button type="button">Edits</button></a>
+        <% } %>
+        <button type="button" id="signoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <section class="card workspace-card">
+      <div class="workspace-toolbar">
+        <div class="workspace-toolbar-left">
+          <button type="button" id="refreshContentBtn">Refresh</button>
+          <button type="button" id="addProductBtn">New Product</button>
+          <% if (!isAdmin) { %>
+            <button type="button" id="loadTemplateBtn">Reset From Template</button>
+          <% } %>
+        </div>
+        <div class="workspace-toolbar-right">
+          <span class="workspace-user"><%= (currentUser && currentUser.email) || panelUser.email %></span>
+        </div>
+      </div>
+
+      <div class="workspace-card-title">Admin Sections</div>
+      <p class="workspace-card-sub">Use the side menu to switch between Products and website blocks.</p>
+
+      <div class="workspace-grid">
+        <aside class="workspace-nav" id="workspaceNav"></aside>
+
+        <section class="workspace-list-wrap">
+          <div class="workspace-col-head">
+            <h3 id="workspaceListTitle">Products</h3>
+          </div>
+          <div class="workspace-list" id="workspaceList"></div>
+        </section>
+
+        <section class="workspace-editor-wrap">
+          <div class="workspace-col-head">
+            <h3 id="workspaceEditorTitle">Editor</h3>
+          </div>
+          <div id="workspaceEditor"></div>
+          <div class="workspace-status" id="workspaceStatus">Ready.</div>
+          <div class="actions workspace-actions" id="workspaceActionRow"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="card workspace-requests">
+      <div class="topbar" style="margin-bottom:8px;">
+        <h2 style="margin:0;">Edit Requests</h2>
+        <button type="button" id="refreshEditsBtn">Refresh</button>
+      </div>
+      <div class="small muted" id="editsStatus">Loading...</div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="editsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    const isAdmin = <%= isAdmin ? "true" : "false" %>;
+    const panelUserId = <%= Number(panelUser.id) %>;
+    const TAB_ORDER = ["products", "home", "about", "services", "process", "gallery", "contact", "footer"];
+    const TAB_LABEL = {
+      products: "Products",
+      home: "Home",
+      about: "About",
+      services: "Services",
+      process: "Process",
+      gallery: "Gallery",
+      contact: "Contact",
+      footer: "Footer",
+    };
+
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
+
+    const navEl = document.getElementById("workspaceNav");
+    const listEl = document.getElementById("workspaceList");
+    const editorEl = document.getElementById("workspaceEditor");
+    const listTitleEl = document.getElementById("workspaceListTitle");
+    const editorTitleEl = document.getElementById("workspaceEditorTitle");
+    const statusEl = document.getElementById("workspaceStatus");
+    const actionRowEl = document.getElementById("workspaceActionRow");
+    const editsStatusEl = document.getElementById("editsStatus");
+    const editsBodyEl = document.getElementById("editsTableBody");
+
+    const refreshContentBtn = document.getElementById("refreshContentBtn");
+    const addProductBtn = document.getElementById("addProductBtn");
+    const loadTemplateBtn = document.getElementById("loadTemplateBtn");
+    const refreshEditsBtn = document.getElementById("refreshEditsBtn");
+
+    let currentState = { sections: {}, products: [] };
+    let activeTab = "products";
+    let selectedProductId = null;
+    let requestTitle = "";
+    let requestDescription = "";
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function setStatus(text, type = "muted") {
+      statusEl.textContent = text;
+      statusEl.className = `workspace-status ${type}`;
+    }
+
+    function ensureSection(sectionKey) {
+      if (!currentState.sections || typeof currentState.sections !== "object") {
+        currentState.sections = {};
+      }
+      if (!currentState.sections[sectionKey] || typeof currentState.sections[sectionKey] !== "object") {
+        currentState.sections[sectionKey] = {};
+      }
+      return currentState.sections[sectionKey];
+    }
+
+    function getSelectedProduct() {
+      if (!Array.isArray(currentState.products)) {
+        currentState.products = [];
+      }
+      if (!selectedProductId && currentState.products.length) {
+        selectedProductId = currentState.products[0].id;
+      }
+      return currentState.products.find((p) => p.id === selectedProductId) || null;
+    }
+
+    function renderNav() {
+      navEl.innerHTML = TAB_ORDER.map((tab) => {
+        const active = tab === activeTab ? "active" : "";
+        return `<button class="workspace-nav-btn ${active}" data-tab="${tab}">${TAB_LABEL[tab]}</button>`;
+      }).join("");
+    }
+
+    function renderProductsList() {
+      const products = Array.isArray(currentState.products) ? currentState.products : [];
+      if (!products.length) {
+        listEl.innerHTML = `<div class="workspace-empty">No products yet. Click "New Product".</div>`;
+        return;
+      }
+      listEl.innerHTML = products.map((product) => {
+        const active = product.id === selectedProductId ? "active" : "";
+        return `
+          <button class="workspace-item ${active}" data-product-id="${escapeHtml(product.id)}">
+            <span class="workspace-item-name">${escapeHtml(product.name || "Untitled Product")}</span>
+            <span class="workspace-item-meta">${escapeHtml((product.gallery_type || "").toUpperCase())} · ${escapeHtml((product.status || "active").toUpperCase())}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderSectionList(sectionKey) {
+      const section = ensureSection(sectionKey);
+      const keys = Object.keys(section);
+      if (!keys.length) {
+        listEl.innerHTML = `<div class="workspace-empty">No fields yet for this section.</div>`;
+        return;
+      }
+      listEl.innerHTML = keys.map((key) => {
+        const value = section[key];
+        const preview = typeof value === "string" ? value : JSON.stringify(value);
+        return `
+          <div class="workspace-field-row">
+            <span class="workspace-field-key">${escapeHtml(key)}</span>
+            <span class="workspace-field-preview">${escapeHtml(preview)}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderProductEditor() {
+      const product = getSelectedProduct();
+      if (!product) {
+        editorEl.innerHTML = `<div class="workspace-empty">Select a product to edit.</div>`;
+        actionRowEl.innerHTML = "";
+        return;
+      }
+
+      editorTitleEl.textContent = "Product Editor";
+      editorEl.innerHTML = `
+        <div class="workspace-form-grid two">
+          <div class="field-row"><label>Product Name</label><input data-product-field="name" value="${escapeHtml(product.name || "")}" /></div>
+          <div class="field-row"><label>Gallery Type</label><input data-product-field="gallery_type" value="${escapeHtml(product.gallery_type || "")}" /></div>
+        </div>
+        <div class="workspace-form-grid two">
+          <div class="field-row"><label>Category</label><input data-product-field="category" value="${escapeHtml(product.category || "")}" /></div>
+          <div class="field-row"><label>Sort Order</label><input data-product-field="sort_order" type="number" value="${escapeHtml(product.sort_order || 0)}" /></div>
+        </div>
+        <div class="workspace-form-grid two">
+          <div class="field-row"><label>Status</label><input data-product-field="status" value="${escapeHtml(product.status || "active")}" /></div>
+          <div class="field-row"><label>Artist Name</label><input data-product-field="artist_name" value="${escapeHtml(product.artist_name || "")}" /></div>
+        </div>
+        <div class="workspace-form-grid two">
+          <div class="field-row"><label>Artist Role</label><input data-product-field="artist_role" value="${escapeHtml(product.artist_role || "")}" /></div>
+          <div class="field-row"><label>Artist Image URL</label><input data-product-field="artist_image_url" value="${escapeHtml(product.artist_image_url || "")}" /></div>
+        </div>
+        <div class="field-row"><label>Artist Bio</label><textarea data-product-field="artist_bio" rows="3">${escapeHtml(product.artist_bio || "")}</textarea></div>
+        <div class="workspace-form-grid two">
+          <div class="field-row"><label>Cover Image URL</label><input data-product-field="image_url" value="${escapeHtml(product.image_url || "")}" /></div>
+          <div class="field-row"><label>3D Model URL</label><input data-product-field="model_url" value="${escapeHtml(product.model_url || "")}" /></div>
+        </div>
+        <div class="field-row"><label>Description</label><textarea data-product-field="description" rows="4">${escapeHtml(product.description || "")}</textarea></div>
+      `;
+
+      editorEl.querySelectorAll("[data-product-field]").forEach((input) => {
+        input.addEventListener("input", (event) => {
+          const field = event.target.getAttribute("data-product-field");
+          if (!field) return;
+          const selected = getSelectedProduct();
+          if (!selected) return;
+          if (field === "sort_order") {
+            selected[field] = Number(event.target.value || 0);
+          } else {
+            selected[field] = event.target.value;
+          }
+          renderProductsList();
+        });
+      });
+
+      actionRowEl.innerHTML = `
+        <button type="button" id="deleteProductBtn" class="ghost">Delete Product</button>
+        ${isAdmin ? '<button type="button" id="saveLiveBtn" class="primary">Save Live</button>' : '<button type="button" id="submitApprovalBtn" class="primary">Submit For Approval</button>'}
+      `;
+
+      const deleteBtn = document.getElementById("deleteProductBtn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+          currentState.products = currentState.products.filter((p) => p.id !== selectedProductId);
+          selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
+          renderWorkspace();
+        });
+      }
+
+      wirePrimaryActionButtons();
+    }
+
+    function renderSectionEditor(sectionKey) {
+      const section = ensureSection(sectionKey);
+      editorTitleEl.textContent = `${TAB_LABEL[sectionKey]} Editor`;
+      editorEl.innerHTML = `
+        <div class="field-row">
+          <label>Section JSON</label>
+          <textarea id="sectionJsonEditor" class="mono" rows="18">${escapeHtml(JSON.stringify(section, null, 2))}</textarea>
+        </div>
+      `;
+
+      actionRowEl.innerHTML = isAdmin
+        ? '<button type="button" id="saveLiveBtn" class="primary">Save Live</button>'
+        : `
+          <div class="workspace-request-grid">
+            <div class="field-row"><label>Edit Title</label><input id="requestTitleInput" value="${escapeHtml(requestTitle)}" placeholder="Update ${TAB_LABEL[sectionKey]} section" /></div>
+            <div class="field-row"><label>Edit Description</label><input id="requestDescriptionInput" value="${escapeHtml(requestDescription)}" placeholder="Describe your changes" /></div>
+          </div>
+          <button type="button" id="submitApprovalBtn" class="primary">Submit For Approval</button>
+        `;
+
+      const textarea = document.getElementById("sectionJsonEditor");
+      if (textarea) {
+        textarea.addEventListener("input", () => {
+          try {
+            const parsed = JSON.parse(textarea.value || "{}");
+            currentState.sections[sectionKey] = parsed;
+            setStatus("Section JSON is valid.", "success");
+            renderSectionList(sectionKey);
+          } catch {
+            setStatus("Section JSON is invalid. Fix JSON before submit.", "error");
+          }
+        });
+      }
+
+      wirePrimaryActionButtons();
+    }
+
+    function renderWorkspace() {
+      renderNav();
+      listTitleEl.textContent = activeTab === "products" ? "Products" : `${TAB_LABEL[activeTab]} Fields`;
+      addProductBtn.style.display = activeTab === "products" ? "inline-flex" : "none";
+
+      if (activeTab === "products") {
+        renderProductsList();
+        renderProductEditor();
+      } else {
+        renderSectionList(activeTab);
+        renderSectionEditor(activeTab);
+      }
+    }
+
+    async function loadContentState() {
+      const result = await sendApiRequest("/api/content/current");
+      currentState = result.state || { sections: {}, products: [] };
+      if (!selectedProductId && Array.isArray(currentState.products) && currentState.products.length) {
+        selectedProductId = currentState.products[0].id;
+      }
+      renderWorkspace();
+      setStatus("Content loaded.", "success");
+    }
+
+    async function saveLive() {
+      await sendApiRequest("/api/content/current", {
+        method: "PUT",
+        body: JSON.stringify(currentState),
+      });
+      setStatus("Live content saved.", "success");
+      await loadEdits();
+    }
+
+    async function submitForApproval() {
+      const titleInput = document.getElementById("requestTitleInput");
+      const descriptionInput = document.getElementById("requestDescriptionInput");
+
+      const title = titleInput ? String(titleInput.value || "").trim() : `Content update: ${TAB_LABEL[activeTab]}`;
+      const description = descriptionInput ? String(descriptionInput.value || "").trim() : `User update for ${TAB_LABEL[activeTab]}.`;
+
+      if (!title || !description) {
+        setStatus("Title and description are required for approval requests.", "error");
+        return;
+      }
+
+      const payload = {
+        target: "full_website",
+        sections: currentState.sections,
+        products: currentState.products,
+      };
+
+      await sendApiRequest("/api/edits", {
+        method: "POST",
+        body: JSON.stringify({
+          title,
+          description,
+          payload,
+        }),
+      });
+
+      requestTitle = "";
+      requestDescription = "";
+      setStatus("Edit request submitted. Waiting for admin approval.", "success");
+      await loadEdits();
+    }
+
+    function wirePrimaryActionButtons() {
+      const saveBtn = document.getElementById("saveLiveBtn");
+      const submitBtn = document.getElementById("submitApprovalBtn");
+      const titleInput = document.getElementById("requestTitleInput");
+      const descriptionInput = document.getElementById("requestDescriptionInput");
+
+      if (titleInput) {
+        titleInput.addEventListener("input", () => {
+          requestTitle = titleInput.value;
+        });
+      }
+      if (descriptionInput) {
+        descriptionInput.addEventListener("input", () => {
+          requestDescription = descriptionInput.value;
+        });
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener("click", async () => {
+          saveBtn.disabled = true;
+          try {
+            await saveLive();
+          } catch (error) {
+            setStatus(error.message || "Could not save live content.", "error");
+          } finally {
+            saveBtn.disabled = false;
+          }
+        });
+      }
+
+      if (submitBtn) {
+        submitBtn.addEventListener("click", async () => {
+          submitBtn.disabled = true;
+          try {
+            await submitForApproval();
+          } catch (error) {
+            setStatus(error.message || "Could not submit approval request.", "error");
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
+    }
+
+    function renderEditsTable(edits) {
+      if (!Array.isArray(edits) || !edits.length) {
+        editsBodyEl.innerHTML = `<tr><td colspan="6" class="muted small">No edits yet.</td></tr>`;
+        return;
+      }
+
+      editsBodyEl.innerHTML = edits.map((edit) => `
+        <tr data-edit-id="${edit.id}">
+          <td>#${edit.id}</td>
+          <td>${escapeHtml(edit.userName || "-")}</td>
+          <td>${escapeHtml(edit.title || "-")}</td>
+          <td><span class="status ${escapeHtml(edit.status || "pending")}">${escapeHtml(edit.status || "pending")}</span></td>
+          <td>${escapeHtml(edit.createdAt || "")}</td>
+          <td>
+            ${isAdmin ? `
+              <div class="actions">
+                <button type="button" data-edit-action="approve" ${edit.status !== "pending" ? "disabled" : ""}>Approve</button>
+                <button type="button" data-edit-action="reject" ${edit.status !== "pending" ? "disabled" : ""}>Reject</button>
+              </div>
+            ` : `${escapeHtml(edit.approvedByName || "-")}`}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadEdits() {
+      editsStatusEl.textContent = "Loading edits...";
+      const result = await sendApiRequest("/api/edits");
+      const all = Array.isArray(result.edits) ? result.edits : [];
+      const rows = isAdmin ? all : all.filter((item) => Number(item.userId) === panelUserId);
+      renderEditsTable(rows);
+      editsStatusEl.textContent = rows.length ? "" : "No edits yet.";
+    }
+
+    navEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-tab]");
+      if (!button) return;
+      activeTab = button.getAttribute("data-tab");
+      renderWorkspace();
+    });
+
+    listEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-product-id]");
+      if (!button) return;
+      selectedProductId = button.getAttribute("data-product-id");
+      renderWorkspace();
+    });
+
+    addProductBtn.addEventListener("click", () => {
+      const product = {
+        id: `prod-${Date.now()}`,
+        name: "Untitled Product",
+        gallery_type: "art",
+        category: "",
+        status: "active",
+        sort_order: 0,
+        artist_name: "",
+        artist_role: "",
+        artist_image_url: "",
+        artist_bio: "",
+        image_url: "",
+        model_url: "",
+        description: "",
+      };
+      if (!Array.isArray(currentState.products)) currentState.products = [];
+      currentState.products.unshift(product);
+      selectedProductId = product.id;
+      renderWorkspace();
+      setStatus("New product draft created.", "success");
+    });
+
+    refreshContentBtn.addEventListener("click", async () => {
+      refreshContentBtn.disabled = true;
+      try {
+        await loadContentState();
+      } catch (error) {
+        setStatus(error.message || "Could not refresh content.", "error");
+      } finally {
+        refreshContentBtn.disabled = false;
+      }
+    });
+
+    if (loadTemplateBtn) {
+      loadTemplateBtn.addEventListener("click", async () => {
+        loadTemplateBtn.disabled = true;
+        try {
+          const result = await sendApiRequest("/api/content/template");
+          currentState = {
+            sections: (result.template && result.template.sections) || {},
+            products: (result.template && result.template.products) || [],
+          };
+          selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
+          renderWorkspace();
+          setStatus("Loaded template content into draft.", "success");
+        } catch (error) {
+          setStatus(error.message || "Could not load template.", "error");
+        } finally {
+          loadTemplateBtn.disabled = false;
+        }
+      });
+    }
+
+    refreshEditsBtn.addEventListener("click", async () => {
+      refreshEditsBtn.disabled = true;
+      try {
+        await loadEdits();
+      } catch (error) {
+        editsStatusEl.textContent = error.message || "Could not load edits.";
+      } finally {
+        refreshEditsBtn.disabled = false;
+      }
+    });
+
+    editsBodyEl.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-edit-action]");
+      if (!button || !isAdmin) return;
+      const row = event.target.closest("tr[data-edit-id]");
+      if (!row) return;
+      const editId = row.getAttribute("data-edit-id");
+      const action = button.getAttribute("data-edit-action");
+      button.disabled = true;
+      try {
+        await sendApiRequest(`/api/edits/${editId}/${action}`, {
+          method: "PATCH",
+        });
+        await loadContentState();
+        await loadEdits();
+        setStatus(action === "approve" ? "Edit approved and applied." : "Edit rejected.", "success");
+      } catch (error) {
+        setStatus(error.message || "Could not update edit status.", "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    (async () => {
+      try {
+        await loadContentState();
+        await loadEdits();
+      } catch (error) {
+        setStatus(error.message || "Failed to initialize workspace.", "error");
+        editsStatusEl.textContent = "Could not load edits.";
+      }
+    })();
+  </script>
+</body>
+</html>

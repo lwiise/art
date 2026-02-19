@@ -34,9 +34,20 @@ db.exec(`
     approved_by integer references users(id)
   );
 
+  create table if not exists site_state (
+    id integer primary key check (id = 1),
+    sections_json text not null default '{}',
+    products_json text not null default '[]',
+    updated_at text not null default (datetime('now')),
+    updated_by integer references users(id)
+  );
+
   create index if not exists idx_users_slug on users(slug);
   create index if not exists idx_edits_user_id on edits(user_id);
   create index if not exists idx_edits_status on edits(status);
+
+  insert or ignore into site_state (id, sections_json, products_json)
+  values (1, '{}', '[]');
 `);
 
 function slugifyName(name) {

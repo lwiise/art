@@ -161,6 +161,188 @@ const WEBSITE_EDIT_TEMPLATE = Object.freeze({
   notes: "Users can edit any field in this template and submit it as a pending change request."
 });
 
+const DEFAULT_SITE_STATE = Object.freeze({
+  sections: {
+    home: {
+      title: "Welcome to FNN Art",
+      subtitle: "The New Marketplace for Exceptional Art"
+    },
+    about: {
+      title: "About FNN",
+      lead: "A modern art platform presenting original works by selected artists."
+    },
+    services: {
+      title: "Services",
+      subtitle: "Creative direction, curation, and installation."
+    },
+    process: {
+      title: "Our Process",
+      subtitle: "From discovery to delivery with clear quality gates."
+    },
+    gallery: {
+      title: "Gallery",
+      artists_button: "Artists"
+    },
+    contact: {
+      title: "Get in Touch",
+      subtitle: "Interested in a piece? Let us know."
+    },
+    footer: {
+      note: "A modern art platform connecting artists, institutions, and audiences.",
+      contact: "anaskaroti@gmail.com"
+    }
+  },
+  products: [
+    {
+      id: "prod-praying-girl",
+      name: "Praying Girl (19th Century)",
+      gallery_type: "art",
+      category: "Artwork",
+      status: "active",
+      sort_order: 1,
+      artist_name: "Roberto Ferruzzi",
+      artist_role: "Painter",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: "",
+      model_url: "",
+      description: ""
+    },
+    {
+      id: "prod-arch-cabinet",
+      name: "Arch Cabinet",
+      gallery_type: "designs",
+      category: "Cabinets",
+      status: "active",
+      sort_order: 2,
+      artist_name: "",
+      artist_role: "",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: "",
+      model_url: "",
+      description: ""
+    },
+    {
+      id: "prod-hajj-arts",
+      name: "Hajj and the Arts of Pilgrimage",
+      gallery_type: "books",
+      category: "Books",
+      status: "active",
+      sort_order: 3,
+      artist_name: "",
+      artist_role: "",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: "",
+      model_url: "",
+      description: ""
+    }
+  ]
+});
+
+function deepCloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function safeJsonParseText(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeSiteState(input) {
+  const base = deepCloneJson(DEFAULT_SITE_STATE);
+  if (!input || typeof input !== "object") {
+    return base;
+  }
+
+  if (input.sections && typeof input.sections === "object" && !Array.isArray(input.sections)) {
+    base.sections = input.sections;
+  }
+
+  if (Array.isArray(input.products)) {
+    base.products = input.products.map((product, index) => {
+      const p = (product && typeof product === "object") ? product : {};
+      return {
+        id: String(p.id || `prod-${Date.now()}-${index}`),
+        name: String(p.name || "Untitled Product"),
+        gallery_type: String(p.gallery_type || "art"),
+        category: String(p.category || ""),
+        status: String(p.status || "active"),
+        sort_order: Number.isFinite(Number(p.sort_order)) ? Number(p.sort_order) : 0,
+        artist_name: String(p.artist_name || ""),
+        artist_role: String(p.artist_role || ""),
+        artist_image_url: String(p.artist_image_url || ""),
+        artist_bio: String(p.artist_bio || ""),
+        image_url: String(p.image_url || ""),
+        model_url: String(p.model_url || ""),
+        description: String(p.description || ""),
+      };
+    });
+  }
+
+  return base;
+}
+
+function getSiteState() {
+  const row = db
+    .prepare("select sections_json, products_json from site_state where id = 1")
+    .get();
+
+  if (!row) {
+    const fallback = deepCloneJson(DEFAULT_SITE_STATE);
+    db.prepare(
+      "insert into site_state (id, sections_json, products_json, updated_at) values (1, ?, ?, datetime('now'))"
+    ).run(JSON.stringify(fallback.sections), JSON.stringify(fallback.products));
+    return fallback;
+  }
+
+  return normalizeSiteState({
+    sections: safeJsonParseText(row.sections_json, deepCloneJson(DEFAULT_SITE_STATE.sections)),
+    products: safeJsonParseText(row.products_json, deepCloneJson(DEFAULT_SITE_STATE.products)),
+  });
+}
+
+function saveSiteState(state, updatedBy) {
+  const normalized = normalizeSiteState(state);
+  db.prepare(
+    `update site_state
+     set sections_json = ?, products_json = ?, updated_at = datetime('now'), updated_by = ?
+     where id = 1`
+  ).run(
+    JSON.stringify(normalized.sections),
+    JSON.stringify(normalized.products),
+    updatedBy || null
+  );
+  return normalized;
+}
+
+function applyPayloadToSiteState(payload, adminUserId) {
+  if (!payload || typeof payload !== "object") return false;
+
+  const current = getSiteState();
+  const next = deepCloneJson(current);
+  let changed = false;
+
+  if (payload.sections && typeof payload.sections === "object" && !Array.isArray(payload.sections)) {
+    next.sections = payload.sections;
+    changed = true;
+  }
+
+  if (Array.isArray(payload.products)) {
+    next.products = payload.products;
+    changed = true;
+  }
+
+  if (changed) {
+    saveSiteState(next, adminUserId);
+  }
+  return changed;
+}
+
 function normalizeStatus(status) {
   if (!status) return null;
   const value = String(status).trim().toLowerCase();
@@ -381,15 +563,22 @@ app.get("/panel/:slug", requireAuth, (req, res) => {
     });
   }
 
-  const canSubmit = req.user.role === "user" && req.user.id === panelUser.id;
-
-  return res.render("panel", {
+  return res.render("workspace", {
     panelUser,
-    canSubmit,
+    isAdmin: req.user.role === "admin",
+    isOwnPanel: req.user.id === panelUser.id,
   });
 });
 
 app.get("/admin", requireAdmin, (req, res) => {
+  return res.render("workspace", {
+    panelUser: req.user,
+    isAdmin: true,
+    isOwnPanel: true,
+  });
+});
+
+app.get("/admin/overview", requireAdmin, (req, res) => {
   const stats = db
     .prepare(
       `select
@@ -531,10 +720,32 @@ app.get("/api/me", requireAuth, (req, res) => {
   return res.json({ user: buildSessionUser(req.user) });
 });
 
-app.get("/api/content/template", requireAuth, (_req, res) => {
-  // Return a fresh object so callers can mutate safely on the client side.
+app.get("/api/content/current", requireAuth, (_req, res) => {
+  return res.json({ state: getSiteState() });
+});
+
+app.put("/api/content/current", requireAdmin, (req, res) => {
+  const incoming = req.body || {};
+  const normalized = normalizeSiteState({
+    sections: incoming.sections,
+    products: incoming.products,
+  });
+  const saved = saveSiteState(normalized, req.user.id);
   return res.json({
-    template: JSON.parse(JSON.stringify(WEBSITE_EDIT_TEMPLATE)),
+    message: "Website content saved.",
+    state: saved,
+  });
+});
+
+app.get("/api/content/template", requireAuth, (_req, res) => {
+  return res.json({
+    template: {
+      schema_version: "1.0",
+      target: "full_website",
+      sections: deepCloneJson(DEFAULT_SITE_STATE.sections),
+      products: deepCloneJson(DEFAULT_SITE_STATE.products),
+      notes: WEBSITE_EDIT_TEMPLATE.notes,
+    },
   });
 });
 
@@ -588,10 +799,15 @@ function setEditDecision(decision) {
     ).run(decision, req.user.id, editId);
 
     const updated = getEditById(editId);
-    const message =
-      decision === "approved"
-        ? "Edit approved. It is now eligible for push/deploy."
-        : "Edit rejected.";
+    let message = decision === "approved" ? "Edit approved." : "Edit rejected.";
+    if (decision === "approved") {
+      const applied = applyPayloadToSiteState(updated.payload, req.user.id);
+      if (applied) {
+        message = "Edit approved and applied to website content.";
+      } else {
+        message = "Edit approved. No website content fields were found in payload.";
+      }
+    }
     return res.json({ message, edit: updated });
   };
 }
