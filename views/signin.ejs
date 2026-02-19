@@ -38,7 +38,7 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    const apiRequest = (window.APP && typeof APP.apiRequest === "function")
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
     const form = document.getElementById("signinForm");
@@ -57,7 +57,7 @@
       };
 
       try {
-        const result = await apiRequest("/api/auth/signin", {
+        const result = await sendApiRequest("/api/auth/signin", {
           method: "POST",
           body: JSON.stringify(payload),
         });

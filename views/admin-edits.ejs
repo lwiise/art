@@ -80,7 +80,7 @@
     if (window.APP && typeof APP.attachSignOutHandler === "function") {
       APP.attachSignOutHandler("signoutBtn");
     }
-    const apiRequest = (window.APP && typeof APP.apiRequest === "function")
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
 
@@ -104,7 +104,7 @@
       adminMsg.textContent = "";
       button.disabled = true;
       try {
-        const result = await apiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
+        const result = await sendApiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
         updateRow(row, result.edit);
         adminMsg.textContent = action === "approve" ? "Edit approved." : "Edit rejected.";
       } catch (error) {
