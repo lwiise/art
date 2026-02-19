@@ -89,7 +89,13 @@
               <tr data-id="<%= e.id %>">
                 <td>#<%= e.id %></td>
                 <td><a href="/admin/users/<%= e.userId %>"><%= e.userName %></a></td>
-                <td><%= e.title %></td>
+                <td>
+                  <div><%= e.title %></div>
+                  <details class="payload-details">
+                    <summary>Payload</summary>
+                    <pre class="payload-preview"><%= JSON.stringify(e.payload || {}, null, 2) %></pre>
+                  </details>
+                </td>
                 <td><span class="status <%= e.status %>"><%= e.status %></span></td>
                 <td><%= e.createdAt %></td>
                 <td>
@@ -108,13 +114,18 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    APP.attachSignOutHandler("signoutBtn");
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const apiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
 
     const editsBody = document.getElementById("recentEditsBody");
     const adminMsg = document.getElementById("adminMsg");
 
     async function setDecision(editId, action) {
-      const result = await APP.apiRequest(`/api/edits/${editId}/${action}`, {
+      const result = await apiRequest(`/api/edits/${editId}/${action}`, {
         method: "PATCH",
       });
       return result.edit;

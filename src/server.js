@@ -29,6 +29,138 @@ const publicDir = path.join(__dirname, "..", "public");
 app.use("/auth-assets", express.static(publicDir));
 app.use(express.static(publicDir));
 
+const WEBSITE_EDIT_TEMPLATE = Object.freeze({
+  schema_version: "1.0",
+  target: "full_website",
+  sections: {
+    home: {
+      welcome: "",
+      tagline: "",
+      banner_title: "",
+      banner_button: "",
+      slides: [
+        { image_url: "" },
+        { image_url: "" },
+        { image_url: "" }
+      ]
+    },
+    about: {
+      title: "",
+      lead: "",
+      sublead: "",
+      cards: [
+        { meta: "", title: "", description: "", image_url: "" },
+        { meta: "", title: "", description: "", image_url: "" },
+        { meta: "", title: "", description: "", image_url: "" }
+      ]
+    },
+    services: {
+      title: "",
+      subtitle: "",
+      items: [
+        { icon: "", title: "", description: "" }
+      ]
+    },
+    process: {
+      title: "",
+      subtitle: "",
+      steps: [
+        { kicker: "", title: "", description: "", illustration: "" }
+      ]
+    },
+    gallery: {
+      title: "",
+      artists_button: "",
+      tabs: {
+        art: "Art",
+        designs: "Designs",
+        books: "Books",
+        photography: "Photography"
+      },
+      art_types: ["Artwork", "Sculpture"],
+      design_filters: ["All", "Cabinets", "Sideboards", "Decor"],
+      book_filters: {
+        themes: ["Heritage", "Pilgrimage", "Architecture", "Travel", "Culture"],
+        colors: ["Warm", "Cool", "Neutral", "Bold"],
+        sizes: ["Compact", "Classic", "Large"]
+      }
+    },
+    contact: {
+      title: "",
+      subtitle: "",
+      form_placeholders: {
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+      },
+      button: ""
+    },
+    footer: {
+      brand: "",
+      note: "",
+      contact_title: "",
+      contact: "",
+      navigation_title: "",
+      social_title: "",
+      navigation: {
+        home: "Home",
+        about: "About",
+        services: "Services",
+        gallery: "Gallery",
+        contact: "Contact"
+      },
+      social: ["", "", "", ""],
+      copyright: ""
+    }
+  },
+  products: [
+    {
+      action: "update",
+      id: "existing-product-id-or-empty-for-create",
+      name: "",
+      gallery_type: "art",
+      status: "active",
+      sort_order: 0,
+      category: "",
+      image_url: "",
+      media_images: [],
+      model_url: "",
+      artist: {
+        name: "",
+        role: "",
+        image_url: "",
+        bio: ""
+      },
+      book_fields: {
+        theme: "",
+        color: "",
+        size: "",
+        tag: "",
+        kicker: ""
+      },
+      design_fields: {
+        material: "",
+        dimensions: "",
+        store_name: "",
+        store_lng: null,
+        store_lat: null
+      },
+      art_fields: {
+        medium: "",
+        period: "",
+        era: "",
+        year: null,
+        material: "",
+        rating: null,
+        rating_count: "",
+        base_price: null
+      }
+    }
+  ],
+  notes: "Users can edit any field in this template and submit it as a pending change request."
+});
+
 function normalizeStatus(status) {
   if (!status) return null;
   const value = String(status).trim().toLowerCase();
@@ -397,6 +529,13 @@ app.post("/api/auth/signout", (req, res) => {
 
 app.get("/api/me", requireAuth, (req, res) => {
   return res.json({ user: buildSessionUser(req.user) });
+});
+
+app.get("/api/content/template", requireAuth, (_req, res) => {
+  // Return a fresh object so callers can mutate safely on the client side.
+  return res.json({
+    template: JSON.parse(JSON.stringify(WEBSITE_EDIT_TEMPLATE)),
+  });
 });
 
 app.post("/api/edits", requireAuth, (req, res) => {

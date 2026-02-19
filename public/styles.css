@@ -272,6 +272,33 @@ th {
   font-weight: 900;
 }
 
+.payload-details {
+  margin-top: 6px;
+}
+
+.payload-details summary {
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.payload-preview {
+  margin: 8px 0 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  background: #f6f6f6;
+  max-width: 420px;
+  max-height: 240px;
+  overflow: auto;
+  font-size: 11px;
+  line-height: 1.5;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
 .status {
   display: inline-flex;
   align-items: center;

@@ -23,8 +23,8 @@
 
     <% if (canSubmit) { %>
       <section class="card" style="margin-bottom: 14px;">
-        <h2 style="margin-top:0;">Submit New Edit</h2>
-        <p class="muted">Edits are always saved as <strong>Pending</strong> until an admin approves or rejects them.</p>
+        <h2 style="margin-top:0;">Submit Website Edit</h2>
+        <p class="muted">You can edit the same website content blocks as admin. Every request is saved as <strong>Pending</strong> and must be approved by admin before push.</p>
         <form id="editForm">
           <div class="grid two">
             <div>
@@ -32,15 +32,24 @@
               <input id="title" name="title" maxlength="150" required />
             </div>
             <div>
-              <label for="payload">Payload (JSON)</label>
-              <input id="payload" name="payload" placeholder='{"field":"value"}' />
+              <label for="editScope">Edit Scope</label>
+              <select id="editScope" name="editScope">
+                <option value="full_website">Full Website</option>
+                <option value="sections_only">Sections Only</option>
+                <option value="products_only">Products Only</option>
+              </select>
             </div>
           </div>
           <div style="margin-top:10px;">
             <label for="description">Description</label>
             <textarea id="description" name="description" maxlength="5000" required></textarea>
           </div>
+          <div style="margin-top:10px;">
+            <label for="payload">Payload (JSON)</label>
+            <textarea id="payload" name="payload" class="mono" rows="18" placeholder='{"target":"full_website","sections":{},"products":[]}'></textarea>
+          </div>
           <div class="actions" style="margin-top: 10px;">
+            <button type="button" id="loadTemplateBtn">Load Website Template</button>
             <button class="primary" type="submit" id="submitEditBtn">Submit Edit</button>
           </div>
           <div id="editFormMsg" class="error"></div>
@@ -64,6 +73,7 @@
             <tr>
               <th>ID</th>
               <th>Title</th>
+              <th>Scope</th>
               <th>Description</th>
               <th>Status</th>
               <th>Created</th>
@@ -78,7 +88,12 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    APP.attachSignOutHandler("signoutBtn");
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const apiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
 
     const panelUserId = <%= Number(panelUser.id) %>;
     const editsBody = document.getElementById("editsBody");
@@ -98,10 +113,12 @@
     }
 
     function rowTemplate(edit) {
+      const scope = (edit && edit.payload && edit.payload.target) ? edit.payload.target : "custom";
       return `
         <tr>
           <td>#${edit.id}</td>
           <td>${escapeHtml(edit.title)}</td>
+          <td>${escapeHtml(String(scope).replace(/_/g, " "))}</td>
           <td>${escapeHtml(edit.description)}</td>
           <td>${statusBadge(edit.status)}</td>
           <td>${escapeHtml(edit.createdAt || "")}</td>
@@ -113,7 +130,7 @@
     async function loadEdits() {
       editsMsg.textContent = "Loading edits...";
       try {
-        const result = await APP.apiRequest("/api/edits");
+        const result = await apiRequest("/api/edits");
         const rows = Array.isArray(result.edits) ? result.edits : [];
         const userRows = rows.filter((item) => Number(item.userId) === panelUserId);
         editsBody.innerHTML = userRows.map(rowTemplate).join("");
@@ -131,6 +148,70 @@
     if (editForm) {
       const editMsg = document.getElementById("editFormMsg");
       const submitBtn = document.getElementById("submitEditBtn");
+      const scopeSelect = document.getElementById("editScope");
+      const payloadField = document.getElementById("payload");
+      const loadTemplateBtn = document.getElementById("loadTemplateBtn");
+
+      function buildTemplateForScope(scope, fullTemplate) {
+        if (scope === "sections_only") {
+          return {
+            schema_version: fullTemplate.schema_version,
+            target: "sections_only",
+            sections: fullTemplate.sections,
+            notes: "Edit section text/images only.",
+          };
+        }
+        if (scope === "products_only") {
+          return {
+            schema_version: fullTemplate.schema_version,
+            target: "products_only",
+            products: fullTemplate.products,
+            notes: "Edit product data only.",
+          };
+        }
+        return fullTemplate;
+      }
+
+      async function loadTemplateIntoPayload(overrideScope) {
+        const scope = overrideScope || scopeSelect.value || "full_website";
+        const result = await apiRequest("/api/content/template");
+        const template = buildTemplateForScope(scope, result.template || {});
+        payloadField.value = JSON.stringify(template, null, 2);
+      }
+
+      loadTemplateBtn.addEventListener("click", async () => {
+        editMsg.className = "error";
+        editMsg.textContent = "";
+        try {
+          await loadTemplateIntoPayload();
+          editMsg.className = "success";
+          editMsg.textContent = "Template loaded. Update any fields, then submit.";
+        } catch (error) {
+          editMsg.className = "error";
+          editMsg.textContent = error.message || "Could not load template.";
+        }
+      });
+
+      scopeSelect.addEventListener("change", async () => {
+        if (payloadField.value.trim()) {
+          const shouldReplace = window.confirm("Replace payload with the selected scope template?");
+          if (!shouldReplace) return;
+        }
+        try {
+          await loadTemplateIntoPayload(scopeSelect.value);
+        } catch (error) {
+          editMsg.className = "error";
+          editMsg.textContent = error.message || "Could not load template.";
+        }
+      });
+
+      (async () => {
+        try {
+          await loadTemplateIntoPayload("full_website");
+        } catch (_error) {
+          // Keep the field editable even if template fetch fails.
+        }
+      })();
 
       editForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -140,6 +221,12 @@
 
         const formData = new FormData(editForm);
         const payloadRaw = String(formData.get("payload") || "").trim();
+        if (!payloadRaw) {
+          editMsg.className = "error";
+          editMsg.textContent = "Payload JSON is required.";
+          submitBtn.disabled = false;
+          return;
+        }
         const payload = {
           title: formData.get("title"),
           description: formData.get("description"),
@@ -147,13 +234,15 @@
         if (payloadRaw) payload.payload = payloadRaw;
 
         try {
-          await APP.apiRequest("/api/edits", {
+          await apiRequest("/api/edits", {
             method: "POST",
             body: JSON.stringify(payload),
           });
           editMsg.className = "success";
           editMsg.textContent = "Edit submitted successfully.";
           editForm.reset();
+          scopeSelect.value = "full_website";
+          await loadTemplateIntoPayload("full_website");
           await loadEdits();
         } catch (error) {
           editMsg.className = "error";

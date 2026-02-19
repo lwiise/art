@@ -51,7 +51,13 @@
                 <td>#<%= e.id %></td>
                 <td><a href="/admin/users/<%= e.userId %>"><%= e.userName %></a></td>
                 <td><%= e.title %></td>
-                <td><%= e.description %></td>
+                <td>
+                  <div><%= e.description %></div>
+                  <details class="payload-details">
+                    <summary>Payload</summary>
+                    <pre class="payload-preview"><%= JSON.stringify(e.payload || {}, null, 2) %></pre>
+                  </details>
+                </td>
                 <td><span class="status <%= e.status %>"><%= e.status %></span></td>
                 <td><%= e.createdAt %></td>
                 <td><%= e.approvedByName || "-" %></td>
@@ -71,7 +77,12 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    APP.attachSignOutHandler("signoutBtn");
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const apiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
 
     const editsBody = document.getElementById("editsBody");
     const adminMsg = document.getElementById("adminMsg");
@@ -93,7 +104,7 @@
       adminMsg.textContent = "";
       button.disabled = true;
       try {
-        const result = await APP.apiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
+        const result = await apiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
         updateRow(row, result.edit);
         adminMsg.textContent = action === "approve" ? "Edit approved." : "Edit rejected.";
       } catch (error) {

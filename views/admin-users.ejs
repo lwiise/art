@@ -54,7 +54,9 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    APP.attachSignOutHandler("signoutBtn");
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
   </script>
 </body>
 </html>
