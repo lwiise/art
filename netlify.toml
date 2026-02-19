@@ -1,0 +1,44 @@
+[build]
+publish = "."
+
+[[redirects]]
+from = "/log"
+to = "https://art-production-6dda.up.railway.app/log"
+status = 200
+force = true
+
+[[redirects]]
+from = "/create"
+to = "https://art-production-6dda.up.railway.app/create"
+status = 200
+force = true
+
+[[redirects]]
+from = "/signin"
+to = "https://art-production-6dda.up.railway.app/signin"
+status = 200
+force = true
+
+[[redirects]]
+from = "/panel/*"
+to = "https://art-production-6dda.up.railway.app/panel/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/admin"
+to = "https://art-production-6dda.up.railway.app/admin"
+status = 200
+force = true
+
+[[redirects]]
+from = "/admin/*"
+to = "https://art-production-6dda.up.railway.app/admin/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/api/*"
+to = "https://art-production-6dda.up.railway.app/api/:splat"
+status = 200
+force = true
