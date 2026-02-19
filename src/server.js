@@ -205,8 +205,25 @@ const DEFAULT_SITE_STATE = Object.freeze({
       artist_image_url: "",
       artist_bio: "",
       image_url: "",
+      media_images: [],
       model_url: "",
-      description: ""
+      theme: "",
+      color: "",
+      size: "",
+      tag: "",
+      kicker: "",
+      material: "Oil on canvas",
+      dimensions: "12 x 16",
+      store_name: "",
+      store_lng: null,
+      store_lat: null,
+      medium: "Oil",
+      period: "19th Century",
+      era: "",
+      year: 1890,
+      rating: 4.8,
+      rating_count: "50+",
+      base_price: 153
     },
     {
       id: "prod-arch-cabinet",
@@ -220,8 +237,25 @@ const DEFAULT_SITE_STATE = Object.freeze({
       artist_image_url: "",
       artist_bio: "",
       image_url: "",
+      media_images: [],
       model_url: "",
-      description: ""
+      theme: "",
+      color: "",
+      size: "",
+      tag: "",
+      kicker: "",
+      material: "Oak wood",
+      dimensions: "180 x 45 x 95",
+      store_name: "FNN Store",
+      store_lng: null,
+      store_lat: null,
+      medium: "",
+      period: "",
+      era: "",
+      year: null,
+      rating: null,
+      rating_count: "",
+      base_price: null
     },
     {
       id: "prod-hajj-arts",
@@ -235,8 +269,25 @@ const DEFAULT_SITE_STATE = Object.freeze({
       artist_image_url: "",
       artist_bio: "",
       image_url: "",
+      media_images: [],
       model_url: "",
-      description: ""
+      theme: "Heritage",
+      color: "Warm",
+      size: "Classic",
+      tag: "",
+      kicker: "",
+      material: "",
+      dimensions: "",
+      store_name: "",
+      store_lng: null,
+      store_lat: null,
+      medium: "",
+      period: "",
+      era: "",
+      year: null,
+      rating: null,
+      rating_count: "",
+      base_price: null
     }
   ]
 });
@@ -266,6 +317,14 @@ function normalizeSiteState(input) {
   if (Array.isArray(input.products)) {
     base.products = input.products.map((product, index) => {
       const p = (product && typeof product === "object") ? product : {};
+      const toNumberOrNull = (value) => {
+        if (value === null || value === undefined || value === "") return null;
+        const num = Number(value);
+        return Number.isFinite(num) ? num : null;
+      };
+      const mediaImages = Array.isArray(p.media_images)
+        ? p.media_images.map((item) => String(item || "")).filter(Boolean)
+        : [];
       return {
         id: String(p.id || `prod-${Date.now()}-${index}`),
         name: String(p.name || "Untitled Product"),
@@ -278,8 +337,25 @@ function normalizeSiteState(input) {
         artist_image_url: String(p.artist_image_url || ""),
         artist_bio: String(p.artist_bio || ""),
         image_url: String(p.image_url || ""),
+        media_images: mediaImages,
         model_url: String(p.model_url || ""),
-        description: String(p.description || ""),
+        theme: String(p.theme || ""),
+        color: String(p.color || ""),
+        size: String(p.size || ""),
+        tag: String(p.tag || ""),
+        kicker: String(p.kicker || ""),
+        material: String(p.material || ""),
+        dimensions: String(p.dimensions || ""),
+        store_name: String(p.store_name || ""),
+        store_lng: toNumberOrNull(p.store_lng),
+        store_lat: toNumberOrNull(p.store_lat),
+        medium: String(p.medium || ""),
+        period: String(p.period || ""),
+        era: String(p.era || ""),
+        year: toNumberOrNull(p.year),
+        rating: toNumberOrNull(p.rating),
+        rating_count: String(p.rating_count || ""),
+        base_price: toNumberOrNull(p.base_price),
       };
     });
   }

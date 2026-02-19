@@ -8,36 +8,25 @@
 </head>
 <body>
   <main class="container">
-    <div class="topbar">
-      <div>
-        <h1 style="margin:0;"><%= isAdmin ? "Admin Panel" : "User Panel" %></h1>
-        <p class="muted small" style="margin:6px 0 0;">
-          Manage products and all website sections in one workspace.
-          <% if (!isAdmin) { %>
-            Your changes are submitted as pending edits for admin approval.
-          <% } %>
-        </p>
-      </div>
-      <div class="actions">
-        <% if (isAdmin) { %>
-          <a href="/admin/users"><button type="button">Users</button></a>
-          <a href="/admin/edits"><button type="button">Edits</button></a>
+    <div>
+      <h1 style="margin:0;"><%= isAdmin ? "Admin Panel" : "User Panel" %></h1>
+      <p class="muted" style="margin:8px 0 20px;">
+        Manage products, upload images/models, and keep filters aligned with Art, Designs, Books, and Photography.
+        <% if (!isAdmin) { %>
+          Your changes are submitted as pending edits for admin approval.
         <% } %>
-        <button type="button" id="signoutBtn">Logout</button>
-      </div>
+      </p>
     </div>
 
     <section class="card workspace-card">
       <div class="workspace-toolbar">
         <div class="workspace-toolbar-left">
           <button type="button" id="refreshContentBtn">Refresh</button>
-          <button type="button" id="addProductBtn">New Product</button>
-          <% if (!isAdmin) { %>
-            <button type="button" id="loadTemplateBtn">Reset From Template</button>
-          <% } %>
+          <button type="button" id="seedContentBtn"><%= isAdmin ? "Seed Current Products" : "Load Template" %></button>
         </div>
         <div class="workspace-toolbar-right">
           <span class="workspace-user"><%= (currentUser && currentUser.email) || panelUser.email %></span>
+          <button type="button" id="signoutBtn">Logout</button>
         </div>
       </div>
 
@@ -50,6 +39,17 @@
         <section class="workspace-list-wrap">
           <div class="workspace-col-head">
             <h3 id="workspaceListTitle">Products</h3>
+            <button type="button" id="addProductBtn">New Product</button>
+          </div>
+          <div class="field-row" id="productFilterRow">
+            <select id="productTypeFilter">
+              <option value="all">All Categories</option>
+              <option value="art">Art</option>
+              <option value="designs">Designs</option>
+              <option value="books">Books</option>
+              <option value="photography">Photography</option>
+              <option value="sculpture">Sculpture</option>
+            </select>
           </div>
           <div class="workspace-list" id="workspaceList"></div>
         </section>
@@ -104,6 +104,22 @@
       contact: "Contact",
       footer: "Footer",
     };
+    const GALLERY_TYPE_LABELS = {
+      art: "Art",
+      designs: "Designs",
+      furniture: "Designs",
+      books: "Books",
+      photography: "Photography",
+      sculpture: "Sculpture",
+    };
+    const CATEGORY_OPTIONS = {
+      art: ["Artwork", "Sculpture"],
+      sculpture: ["Sculpture", "Artwork"],
+      designs: ["All", "Cabinets", "Sideboards", "Decor"],
+      furniture: ["All", "Cabinets", "Sideboards", "Decor"],
+      books: ["All"],
+      photography: ["All"],
+    };
 
     if (window.APP && typeof APP.attachSignOutHandler === "function") {
       APP.attachSignOutHandler("signoutBtn");
@@ -124,15 +140,15 @@
     const editsBodyEl = document.getElementById("editsTableBody");
 
     const refreshContentBtn = document.getElementById("refreshContentBtn");
+    const seedContentBtn = document.getElementById("seedContentBtn");
     const addProductBtn = document.getElementById("addProductBtn");
-    const loadTemplateBtn = document.getElementById("loadTemplateBtn");
+    const productTypeFilter = document.getElementById("productTypeFilter");
+    const productFilterRow = document.getElementById("productFilterRow");
     const refreshEditsBtn = document.getElementById("refreshEditsBtn");
 
     let currentState = { sections: {}, products: [] };
     let activeTab = "products";
     let selectedProductId = null;
-    let requestTitle = "";
-    let requestDescription = "";
 
     function escapeHtml(value) {
       return String(value || "")
@@ -144,6 +160,84 @@
     function setStatus(text, type = "muted") {
       statusEl.textContent = text;
       statusEl.className = `workspace-status ${type}`;
+    }
+
+    function toNumberOrNull(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function toGalleryType(rawType) {
+      const value = String(rawType || "").trim().toLowerCase();
+      if (value === "furniture") return "designs";
+      if (value === "sculpture") return "sculpture";
+      if (value === "books") return "books";
+      if (value === "designs") return "designs";
+      if (value === "photography") return "photography";
+      return "art";
+    }
+
+    function defaultCategory(type) {
+      const options = CATEGORY_OPTIONS[type] || ["All"];
+      return options[0];
+    }
+
+    function parseMediaImages(value) {
+      if (Array.isArray(value)) {
+        return value.map((item) => String(item || "").trim()).filter(Boolean);
+      }
+      return String(value || "")
+        .split(/\r?\n/g)
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    function normalizeProduct(product, index = 0) {
+      const source = (product && typeof product === "object") ? product : {};
+      const type = toGalleryType(source.gallery_type);
+      return {
+        id: String(source.id || `prod-${Date.now()}-${index}`),
+        name: String(source.name || "Untitled Product"),
+        gallery_type: type,
+        category: String(source.category || defaultCategory(type)),
+        status: String(source.status || "active"),
+        sort_order: Number.isFinite(Number(source.sort_order)) ? Number(source.sort_order) : 0,
+        artist_name: String(source.artist_name || ""),
+        artist_role: String(source.artist_role || ""),
+        artist_image_url: String(source.artist_image_url || ""),
+        artist_bio: String(source.artist_bio || ""),
+        image_url: String(source.image_url || ""),
+        media_images: parseMediaImages(source.media_images),
+        model_url: String(source.model_url || ""),
+        theme: String(source.theme || ""),
+        color: String(source.color || ""),
+        size: String(source.size || ""),
+        tag: String(source.tag || ""),
+        kicker: String(source.kicker || ""),
+        material: String(source.material || ""),
+        dimensions: String(source.dimensions || ""),
+        store_name: String(source.store_name || ""),
+        store_lng: toNumberOrNull(source.store_lng),
+        store_lat: toNumberOrNull(source.store_lat),
+        medium: String(source.medium || ""),
+        period: String(source.period || ""),
+        era: String(source.era || ""),
+        year: toNumberOrNull(source.year),
+        rating: toNumberOrNull(source.rating),
+        rating_count: String(source.rating_count || ""),
+        base_price: toNumberOrNull(source.base_price),
+      };
+    }
+
+    function newDraftProduct() {
+      return normalizeProduct({
+        id: `prod-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        name: "Untitled Product",
+        gallery_type: "art",
+        category: "Artwork",
+        status: "active",
+      });
     }
 
     function ensureSection(sectionKey) {
@@ -160,8 +254,12 @@
       if (!Array.isArray(currentState.products)) {
         currentState.products = [];
       }
+      currentState.products = currentState.products.map((product, index) => normalizeProduct(product, index));
       if (!selectedProductId && currentState.products.length) {
         selectedProductId = currentState.products[0].id;
+      }
+      if (selectedProductId && !currentState.products.some((product) => product.id === selectedProductId)) {
+        selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
       }
       return currentState.products.find((p) => p.id === selectedProductId) || null;
     }
@@ -173,19 +271,38 @@
       }).join("");
     }
 
-    function renderProductsList() {
+    function getFilteredProducts() {
+      const filter = String((productTypeFilter && productTypeFilter.value) || "all").toLowerCase();
       const products = Array.isArray(currentState.products) ? currentState.products : [];
+      if (filter === "all") return products;
+      return products.filter((product) => {
+        const type = toGalleryType(product.gallery_type);
+        if (filter === "art") {
+          return type === "art" || type === "sculpture";
+        }
+        return type === filter;
+      });
+    }
+
+    function renderProductsList() {
+      const products = getFilteredProducts();
       if (!products.length) {
         listEl.innerHTML = `<div class="workspace-empty">No products yet. Click "New Product".</div>`;
         return;
       }
       listEl.innerHTML = products.map((product) => {
         const active = product.id === selectedProductId ? "active" : "";
+        const type = toGalleryType(product.gallery_type);
+        const typeLabel = GALLERY_TYPE_LABELS[type] || "Art";
         return `
-          <button class="workspace-item ${active}" data-product-id="${escapeHtml(product.id)}">
-            <span class="workspace-item-name">${escapeHtml(product.name || "Untitled Product")}</span>
-            <span class="workspace-item-meta">${escapeHtml((product.gallery_type || "").toUpperCase())} · ${escapeHtml((product.status || "active").toUpperCase())}</span>
-          </button>
+          <div class="workspace-item ${active}" data-product-id="${escapeHtml(product.id)}">
+            <div class="workspace-item-name">${escapeHtml(product.name || "Untitled Product")}</div>
+            <div class="workspace-item-meta">${escapeHtml(typeLabel.toUpperCase())} · ${escapeHtml((product.status || "active").toUpperCase())}</div>
+            <div class="workspace-item-actions">
+              <button type="button" class="workspace-item-btn" data-item-action="edit" data-product-id="${escapeHtml(product.id)}">Edit</button>
+              <button type="button" class="workspace-item-btn" data-item-action="delete" data-product-id="${escapeHtml(product.id)}">Delete</button>
+            </div>
+          </div>
         `;
       }).join("");
     }
@@ -209,6 +326,127 @@
       }).join("");
     }
 
+    function setCategoryOptions(selectEl, type, selectedValue) {
+      if (!selectEl) return;
+      const options = CATEGORY_OPTIONS[type] || ["All"];
+      const chosen = String(selectedValue || "").trim();
+      const allOptions = options.slice();
+      if (chosen && !allOptions.includes(chosen)) {
+        allOptions.push(chosen);
+      }
+      selectEl.innerHTML = allOptions
+        .map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`)
+        .join("");
+      selectEl.value = chosen || options[0];
+    }
+
+    function setProductFieldVisibility(container, type) {
+      const normalized = toGalleryType(type);
+      const artTypeRow = container.querySelector("[data-role='art-type-row']");
+      const booksFields = container.querySelector("[data-role='books-fields']");
+      const designFields = container.querySelector("[data-role='design-fields']");
+      const artFields = container.querySelector("[data-role='art-fields']");
+      const categorySelect = container.querySelector("[data-product-field='category']");
+      if (artTypeRow) artTypeRow.hidden = normalized !== "art";
+      if (booksFields) booksFields.hidden = normalized !== "books";
+      if (designFields) designFields.hidden = normalized !== "designs";
+      if (artFields) artFields.hidden = !(normalized === "art" || normalized === "sculpture" || normalized === "photography");
+      setCategoryOptions(categorySelect, normalized, categorySelect ? categorySelect.value : "");
+    }
+
+    function fillProductEditor(container, product) {
+      if (!container || !product) return;
+      const productType = toGalleryType(product.gallery_type);
+      const formType = productType === "sculpture" ? "art" : productType;
+      const artType = productType === "sculpture" ? "sculpture" : "art";
+
+      const setValue = (field, value) => {
+        const input = container.querySelector(`[data-product-field='${field}']`);
+        if (!input) return;
+        input.value = value == null ? "" : String(value);
+      };
+
+      setValue("id", product.id);
+      setValue("name", product.name);
+      setValue("gallery_type", formType);
+      setValue("art_type", artType);
+      setValue("sort_order", product.sort_order);
+      setValue("artist_name", product.artist_name);
+      setValue("artist_role", product.artist_role);
+      setValue("artist_image_url", product.artist_image_url);
+      setValue("artist_bio", product.artist_bio);
+      setValue("image_url", product.image_url);
+      setValue("model_url", product.model_url);
+      setValue("media_images", parseMediaImages(product.media_images).join("\n"));
+      setValue("theme", product.theme);
+      setValue("color", product.color);
+      setValue("size", product.size);
+      setValue("tag", product.tag);
+      setValue("kicker", product.kicker);
+      setValue("material", product.material);
+      setValue("art_material", product.material);
+      setValue("dimensions", product.dimensions);
+      setValue("store_name", product.store_name);
+      setValue("store_lng", product.store_lng);
+      setValue("store_lat", product.store_lat);
+      setValue("medium", product.medium);
+      setValue("period", product.period);
+      setValue("era", product.era);
+      setValue("year", product.year);
+      setValue("rating", product.rating);
+      setValue("rating_count", product.rating_count);
+      setValue("base_price", product.base_price);
+
+      const categorySelect = container.querySelector("[data-product-field='category']");
+      setCategoryOptions(categorySelect, productType, product.category || defaultCategory(productType));
+      setProductFieldVisibility(container, formType);
+    }
+
+    function collectProductEditor(container, currentProduct) {
+      const getValue = (field) => {
+        const input = container.querySelector(`[data-product-field='${field}']`);
+        return input ? String(input.value || "").trim() : "";
+      };
+
+      const galleryTypeBase = toGalleryType(getValue("gallery_type"));
+      const artType = getValue("art_type");
+      const finalType = galleryTypeBase === "art" && artType === "sculpture" ? "sculpture" : galleryTypeBase;
+
+      return normalizeProduct({
+        ...currentProduct,
+        id: getValue("id") || currentProduct.id || `prod-${Date.now()}`,
+        name: getValue("name") || "Untitled Product",
+        gallery_type: finalType,
+        category: getValue("category") || defaultCategory(finalType),
+        status: currentProduct.status || "active",
+        sort_order: getValue("sort_order"),
+        artist_name: getValue("artist_name"),
+        artist_role: getValue("artist_role"),
+        artist_image_url: getValue("artist_image_url"),
+        artist_bio: getValue("artist_bio"),
+        image_url: getValue("image_url"),
+        model_url: getValue("model_url"),
+        media_images: parseMediaImages(getValue("media_images")),
+        theme: getValue("theme"),
+        color: getValue("color"),
+        size: getValue("size"),
+        tag: getValue("tag"),
+        kicker: getValue("kicker"),
+        material: getValue("art_material") || getValue("material"),
+        dimensions: getValue("dimensions"),
+        store_name: getValue("store_name"),
+        store_lng: getValue("store_lng"),
+        store_lat: getValue("store_lat"),
+        medium: getValue("medium"),
+        period: getValue("period"),
+        era: getValue("era"),
+        year: getValue("year"),
+        rating: getValue("rating"),
+        rating_count: getValue("rating_count"),
+        base_price: getValue("base_price"),
+      });
+    }
+
     function renderProductEditor() {
       const product = getSelectedProduct();
       if (!product) {
@@ -219,56 +457,169 @@
 
       editorTitleEl.textContent = "Product Editor";
       editorEl.innerHTML = `
+        <input type="hidden" data-product-field="id" />
         <div class="workspace-form-grid two">
-          <div class="field-row"><label>Product Name</label><input data-product-field="name" value="${escapeHtml(product.name || "")}" /></div>
-          <div class="field-row"><label>Gallery Type</label><input data-product-field="gallery_type" value="${escapeHtml(product.gallery_type || "")}" /></div>
+          <div class="field-row"><input data-product-field="name" placeholder="Product Name" /></div>
+          <div class="field-row">
+            <select data-product-field="gallery_type">
+              <option value="art">Art</option>
+              <option value="designs">Designs</option>
+              <option value="books">Books</option>
+              <option value="photography">Photography</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="workspace-form-grid two" data-role="art-type-row" hidden>
+          <div class="field-row">
+            <select data-product-field="art_type">
+              <option value="art">Artwork</option>
+              <option value="sculpture">Sculpture</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="workspace-form-grid two">
+          <div class="field-row"><select data-product-field="category"></select></div>
+          <div class="field-row"><input data-product-field="sort_order" type="number" placeholder="Sort Order" /></div>
+        </div>
+        <div class="workspace-form-grid three">
+          <div class="field-row"><input data-product-field="artist_name" placeholder="Artist Name" /></div>
+          <div class="field-row"><input data-product-field="artist_role" placeholder="Artist Role" /></div>
+          <div class="field-row"><input data-product-field="artist_image_url" placeholder="Artist Image URL" /></div>
+        </div>
+        <div class="field-row"><textarea data-product-field="artist_bio" rows="3" placeholder="Artist Bio"></textarea></div>
+        <div class="workspace-form-grid two">
+          <div class="field-row"><input data-product-field="image_url" placeholder="Cover Image URL" /></div>
+          <div class="field-row"><input data-product-field="model_url" placeholder="3D Model URL (.glb/.gltf)" /></div>
         </div>
         <div class="workspace-form-grid two">
-          <div class="field-row"><label>Category</label><input data-product-field="category" value="${escapeHtml(product.category || "")}" /></div>
-          <div class="field-row"><label>Sort Order</label><input data-product-field="sort_order" type="number" value="${escapeHtml(product.sort_order || 0)}" /></div>
+          <div class="field-row"><input type="file" data-ui-field="cover_upload" accept="image/*" /></div>
+          <div class="field-row"><input type="file" data-ui-field="model_upload" accept=".glb,.gltf,model/gltf-binary,model/gltf+json" /></div>
         </div>
-        <div class="workspace-form-grid two">
-          <div class="field-row"><label>Status</label><input data-product-field="status" value="${escapeHtml(product.status || "active")}" /></div>
-          <div class="field-row"><label>Artist Name</label><input data-product-field="artist_name" value="${escapeHtml(product.artist_name || "")}" /></div>
+        <div class="field-row"><textarea data-product-field="media_images" rows="4" placeholder="Extra image URLs (one per line)"></textarea></div>
+        <div class="field-row"><input type="file" data-ui-field="images_upload" accept="image/*" multiple /></div>
+        <div class="workspace-note">Tip: use URL fields. File upload is UI-only in this build.</div>
+
+        <div class="workspace-group" data-role="books-fields">
+          <div class="workspace-group-title">Book Fields</div>
+          <div class="workspace-form-grid three">
+            <div class="field-row">
+              <select data-product-field="theme">
+                <option value="">Theme</option>
+                <option value="Heritage">Heritage</option>
+                <option value="Pilgrimage">Pilgrimage</option>
+                <option value="Architecture">Architecture</option>
+                <option value="Travel">Travel</option>
+                <option value="Culture">Culture</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <select data-product-field="color">
+                <option value="">Color</option>
+                <option value="Warm">Warm</option>
+                <option value="Cool">Cool</option>
+                <option value="Neutral">Neutral</option>
+                <option value="Bold">Bold</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <select data-product-field="size">
+                <option value="">Size</option>
+                <option value="Compact">Compact</option>
+                <option value="Classic">Classic</option>
+                <option value="Large">Large</option>
+              </select>
+            </div>
+          </div>
+          <div class="workspace-form-grid two">
+            <div class="field-row"><input data-product-field="tag" placeholder="Tag" /></div>
+            <div class="field-row"><input data-product-field="kicker" placeholder="Kicker" /></div>
+          </div>
         </div>
-        <div class="workspace-form-grid two">
-          <div class="field-row"><label>Artist Role</label><input data-product-field="artist_role" value="${escapeHtml(product.artist_role || "")}" /></div>
-          <div class="field-row"><label>Artist Image URL</label><input data-product-field="artist_image_url" value="${escapeHtml(product.artist_image_url || "")}" /></div>
+
+        <div class="workspace-group" data-role="design-fields">
+          <div class="workspace-group-title">Design Fields</div>
+          <div class="workspace-form-grid two">
+            <div class="field-row"><input data-product-field="material" placeholder="Material" /></div>
+            <div class="field-row"><input data-product-field="dimensions" placeholder="Dimensions (e.g. 120x60x90)" /></div>
+          </div>
+          <div class="workspace-form-grid three">
+            <div class="field-row"><input data-product-field="store_name" placeholder="Store Name" /></div>
+            <div class="field-row"><input data-product-field="store_lng" type="number" step="0.000001" placeholder="Store Longitude" /></div>
+            <div class="field-row"><input data-product-field="store_lat" type="number" step="0.000001" placeholder="Store Latitude" /></div>
+          </div>
         </div>
-        <div class="field-row"><label>Artist Bio</label><textarea data-product-field="artist_bio" rows="3">${escapeHtml(product.artist_bio || "")}</textarea></div>
-        <div class="workspace-form-grid two">
-          <div class="field-row"><label>Cover Image URL</label><input data-product-field="image_url" value="${escapeHtml(product.image_url || "")}" /></div>
-          <div class="field-row"><label>3D Model URL</label><input data-product-field="model_url" value="${escapeHtml(product.model_url || "")}" /></div>
+
+        <div class="workspace-group" data-role="art-fields">
+          <div class="workspace-group-title">Art / Sculpture Fields</div>
+          <div class="workspace-form-grid three">
+            <div class="field-row"><input data-product-field="medium" placeholder="Medium" /></div>
+            <div class="field-row"><input data-product-field="period" placeholder="Period" /></div>
+            <div class="field-row"><input data-product-field="art_material" placeholder="Material" /></div>
+          </div>
+          <div class="workspace-form-grid three">
+            <div class="field-row"><input data-product-field="era" placeholder="Era" /></div>
+            <div class="field-row"><input data-product-field="year" type="number" placeholder="Year" /></div>
+            <div class="field-row"><input data-product-field="rating" type="number" step="0.1" placeholder="Rating" /></div>
+          </div>
+          <div class="workspace-form-grid two">
+            <div class="field-row"><input data-product-field="rating_count" placeholder="Rating Count (e.g. 50+)" /></div>
+            <div class="field-row"><input data-product-field="base_price" type="number" placeholder="Base Price" /></div>
+          </div>
         </div>
-        <div class="field-row"><label>Description</label><textarea data-product-field="description" rows="4">${escapeHtml(product.description || "")}</textarea></div>
       `;
 
-      editorEl.querySelectorAll("[data-product-field]").forEach((input) => {
-        input.addEventListener("input", (event) => {
-          const field = event.target.getAttribute("data-product-field");
-          if (!field) return;
-          const selected = getSelectedProduct();
-          if (!selected) return;
-          if (field === "sort_order") {
-            selected[field] = Number(event.target.value || 0);
-          } else {
-            selected[field] = event.target.value;
+      fillProductEditor(editorEl, product);
+
+      const galleryTypeEl = editorEl.querySelector("[data-product-field='gallery_type']");
+      const artTypeEl = editorEl.querySelector("[data-product-field='art_type']");
+      if (galleryTypeEl) {
+        galleryTypeEl.addEventListener("change", () => {
+          if (toGalleryType(galleryTypeEl.value) !== "art" && artTypeEl) {
+            artTypeEl.value = "art";
           }
-          renderProductsList();
+          setProductFieldVisibility(editorEl, galleryTypeEl.value);
+        });
+      }
+      if (artTypeEl) {
+        artTypeEl.addEventListener("change", () => {
+          setProductFieldVisibility(editorEl, galleryTypeEl ? galleryTypeEl.value : "art");
+        });
+      }
+
+      editorEl.querySelectorAll("[data-ui-field]").forEach((input) => {
+        input.addEventListener("change", () => {
+          if (!input.files || !input.files.length) return;
+          setStatus("File fields are visual only. Use URL fields to persist assets.", "error");
         });
       });
 
       actionRowEl.innerHTML = `
-        <button type="button" id="deleteProductBtn" class="ghost">Delete Product</button>
-        ${isAdmin ? '<button type="button" id="saveLiveBtn" class="primary">Save Live</button>' : '<button type="button" id="submitApprovalBtn" class="primary">Submit For Approval</button>'}
+        <button type="button" id="deleteProductBtn" class="ghost">${isAdmin ? "Delete Product" : "Remove Product"}</button>
+        ${isAdmin ? '<button type="button" id="saveLiveBtn" class="primary">Save Product</button>' : '<button type="button" id="submitApprovalBtn" class="primary">Submit Product Edit</button>'}
       `;
 
       const deleteBtn = document.getElementById("deleteProductBtn");
       if (deleteBtn) {
-        deleteBtn.addEventListener("click", () => {
-          currentState.products = currentState.products.filter((p) => p.id !== selectedProductId);
+        deleteBtn.addEventListener("click", async () => {
+          const selected = getSelectedProduct();
+          if (!selected) return;
+          const shouldDelete = window.confirm(`Delete "${selected.name || "Untitled Product"}"?`);
+          if (!shouldDelete) return;
+          currentState.products = currentState.products.filter((p) => p.id !== selected.id);
           selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
           renderWorkspace();
+          try {
+            if (isAdmin) {
+              await saveLive();
+              setStatus("Product deleted.", "success");
+            } else {
+              await submitForApproval(`Product delete: ${selected.name || "Untitled Product"}`, "User requested product deletion.");
+            }
+          } catch (error) {
+            setStatus(error.message || "Could not delete product.", "error");
+          }
         });
       }
 
@@ -286,14 +637,8 @@
       `;
 
       actionRowEl.innerHTML = isAdmin
-        ? '<button type="button" id="saveLiveBtn" class="primary">Save Live</button>'
-        : `
-          <div class="workspace-request-grid">
-            <div class="field-row"><label>Edit Title</label><input id="requestTitleInput" value="${escapeHtml(requestTitle)}" placeholder="Update ${TAB_LABEL[sectionKey]} section" /></div>
-            <div class="field-row"><label>Edit Description</label><input id="requestDescriptionInput" value="${escapeHtml(requestDescription)}" placeholder="Describe your changes" /></div>
-          </div>
-          <button type="button" id="submitApprovalBtn" class="primary">Submit For Approval</button>
-        `;
+        ? '<button type="button" id="saveLiveBtn" class="primary">Save Section Content</button>'
+        : '<button type="button" id="submitApprovalBtn" class="primary">Submit Section Edit</button>';
 
       const textarea = document.getElementById("sectionJsonEditor");
       if (textarea) {
@@ -316,6 +661,9 @@
       renderNav();
       listTitleEl.textContent = activeTab === "products" ? "Products" : `${TAB_LABEL[activeTab]} Fields`;
       addProductBtn.style.display = activeTab === "products" ? "inline-flex" : "none";
+      if (productFilterRow) {
+        productFilterRow.style.display = activeTab === "products" ? "block" : "none";
+      }
 
       if (activeTab === "products") {
         renderProductsList();
@@ -328,29 +676,52 @@
 
     async function loadContentState() {
       const result = await sendApiRequest("/api/content/current");
-      currentState = result.state || { sections: {}, products: [] };
-      if (!selectedProductId && Array.isArray(currentState.products) && currentState.products.length) {
-        selectedProductId = currentState.products[0].id;
+      currentState = {
+        sections: (result.state && typeof result.state.sections === "object" && !Array.isArray(result.state.sections))
+          ? result.state.sections
+          : {},
+        products: Array.isArray(result.state && result.state.products)
+          ? result.state.products.map((product, index) => normalizeProduct(product, index))
+          : [],
+      };
+      const noSections = Object.keys(currentState.sections).length === 0;
+      const noProducts = currentState.products.length === 0;
+      if (noSections && noProducts) {
+        const templateResult = await sendApiRequest("/api/content/template");
+        const template = templateResult.template || {};
+        currentState = {
+          sections: (template.sections && typeof template.sections === "object") ? template.sections : {},
+          products: Array.isArray(template.products)
+            ? template.products.map((product, index) => normalizeProduct(product, index))
+            : [],
+        };
       }
+      if (!selectedProductId && currentState.products.length) selectedProductId = currentState.products[0].id;
       renderWorkspace();
       setStatus("Content loaded.", "success");
     }
 
-    async function saveLive() {
-      await sendApiRequest("/api/content/current", {
+    async function saveLive(statusText = "Live content saved.") {
+      const response = await sendApiRequest("/api/content/current", {
         method: "PUT",
         body: JSON.stringify(currentState),
       });
-      setStatus("Live content saved.", "success");
+      currentState = {
+        sections: (response.state && typeof response.state.sections === "object" && !Array.isArray(response.state.sections))
+          ? response.state.sections
+          : currentState.sections,
+        products: Array.isArray(response.state && response.state.products)
+          ? response.state.products.map((product, index) => normalizeProduct(product, index))
+          : currentState.products,
+      };
+      renderWorkspace();
+      setStatus(statusText, "success");
       await loadEdits();
     }
 
-    async function submitForApproval() {
-      const titleInput = document.getElementById("requestTitleInput");
-      const descriptionInput = document.getElementById("requestDescriptionInput");
-
-      const title = titleInput ? String(titleInput.value || "").trim() : `Content update: ${TAB_LABEL[activeTab]}`;
-      const description = descriptionInput ? String(descriptionInput.value || "").trim() : `User update for ${TAB_LABEL[activeTab]}.`;
+    async function submitForApproval(customTitle, customDescription) {
+      const title = String(customTitle || `Content update: ${TAB_LABEL[activeTab]}`).trim();
+      const description = String(customDescription || `User update for ${TAB_LABEL[activeTab]}.`).trim();
 
       if (!title || !description) {
         setStatus("Title and description are required for approval requests.", "error");
@@ -372,8 +743,6 @@
         }),
       });
 
-      requestTitle = "";
-      requestDescription = "";
       setStatus("Edit request submitted. Waiting for admin approval.", "success");
       await loadEdits();
     }
@@ -381,25 +750,42 @@
     function wirePrimaryActionButtons() {
       const saveBtn = document.getElementById("saveLiveBtn");
       const submitBtn = document.getElementById("submitApprovalBtn");
-      const titleInput = document.getElementById("requestTitleInput");
-      const descriptionInput = document.getElementById("requestDescriptionInput");
 
-      if (titleInput) {
-        titleInput.addEventListener("input", () => {
-          requestTitle = titleInput.value;
-        });
-      }
-      if (descriptionInput) {
-        descriptionInput.addEventListener("input", () => {
-          requestDescription = descriptionInput.value;
-        });
+      function syncProductDraftFromEditor() {
+        if (activeTab !== "products") {
+          const sectionEditor = document.getElementById("sectionJsonEditor");
+          if (!sectionEditor) return true;
+          try {
+            if (!currentState.sections || typeof currentState.sections !== "object") {
+              currentState.sections = {};
+            }
+            currentState.sections[activeTab] = JSON.parse(sectionEditor.value || "{}");
+            return true;
+          } catch {
+            setStatus("Section JSON is invalid. Fix the JSON before submit.", "error");
+            return false;
+          }
+        }
+        const selected = getSelectedProduct();
+        if (!selected) {
+          setStatus("Select a product to continue.", "error");
+          return false;
+        }
+        const updated = collectProductEditor(editorEl, selected);
+        const index = currentState.products.findIndex((product) => product.id === selected.id);
+        if (index === -1) return false;
+        currentState.products[index] = updated;
+        selectedProductId = updated.id;
+        renderProductsList();
+        return true;
       }
 
       if (saveBtn) {
         saveBtn.addEventListener("click", async () => {
           saveBtn.disabled = true;
           try {
-            await saveLive();
+            if (!syncProductDraftFromEditor()) return;
+            await saveLive(activeTab === "products" ? "Product saved." : `${TAB_LABEL[activeTab]} section saved.`);
           } catch (error) {
             setStatus(error.message || "Could not save live content.", "error");
           } finally {
@@ -412,7 +798,14 @@
         submitBtn.addEventListener("click", async () => {
           submitBtn.disabled = true;
           try {
-            await submitForApproval();
+            if (!syncProductDraftFromEditor()) return;
+            const title = activeTab === "products"
+              ? `Product update: ${getSelectedProduct() ? getSelectedProduct().name : "Untitled Product"}`
+              : `Section update: ${TAB_LABEL[activeTab]}`;
+            const description = activeTab === "products"
+              ? "User submitted product changes for admin approval."
+              : `User submitted ${TAB_LABEL[activeTab]} section changes for admin approval.`;
+            await submitForApproval(title, description);
           } catch (error) {
             setStatus(error.message || "Could not submit approval request.", "error");
           } finally {
@@ -464,28 +857,53 @@
     });
 
     listEl.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-product-id]");
-      if (!button) return;
-      selectedProductId = button.getAttribute("data-product-id");
+      const actionButton = event.target.closest("[data-item-action]");
+      if (actionButton) {
+        const action = actionButton.getAttribute("data-item-action");
+        const productId = actionButton.getAttribute("data-product-id");
+        if (!productId) return;
+        if (action === "edit") {
+          selectedProductId = productId;
+          renderWorkspace();
+          return;
+        }
+        if (action === "delete") {
+          const target = currentState.products.find((product) => product.id === productId);
+          if (!target) return;
+          const shouldDelete = window.confirm(`Delete "${target.name || "Untitled Product"}"?`);
+          if (!shouldDelete) return;
+          currentState.products = currentState.products.filter((product) => product.id !== productId);
+          selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
+          renderWorkspace();
+          (async () => {
+            try {
+              if (isAdmin) {
+                await saveLive("Product deleted.");
+              } else {
+                await submitForApproval(`Product delete: ${target.name || "Untitled Product"}`, "User requested product deletion.");
+              }
+            } catch (error) {
+              setStatus(error.message || "Could not delete product.", "error");
+            }
+          })();
+          return;
+        }
+      }
+
+      const row = event.target.closest("[data-product-id]");
+      if (!row) return;
+      selectedProductId = row.getAttribute("data-product-id");
       renderWorkspace();
     });
 
+    if (productTypeFilter) {
+      productTypeFilter.addEventListener("change", () => {
+        renderProductsList();
+      });
+    }
+
     addProductBtn.addEventListener("click", () => {
-      const product = {
-        id: `prod-${Date.now()}`,
-        name: "Untitled Product",
-        gallery_type: "art",
-        category: "",
-        status: "active",
-        sort_order: 0,
-        artist_name: "",
-        artist_role: "",
-        artist_image_url: "",
-        artist_bio: "",
-        image_url: "",
-        model_url: "",
-        description: "",
-      };
+      const product = newDraftProduct();
       if (!Array.isArray(currentState.products)) currentState.products = [];
       currentState.products.unshift(product);
       selectedProductId = product.id;
@@ -504,22 +922,35 @@
       }
     });
 
-    if (loadTemplateBtn) {
-      loadTemplateBtn.addEventListener("click", async () => {
-        loadTemplateBtn.disabled = true;
+    if (seedContentBtn) {
+      seedContentBtn.addEventListener("click", async () => {
+        seedContentBtn.disabled = true;
         try {
+          if (isAdmin) {
+            const confirmed = window.confirm("Replace current content with template content?");
+            if (!confirmed) return;
+          }
+
           const result = await sendApiRequest("/api/content/template");
+          const template = result.template || {};
           currentState = {
-            sections: (result.template && result.template.sections) || {},
-            products: (result.template && result.template.products) || [],
+            sections: (template.sections && typeof template.sections === "object") ? template.sections : {},
+            products: Array.isArray(template.products)
+              ? template.products.map((product, index) => normalizeProduct(product, index))
+              : [],
           };
           selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
           renderWorkspace();
-          setStatus("Loaded template content into draft.", "success");
+
+          if (isAdmin) {
+            await saveLive("Template content seeded.");
+          } else {
+            setStatus("Template loaded in draft. Submit your edit for approval.", "success");
+          }
         } catch (error) {
           setStatus(error.message || "Could not load template.", "error");
         } finally {
-          loadTemplateBtn.disabled = false;
+          seedContentBtn.disabled = false;
         }
       });
     }
@@ -569,3 +1000,4 @@
   </script>
 </body>
 </html>
+

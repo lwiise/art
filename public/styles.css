@@ -455,6 +455,11 @@ th {
   padding: 12px;
 }
 
+.workspace-editor-wrap {
+  max-height: 72vh;
+  overflow: auto;
+}
+
 .workspace-col-head {
   display: flex;
   justify-content: space-between;
@@ -482,7 +487,6 @@ th {
 
 .workspace-item {
   width: 100%;
-  text-align: left;
   border-radius: 14px;
   border: 1px solid #e1e1e1;
   padding: 10px;
@@ -490,6 +494,7 @@ th {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
 }
 
 .workspace-item.active {
@@ -508,6 +513,28 @@ th {
   color: #767676;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.workspace-item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.workspace-item-btn {
+  border: 1px solid #dbdbdb;
+  border-radius: 10px;
+  padding: 6px 8px;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.workspace-item-btn:hover {
+  background: #f6f6f6;
 }
 
 .workspace-empty {
@@ -553,6 +580,10 @@ th {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.workspace-form-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .workspace-actions {
   margin-top: 10px;
 }
@@ -580,6 +611,29 @@ th {
 
 .workspace-requests {
   margin-top: 14px;
+}
+
+.workspace-note {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.workspace-group {
+  margin-top: 10px;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 10px;
+  background: #fcfcfc;
+}
+
+.workspace-group-title {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 @media (max-width: 900px) {
@@ -610,6 +664,7 @@ th {
   }
 
   .workspace-form-grid.two,
+  .workspace-form-grid.three,
   .workspace-request-grid {
     grid-template-columns: 1fr;
   }
