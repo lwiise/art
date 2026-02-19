@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Edits</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">All Edits</h1>
+        <p class="muted small" style="margin:4px 0 0;">Filter and approve/reject pending changes.</p>
+      </div>
+      <div class="actions">
+        <a href="/admin"><button type="button">Dashboard</button></a>
+        <a href="/admin/users"><button type="button">Users</button></a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="topbar" style="margin-bottom:8px;">
+        <div class="pill-nav">
+          <a href="/admin/edits" class="<%= filterStatus === 'all' ? 'active' : '' %>">All</a>
+          <a href="/admin/edits?status=pending" class="<%= filterStatus === 'pending' ? 'active' : '' %>">Pending</a>
+          <a href="/admin/edits?status=approved" class="<%= filterStatus === 'approved' ? 'active' : '' %>">Approved</a>
+          <a href="/admin/edits?status=rejected" class="<%= filterStatus === 'rejected' ? 'active' : '' %>">Rejected</a>
+        </div>
+      </div>
+
+      <div id="adminMsg" class="small muted"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Reviewed By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="editsBody">
+            <% edits.forEach((e) => { %>
+              <tr data-id="<%= e.id %>">
+                <td>#<%= e.id %></td>
+                <td><a href="/admin/users/<%= e.userId %>"><%= e.userName %></a></td>
+                <td><%= e.title %></td>
+                <td><%= e.description %></td>
+                <td><span class="status <%= e.status %>"><%= e.status %></span></td>
+                <td><%= e.createdAt %></td>
+                <td><%= e.approvedByName || "-" %></td>
+                <td>
+                  <div class="actions">
+                    <button data-action="approve" <%= e.status === "approved" ? "disabled" : "" %>>Approve</button>
+                    <button data-action="reject" <%= e.status === "rejected" ? "disabled" : "" %>>Reject</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    APP.attachSignOutHandler("signoutBtn");
+
+    const editsBody = document.getElementById("editsBody");
+    const adminMsg = document.getElementById("adminMsg");
+
+    function updateRow(row, edit) {
+      row.querySelector("td:nth-child(5)").innerHTML = `<span class="status ${edit.status}">${edit.status}</span>`;
+      row.querySelector("td:nth-child(7)").textContent = edit.approvedByName || "-";
+      row.querySelector("button[data-action='approve']").disabled = edit.status === "approved";
+      row.querySelector("button[data-action='reject']").disabled = edit.status === "rejected";
+    }
+
+    editsBody?.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      const editId = row.getAttribute("data-id");
+      const action = button.getAttribute("data-action");
+      adminMsg.textContent = "";
+      button.disabled = true;
+      try {
+        const result = await APP.apiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
+        updateRow(row, result.edit);
+        adminMsg.textContent = action === "approve" ? "Edit approved." : "Edit rejected.";
+      } catch (error) {
+        adminMsg.textContent = error.message || "Could not update edit.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel - <%= panelUser.name %></title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Welcome, <%= panelUser.name %></h1>
+        <div class="muted small">Panel URL: <span class="mono">/panel/<%= panelUser.slug %></span></div>
+      </div>
+      <div class="actions">
+        <% if (currentUser && currentUser.role === "admin") { %>
+          <a href="/admin"><button type="button">Admin Dashboard</button></a>
+        <% } %>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <% if (canSubmit) { %>
+      <section class="card" style="margin-bottom: 14px;">
+        <h2 style="margin-top:0;">Submit New Edit</h2>
+        <p class="muted">Edits are always saved as <strong>Pending</strong> until an admin approves or rejects them.</p>
+        <form id="editForm">
+          <div class="grid two">
+            <div>
+              <label for="title">Title</label>
+              <input id="title" name="title" maxlength="150" required />
+            </div>
+            <div>
+              <label for="payload">Payload (JSON)</label>
+              <input id="payload" name="payload" placeholder='{"field":"value"}' />
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" maxlength="5000" required></textarea>
+          </div>
+          <div class="actions" style="margin-top: 10px;">
+            <button class="primary" type="submit" id="submitEditBtn">Submit Edit</button>
+          </div>
+          <div id="editFormMsg" class="error"></div>
+        </form>
+      </section>
+    <% } else { %>
+      <section class="card" style="margin-bottom: 14px;">
+        <p class="muted" style="margin:0;">This panel is read-only for your current role.</p>
+      </section>
+    <% } %>
+
+    <section class="card">
+      <div class="topbar" style="margin-bottom: 8px;">
+        <h2 style="margin:0;">Edit Requests</h2>
+        <button type="button" id="refreshEditsBtn">Refresh</button>
+      </div>
+      <div id="editsMsg" class="small muted">Loading edits...</div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Reviewed By</th>
+            </tr>
+          </thead>
+          <tbody id="editsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    APP.attachSignOutHandler("signoutBtn");
+
+    const panelUserId = <%= Number(panelUser.id) %>;
+    const editsBody = document.getElementById("editsBody");
+    const editsMsg = document.getElementById("editsMsg");
+    const refreshBtn = document.getElementById("refreshEditsBtn");
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function statusBadge(status) {
+      const safeStatus = (status || "pending").toLowerCase();
+      return `<span class="status ${safeStatus}">${safeStatus}</span>`;
+    }
+
+    function rowTemplate(edit) {
+      return `
+        <tr>
+          <td>#${edit.id}</td>
+          <td>${escapeHtml(edit.title)}</td>
+          <td>${escapeHtml(edit.description)}</td>
+          <td>${statusBadge(edit.status)}</td>
+          <td>${escapeHtml(edit.createdAt || "")}</td>
+          <td>${escapeHtml(edit.approvedByName || "-")}</td>
+        </tr>
+      `;
+    }
+
+    async function loadEdits() {
+      editsMsg.textContent = "Loading edits...";
+      try {
+        const result = await APP.apiRequest("/api/edits");
+        const rows = Array.isArray(result.edits) ? result.edits : [];
+        const userRows = rows.filter((item) => Number(item.userId) === panelUserId);
+        editsBody.innerHTML = userRows.map(rowTemplate).join("");
+        editsMsg.textContent = userRows.length ? "" : "No edits submitted yet.";
+      } catch (error) {
+        editsBody.innerHTML = "";
+        editsMsg.textContent = error.message || "Could not load edits.";
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadEdits);
+    loadEdits();
+
+    const editForm = document.getElementById("editForm");
+    if (editForm) {
+      const editMsg = document.getElementById("editFormMsg");
+      const submitBtn = document.getElementById("submitEditBtn");
+
+      editForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        editMsg.className = "error";
+        editMsg.textContent = "";
+        submitBtn.disabled = true;
+
+        const formData = new FormData(editForm);
+        const payloadRaw = String(formData.get("payload") || "").trim();
+        const payload = {
+          title: formData.get("title"),
+          description: formData.get("description"),
+        };
+        if (payloadRaw) payload.payload = payloadRaw;
+
+        try {
+          await APP.apiRequest("/api/edits", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+          editMsg.className = "success";
+          editMsg.textContent = "Edit submitted successfully.";
+          editForm.reset();
+          await loadEdits();
+        } catch (error) {
+          editMsg.className = "error";
+          editMsg.textContent = error.message || "Could not submit edit.";
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create User</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container" style="max-width: 560px;">
+    <div class="card">
+      <h1 style="margin-top:0;">Create User</h1>
+      <p class="muted">Create a new user account on <span class="mono">/create</span>.</p>
+
+      <form id="createForm">
+        <div style="margin-bottom:12px;">
+          <label for="name">Name</label>
+          <input id="name" name="name" required maxlength="120" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required minlength="8" />
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit" id="createBtn">Create account</button>
+          <a href="/log"><button type="button">Back to login</button></a>
+        </div>
+        <div id="createMsg" class="error" role="alert"></div>
+      </form>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    const form = document.getElementById("createForm");
+    const btn = document.getElementById("createBtn");
+    const msg = document.getElementById("createMsg");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      msg.className = "error";
+      msg.textContent = "";
+      btn.disabled = true;
+
+      const data = new FormData(form);
+      const payload = {
+        name: data.get("name"),
+        email: data.get("email"),
+        password: data.get("password"),
+      };
+
+      try {
+        const result = await APP.apiRequest("/api/auth/signup", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        msg.className = "success";
+        msg.textContent = result.message || "Account created.";
+        window.location.href = result.redirect || "/log";
+      } catch (error) {
+        msg.className = "error";
+        msg.textContent = error.message || "Could not create account.";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

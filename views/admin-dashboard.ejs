@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Admin Dashboard</h1>
+        <p class="muted small" style="margin:4px 0 0;">Review users and approve/reject edit requests.</p>
+      </div>
+      <div class="actions">
+        <a href="/admin/users"><button type="button">Users</button></a>
+        <a href="/admin/edits"><button type="button">Edits</button></a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="grid three" style="margin-bottom: 14px;">
+      <div class="card">
+        <div class="muted small">Total Users</div>
+        <h2 style="margin:8px 0 0;"><%= stats.total_users %></h2>
+      </div>
+      <div class="card">
+        <div class="muted small">Total Edits</div>
+        <h2 style="margin:8px 0 0;"><%= stats.total_edits %></h2>
+      </div>
+      <div class="card">
+        <div class="muted small">Pending Edits</div>
+        <h2 style="margin:8px 0 0;"><%= stats.pending_edits %></h2>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 14px;">
+      <div class="topbar" style="margin-bottom: 8px;">
+        <h2 style="margin:0;">Recent Users</h2>
+        <a href="/admin/users">View all</a>
+      </div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Panel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentUsers.forEach((u) => { %>
+              <tr>
+                <td>#<%= u.id %></td>
+                <td><a href="/admin/users/<%= u.id %>"><%= u.name %></a></td>
+                <td><%= u.email %></td>
+                <td><%= u.role %></td>
+                <td><a href="/panel/<%= u.slug %>">/panel/<%= u.slug %></a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="topbar" style="margin-bottom: 8px;">
+        <h2 style="margin:0;">Recent Edits</h2>
+        <a href="/admin/edits">View all</a>
+      </div>
+      <div id="adminMsg" class="small muted"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recentEditsBody">
+            <% recentEdits.forEach((e) => { %>
+              <tr data-id="<%= e.id %>">
+                <td>#<%= e.id %></td>
+                <td><a href="/admin/users/<%= e.userId %>"><%= e.userName %></a></td>
+                <td><%= e.title %></td>
+                <td><span class="status <%= e.status %>"><%= e.status %></span></td>
+                <td><%= e.createdAt %></td>
+                <td>
+                  <div class="actions">
+                    <button class="smallAction" data-action="approve" <%= e.status === "approved" ? "disabled" : "" %>>Approve</button>
+                    <button class="smallAction" data-action="reject" <%= e.status === "rejected" ? "disabled" : "" %>>Reject</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    APP.attachSignOutHandler("signoutBtn");
+
+    const editsBody = document.getElementById("recentEditsBody");
+    const adminMsg = document.getElementById("adminMsg");
+
+    async function setDecision(editId, action) {
+      const result = await APP.apiRequest(`/api/edits/${editId}/${action}`, {
+        method: "PATCH",
+      });
+      return result.edit;
+    }
+
+    function updateRow(row, edit) {
+      if (!row || !edit) return;
+      const statusCell = row.querySelector("td:nth-child(4)");
+      statusCell.innerHTML = `<span class="status ${edit.status}">${edit.status}</span>`;
+      row.querySelectorAll("button[data-action='approve']").forEach((btn) => {
+        btn.disabled = edit.status === "approved";
+      });
+      row.querySelectorAll("button[data-action='reject']").forEach((btn) => {
+        btn.disabled = edit.status === "rejected";
+      });
+    }
+
+    editsBody?.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      const editId = row.getAttribute("data-id");
+      const action = button.getAttribute("data-action");
+
+      button.disabled = true;
+      adminMsg.textContent = "";
+      try {
+        const updated = await setDecision(editId, action);
+        updateRow(row, updated);
+        adminMsg.textContent = action === "approve" ? "Edit approved." : "Edit rejected.";
+      } catch (error) {
+        adminMsg.textContent = error.message || "Could not update edit status.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

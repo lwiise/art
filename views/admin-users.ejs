@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Users</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Users</h1>
+        <p class="muted small" style="margin:4px 0 0;">All registered users and their edit volumes.</p>
+      </div>
+      <div class="actions">
+        <a href="/admin"><button type="button">Dashboard</button></a>
+        <a href="/admin/edits"><button type="button">Edits</button></a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Slug</th>
+              <th>Total Edits</th>
+              <th>Pending</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach((u) => { %>
+              <tr>
+                <td>#<%= u.id %></td>
+                <td><a href="/admin/users/<%= u.id %>"><%= u.name %></a></td>
+                <td><%= u.email %></td>
+                <td><%= u.role %></td>
+                <td><span class="mono"><%= u.slug %></span></td>
+                <td><%= u.total_edits || 0 %></td>
+                <td><%= u.pending_edits || 0 %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    APP.attachSignOutHandler("signoutBtn");
+  </script>
+</body>
+</html>

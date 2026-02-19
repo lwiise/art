@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - <%= targetUser.name %></title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;"><%= targetUser.name %></h1>
+        <p class="muted small" style="margin:4px 0 0;">
+          <%= targetUser.email %> • role: <%= targetUser.role %> • slug: <span class="mono"><%= targetUser.slug %></span>
+        </p>
+      </div>
+      <div class="actions">
+        <a href="/admin/users"><button type="button">Back to users</button></a>
+        <a href="/panel/<%= targetUser.slug %>"><button type="button">Open panel</button></a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Submitted Edits</h2>
+      <div id="adminMsg" class="small muted"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Reviewed By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userEditsBody">
+            <% edits.forEach((e) => { %>
+              <tr data-id="<%= e.id %>">
+                <td>#<%= e.id %></td>
+                <td><%= e.title %></td>
+                <td><%= e.description %></td>
+                <td><span class="status <%= e.status %>"><%= e.status %></span></td>
+                <td><%= e.createdAt %></td>
+                <td><%= e.approvedByName || "-" %></td>
+                <td>
+                  <div class="actions">
+                    <button data-action="approve" <%= e.status === "approved" ? "disabled" : "" %>>Approve</button>
+                    <button data-action="reject" <%= e.status === "rejected" ? "disabled" : "" %>>Reject</button>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script>
+    APP.attachSignOutHandler("signoutBtn");
+
+    const tbody = document.getElementById("userEditsBody");
+    const adminMsg = document.getElementById("adminMsg");
+
+    function applyEditState(row, edit) {
+      const statusCell = row.querySelector("td:nth-child(4)");
+      const reviewerCell = row.querySelector("td:nth-child(6)");
+      statusCell.innerHTML = `<span class="status ${edit.status}">${edit.status}</span>`;
+      reviewerCell.textContent = edit.approvedByName || "-";
+      row.querySelector("button[data-action='approve']").disabled = edit.status === "approved";
+      row.querySelector("button[data-action='reject']").disabled = edit.status === "rejected";
+    }
+
+    tbody?.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      const editId = row.getAttribute("data-id");
+      const action = button.getAttribute("data-action");
+
+      adminMsg.textContent = "";
+      button.disabled = true;
+      try {
+        const result = await APP.apiRequest(`/api/edits/${editId}/${action}`, { method: "PATCH" });
+        applyEditState(row, result.edit);
+        adminMsg.textContent = action === "approve" ? "Edit approved." : "Edit rejected.";
+      } catch (error) {
+        adminMsg.textContent = error.message || "Action failed.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
