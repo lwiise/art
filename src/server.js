@@ -25,7 +25,9 @@ app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(attachCurrentUser);
-app.use(express.static(path.join(__dirname, "..", "public")));
+const publicDir = path.join(__dirname, "..", "public");
+app.use("/auth-assets", express.static(publicDir));
+app.use(express.static(publicDir));
 
 function normalizeStatus(status) {
   if (!status) return null;

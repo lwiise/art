@@ -4,37 +4,39 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create User</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
 </head>
 <body>
-  <main class="container" style="max-width: 560px;">
-    <div class="card">
-      <h1 style="margin-top:0;">Create User</h1>
-      <p class="muted">Create a new user account on <span class="mono">/create</span>.</p>
+  <main class="container auth-shell">
+    <a class="auth-back" href="/">← Back to Website</a>
+    <div class="card auth-card">
+      <div class="auth-mark">FNN ART</div>
+      <h1>Create User</h1>
+      <p class="muted">Create your account, then you will be redirected to your personal panel page.</p>
 
       <form id="createForm">
-        <div style="margin-bottom:12px;">
+        <div class="field-row">
           <label for="name">Name</label>
           <input id="name" name="name" required maxlength="120" />
         </div>
-        <div style="margin-bottom:12px;">
+        <div class="field-row">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" required />
         </div>
-        <div style="margin-bottom:12px;">
+        <div class="field-row">
           <label for="password">Password</label>
           <input id="password" name="password" type="password" required minlength="8" />
         </div>
         <div class="actions">
           <button class="primary" type="submit" id="createBtn">Create account</button>
-          <a href="/log"><button type="button">Back to login</button></a>
+          <a href="/log" class="btn-link">Back to login</a>
         </div>
         <div id="createMsg" class="error" role="alert"></div>
       </form>
     </div>
   </main>
 
-  <script src="/app.js"></script>
+  <script src="/auth-assets/app.js"></script>
   <script>
     const form = document.getElementById("createForm");
     const btn = document.getElementById("createBtn");
@@ -42,6 +44,11 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
+      if (!window.APP || typeof APP.apiRequest !== "function") {
+        msg.className = "error";
+        msg.textContent = "Client assets failed to load. Please refresh and try again.";
+        return;
+      }
       msg.className = "error";
       msg.textContent = "";
       btn.disabled = true;
