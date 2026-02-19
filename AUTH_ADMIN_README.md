@@ -44,5 +44,10 @@
 Override seeds with env vars:
 - `SEED_ADMIN_NAME`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`
 - `SEED_USER_NAME`, `SEED_USER_EMAIL`, `SEED_USER_PASSWORD`
+- `BOOTSTRAP_ADMIN_NAME`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`
+  - If set, this admin user is upserted on every app start (good for Railway).
+
+Reset or promote a user manually:
+- `npm run user:reset -- --email lrazalanas@gmail.com --password "YourPassword123!" --name "Anas" --role admin`
 
 Set `SESSION_SECRET` in production.

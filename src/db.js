@@ -71,6 +71,30 @@ function uniqueSlug(baseSlug) {
   return slug;
 }
 
+function upsertUser({ name, email, password, role }) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const existing = db
+    .prepare("select id, slug from users where email = ?")
+    .get(normalizedEmail);
+  const passwordHash = bcrypt.hashSync(String(password || ""), 12);
+
+  if (existing) {
+    db.prepare(
+      "update users set name = ?, password_hash = ?, role = ? where id = ?"
+    ).run(name, passwordHash, role, existing.id);
+    return existing.id;
+  }
+
+  const baseSlug = slugifyName(name);
+  const slug = uniqueSlug(baseSlug);
+  const info = db
+    .prepare(
+      "insert into users (name, email, password_hash, role, slug) values (?, ?, ?, ?, ?)"
+    )
+    .run(name, normalizedEmail, passwordHash, role, slug);
+  return info.lastInsertRowid;
+}
+
 function createUser({ name, email, password, role, allowExisting = false }) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const existing = db.prepare("select id from users where email = ?").get(normalizedEmail);
@@ -109,6 +133,19 @@ function seedDefaultUsers() {
     role: "user",
     allowExisting: true,
   });
+
+  const bootstrapAdminEmail = String(process.env.BOOTSTRAP_ADMIN_EMAIL || "")
+    .trim()
+    .toLowerCase();
+  const bootstrapAdminPassword = String(process.env.BOOTSTRAP_ADMIN_PASSWORD || "");
+  if (bootstrapAdminEmail && bootstrapAdminPassword) {
+    upsertUser({
+      name: process.env.BOOTSTRAP_ADMIN_NAME || process.env.SEED_ADMIN_NAME || "Admin User",
+      email: bootstrapAdminEmail,
+      password: bootstrapAdminPassword,
+      role: "admin",
+    });
+  }
 }
 
 seedDefaultUsers();
@@ -117,4 +154,5 @@ module.exports = {
   createUser,
   db,
   slugifyName,
+  upsertUser,
 };

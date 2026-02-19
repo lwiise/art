@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "user:reset": "node scripts/reset-user.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
