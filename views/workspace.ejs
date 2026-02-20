@@ -309,21 +309,132 @@
 
     function renderSectionList(sectionKey) {
       const section = ensureSection(sectionKey);
-      const keys = Object.keys(section);
-      if (!keys.length) {
+      const fields = getSectionLeafFields(section);
+      if (!fields.length) {
         listEl.innerHTML = `<div class="workspace-empty">No fields yet for this section.</div>`;
         return;
       }
-      listEl.innerHTML = keys.map((key) => {
-        const value = section[key];
-        const preview = typeof value === "string" ? value : JSON.stringify(value);
+      listEl.innerHTML = fields.map((field) => {
+        const preview = formatFieldValue(field.value);
         return `
           <div class="workspace-field-row">
-            <span class="workspace-field-key">${escapeHtml(key)}</span>
+            <span class="workspace-field-key">${escapeHtml(formatFieldLabel(field.path))}</span>
             <span class="workspace-field-preview">${escapeHtml(preview)}</span>
           </div>
         `;
       }).join("");
+    }
+
+    function collectSectionLeafFields(value, path, out) {
+      if (Array.isArray(value)) {
+        if (!value.length) return;
+        value.forEach((item, index) => collectSectionLeafFields(item, path.concat(index), out));
+        return;
+      }
+      if (value && typeof value === "object") {
+        const keys = Object.keys(value);
+        if (!keys.length) return;
+        keys.forEach((key) => collectSectionLeafFields(value[key], path.concat(key), out));
+        return;
+      }
+      out.push({ path, value });
+    }
+
+    function getSectionLeafFields(section) {
+      const output = [];
+      collectSectionLeafFields(section, [], output);
+      return output;
+    }
+
+    function formatFieldLabel(path) {
+      return path
+        .map((part) => {
+          if (typeof part === "number") return `Item ${part + 1}`;
+          return String(part)
+            .replace(/[_-]+/g, " ")
+            .replace(/\b\w/g, (ch) => ch.toUpperCase());
+        })
+        .join(" / ");
+    }
+
+    function formatFieldValue(value) {
+      if (value === null || value === undefined) return "";
+      if (typeof value === "boolean") return value ? "Yes" : "No";
+      if (typeof value === "number") return String(value);
+      return String(value);
+    }
+
+    function fieldTypeForValue(value) {
+      if (typeof value === "boolean") return "boolean";
+      if (typeof value === "number") return "number";
+      if (value === null) return "null";
+      return "string";
+    }
+
+    function shouldUseTextarea(label, value) {
+      if (typeof value !== "string") return false;
+      if (value.includes("\n")) return true;
+      if (value.length > 80) return true;
+      return /bio|description|subtitle|note|message|lead|copy/i.test(label);
+    }
+
+    function encodePath(path) {
+      return encodeURIComponent(JSON.stringify(path));
+    }
+
+    function decodePath(value) {
+      try {
+        return JSON.parse(decodeURIComponent(String(value || "")));
+      } catch {
+        return [];
+      }
+    }
+
+    function setValueByPath(target, path, value) {
+      if (!target || !Array.isArray(path) || !path.length) return;
+      let ref = target;
+      for (let index = 0; index < path.length - 1; index += 1) {
+        const key = path[index];
+        const nextKey = path[index + 1];
+        if (ref[key] === undefined || ref[key] === null || typeof ref[key] !== "object") {
+          ref[key] = typeof nextKey === "number" ? [] : {};
+        }
+        ref = ref[key];
+      }
+      ref[path[path.length - 1]] = value;
+    }
+
+    function parseSectionInputValue(input) {
+      const type = input.getAttribute("data-section-type") || "string";
+      if (type === "boolean") {
+        return !!input.checked;
+      }
+      if (type === "number") {
+        const raw = String(input.value || "").trim();
+        if (!raw) return null;
+        const number = Number(raw);
+        return Number.isFinite(number) ? number : null;
+      }
+      if (type === "null") {
+        const raw = String(input.value || "").trim();
+        return raw ? raw : null;
+      }
+      return String(input.value || "");
+    }
+
+    function syncSectionDraftFromEditor() {
+      if (activeTab === "products") return true;
+      const section = ensureSection(activeTab);
+      const inputs = editorEl.querySelectorAll("[data-section-field]");
+      inputs.forEach((input) => {
+        const path = decodePath(input.getAttribute("data-section-field"));
+        if (!Array.isArray(path) || !path.length) return;
+        const value = parseSectionInputValue(input);
+        setValueByPath(section, path, value);
+      });
+      currentState.sections[activeTab] = section;
+      renderSectionList(activeTab);
+      return true;
     }
 
     function setCategoryOptions(selectEl, type, selectedValue) {
@@ -629,30 +740,60 @@
     function renderSectionEditor(sectionKey) {
       const section = ensureSection(sectionKey);
       editorTitleEl.textContent = `${TAB_LABEL[sectionKey]} Editor`;
-      editorEl.innerHTML = `
-        <div class="field-row">
-          <label>Section JSON</label>
-          <textarea id="sectionJsonEditor" class="mono" rows="18">${escapeHtml(JSON.stringify(section, null, 2))}</textarea>
-        </div>
-      `;
+      const fields = getSectionLeafFields(section);
+      if (!fields.length) {
+        editorEl.innerHTML = `<div class="workspace-empty">No editable fields found for this section.</div>`;
+      } else {
+        editorEl.innerHTML = `
+          <div class="workspace-section-grid">
+            ${fields.map((field) => {
+              const label = formatFieldLabel(field.path);
+              const type = fieldTypeForValue(field.value);
+              const encodedPath = encodePath(field.path);
+              if (type === "boolean") {
+                const checked = field.value ? "checked" : "";
+                return `
+                  <div class="field-row workspace-section-field">
+                    <label>${escapeHtml(label)}</label>
+                    <label class="workspace-check-row">
+                      <input type="checkbox" data-section-field="${encodedPath}" data-section-type="boolean" ${checked} />
+                      <span>Enabled</span>
+                    </label>
+                  </div>
+                `;
+              }
+              if (shouldUseTextarea(label, field.value)) {
+                return `
+                  <div class="field-row workspace-section-field">
+                    <label>${escapeHtml(label)}</label>
+                    <textarea rows="3" data-section-field="${encodedPath}" data-section-type="${type}">${escapeHtml(formatFieldValue(field.value))}</textarea>
+                  </div>
+                `;
+              }
+              const inputType = type === "number" ? "number" : "text";
+              const step = type === "number" ? " step='any'" : "";
+              return `
+                <div class="field-row workspace-section-field">
+                  <label>${escapeHtml(label)}</label>
+                  <input type="${inputType}"${step} data-section-field="${encodedPath}" data-section-type="${type}" value="${escapeHtml(formatFieldValue(field.value))}" />
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
 
       actionRowEl.innerHTML = isAdmin
         ? '<button type="button" id="saveLiveBtn" class="primary">Save Section Content</button>'
         : '<button type="button" id="submitApprovalBtn" class="primary">Submit Section Edit</button>';
 
-      const textarea = document.getElementById("sectionJsonEditor");
-      if (textarea) {
-        textarea.addEventListener("input", () => {
-          try {
-            const parsed = JSON.parse(textarea.value || "{}");
-            currentState.sections[sectionKey] = parsed;
-            setStatus("Section JSON is valid.", "success");
-            renderSectionList(sectionKey);
-          } catch {
-            setStatus("Section JSON is invalid. Fix JSON before submit.", "error");
-          }
+      editorEl.querySelectorAll("[data-section-field]").forEach((input) => {
+        const eventName = input.type === "checkbox" ? "change" : "input";
+        input.addEventListener(eventName, () => {
+          syncSectionDraftFromEditor();
+          setStatus("Section draft updated.", "success");
         });
-      }
+      });
 
       wirePrimaryActionButtons();
     }
@@ -753,18 +894,7 @@
 
       function syncProductDraftFromEditor() {
         if (activeTab !== "products") {
-          const sectionEditor = document.getElementById("sectionJsonEditor");
-          if (!sectionEditor) return true;
-          try {
-            if (!currentState.sections || typeof currentState.sections !== "object") {
-              currentState.sections = {};
-            }
-            currentState.sections[activeTab] = JSON.parse(sectionEditor.value || "{}");
-            return true;
-          } catch {
-            setStatus("Section JSON is invalid. Fix the JSON before submit.", "error");
-            return false;
-          }
+          return syncSectionDraftFromEditor();
         }
         const selected = getSelectedProduct();
         if (!selected) {
