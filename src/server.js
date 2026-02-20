@@ -223,7 +223,8 @@ const DEFAULT_SITE_STATE = Object.freeze({
       year: 1890,
       rating: 4.8,
       rating_count: "50+",
-      base_price: 153
+      base_price: 153,
+      owner_user_id: null
     },
     {
       id: "prod-arch-cabinet",
@@ -255,7 +256,8 @@ const DEFAULT_SITE_STATE = Object.freeze({
       year: null,
       rating: null,
       rating_count: "",
-      base_price: null
+      base_price: null,
+      owner_user_id: null
     },
     {
       id: "prod-hajj-arts",
@@ -287,7 +289,8 @@ const DEFAULT_SITE_STATE = Object.freeze({
       year: null,
       rating: null,
       rating_count: "",
-      base_price: null
+      base_price: null,
+      owner_user_id: null
     }
   ]
 });
@@ -356,6 +359,7 @@ function normalizeSiteState(input) {
         rating: toNumberOrNull(p.rating),
         rating_count: String(p.rating_count || ""),
         base_price: toNumberOrNull(p.base_price),
+        owner_user_id: toNumberOrNull(p.owner_user_id),
       };
     });
   }
@@ -396,6 +400,74 @@ function saveSiteState(state, updatedBy) {
   return normalized;
 }
 
+function mergeProductChanges(currentProducts, productChanges) {
+  const baseProducts = Array.isArray(currentProducts) ? currentProducts : [];
+  const normalizedChanges = normalizeSiteState({ products: productChanges }).products;
+  const productMap = new Map(baseProducts.map((product) => [String(product.id), product]));
+
+  normalizedChanges.forEach((incoming) => {
+    const key = String(incoming.id);
+    const existing = productMap.get(key);
+    if (existing) {
+      productMap.set(key, {
+        ...existing,
+        ...incoming,
+        owner_user_id:
+          incoming.owner_user_id !== null && incoming.owner_user_id !== undefined
+            ? incoming.owner_user_id
+            : (existing.owner_user_id ?? null),
+      });
+      return;
+    }
+    productMap.set(key, incoming);
+  });
+
+  return Array.from(productMap.values()).sort((a, b) => {
+    const orderA = Number.isFinite(Number(a.sort_order)) ? Number(a.sort_order) : 0;
+    const orderB = Number.isFinite(Number(b.sort_order)) ? Number(b.sort_order) : 0;
+    if (orderA !== orderB) return orderA - orderB;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+}
+
+function buildVendorProductPayload(rawPayload, userId) {
+  const payload = (rawPayload && typeof rawPayload === "object") ? rawPayload : {};
+  if (payload.sections) {
+    const err = new Error("Vendors can edit products only.");
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const changes = Array.isArray(payload.product_changes)
+    ? payload.product_changes
+    : (Array.isArray(payload.products) ? payload.products : []);
+  if (!changes.length) {
+    const err = new Error("Please provide at least one product change.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const current = getSiteState();
+  const currentMap = new Map((current.products || []).map((product) => [String(product.id), product]));
+  const normalizedChanges = normalizeSiteState({ products: changes }).products.map((product) => {
+    const existing = currentMap.get(String(product.id));
+    if (existing && Number(existing.owner_user_id) !== Number(userId)) {
+      const err = new Error("You can edit only your own products.");
+      err.statusCode = 403;
+      throw err;
+    }
+    return {
+      ...product,
+      owner_user_id: Number(userId),
+    };
+  });
+
+  return {
+    target: "vendor_products",
+    product_changes: normalizedChanges,
+  };
+}
+
 function applyPayloadToSiteState(payload, adminUserId) {
   if (!payload || typeof payload !== "object") return false;
 
@@ -410,6 +482,11 @@ function applyPayloadToSiteState(payload, adminUserId) {
 
   if (Array.isArray(payload.products)) {
     next.products = payload.products;
+    changed = true;
+  }
+
+  if (Array.isArray(payload.product_changes)) {
+    next.products = mergeProductChanges(next.products, payload.product_changes);
     changed = true;
   }
 
@@ -796,8 +873,21 @@ app.get("/api/me", requireAuth, (req, res) => {
   return res.json({ user: buildSessionUser(req.user) });
 });
 
-app.get("/api/content/current", requireAuth, (_req, res) => {
-  return res.json({ state: getSiteState() });
+app.get("/api/content/current", requireAuth, (req, res) => {
+  const state = getSiteState();
+  if (req.user.role === "admin") {
+    return res.json({ state });
+  }
+
+  const vendorProducts = (state.products || []).filter(
+    (product) => Number(product.owner_user_id) === Number(req.user.id)
+  );
+  return res.json({
+    state: {
+      sections: {},
+      products: vendorProducts,
+    },
+  });
 });
 
 app.put("/api/content/current", requireAdmin, (req, res) => {
@@ -813,14 +903,26 @@ app.put("/api/content/current", requireAdmin, (req, res) => {
   });
 });
 
-app.get("/api/content/template", requireAuth, (_req, res) => {
+app.get("/api/content/template", requireAuth, (req, res) => {
+  if (req.user.role === "admin") {
+    return res.json({
+      template: {
+        schema_version: "1.0",
+        target: "full_website",
+        sections: deepCloneJson(DEFAULT_SITE_STATE.sections),
+        products: deepCloneJson(DEFAULT_SITE_STATE.products),
+        notes: WEBSITE_EDIT_TEMPLATE.notes,
+      },
+    });
+  }
+
   return res.json({
     template: {
       schema_version: "1.0",
-      target: "full_website",
-      sections: deepCloneJson(DEFAULT_SITE_STATE.sections),
-      products: deepCloneJson(DEFAULT_SITE_STATE.products),
-      notes: WEBSITE_EDIT_TEMPLATE.notes,
+      target: "vendor_products",
+      sections: {},
+      products: [],
+      notes: "Vendors can add products and edit only their own products.",
     },
   });
 });
@@ -835,12 +937,20 @@ app.post("/api/edits", requireAuth, (req, res) => {
     return res.status(400).json({ error: errors.join(" ") });
   }
 
+  let payloadToSave = payload || {};
+  try {
+    payloadToSave = buildVendorProductPayload(payloadToSave, req.user.id);
+  } catch (error) {
+    const statusCode = Number(error && error.statusCode) || 400;
+    return res.status(statusCode).json({ error: error.message || "Invalid vendor payload." });
+  }
+
   const info = db
     .prepare(
       `insert into edits (user_id, title, description, payload, status)
        values (?, ?, ?, ?, 'pending')`
     )
-    .run(req.user.id, title, description, JSON.stringify(payload || {}));
+    .run(req.user.id, title, description, JSON.stringify(payloadToSave));
 
   const created = getEditById(Number(info.lastInsertRowid));
   return res.status(201).json({

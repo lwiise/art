@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><%= isAdmin ? "Admin Panel" : "User Panel" %> - <%= panelUser.name %></title>
+  <title><%= isAdmin ? "Admin Panel" : "Vendors Panel" %> - <%= panelUser.name %></title>
   <link rel="stylesheet" href="/auth-assets/styles.css" />
 </head>
 <body>
   <main class="container">
     <div>
-      <h1 style="margin:0;"><%= isAdmin ? "Admin Panel" : "User Panel" %></h1>
+      <h1 style="margin:0;"><%= isAdmin ? "Admin Panel" : "Vendors Panel" %></h1>
       <p class="muted" style="margin:8px 0 20px;">
-        Manage products, upload images/models, and keep filters aligned with Art, Designs, Books, and Photography.
+        <%= isAdmin
+          ? "Manage all website content and products."
+          : "Manage your products only. You can add new products and edit products you created." %>
         <% if (!isAdmin) { %>
           Your changes are submitted as pending edits for admin approval.
         <% } %>
@@ -22,7 +24,9 @@
       <div class="workspace-toolbar">
         <div class="workspace-toolbar-left">
           <button type="button" id="refreshContentBtn">Refresh</button>
-          <button type="button" id="seedContentBtn"><%= isAdmin ? "Seed Current Products" : "Load Template" %></button>
+          <% if (isAdmin) { %>
+            <button type="button" id="seedContentBtn">Seed Current Products</button>
+          <% } %>
         </div>
         <div class="workspace-toolbar-right">
           <span class="workspace-user"><%= (currentUser && currentUser.email) || panelUser.email %></span>
@@ -30,8 +34,12 @@
         </div>
       </div>
 
-      <div class="workspace-card-title">Admin Sections</div>
-      <p class="workspace-card-sub">Use the side menu to switch between Products and website blocks.</p>
+      <div class="workspace-card-title"><%= isAdmin ? "Admin Sections" : "Vendor Products" %></div>
+      <p class="workspace-card-sub">
+        <%= isAdmin
+          ? "Use the side menu to switch between Products and website blocks."
+          : "Use this page to add new products and edit only your own products." %>
+      </p>
 
       <div class="workspace-grid">
         <aside class="workspace-nav" id="workspaceNav"></aside>
@@ -92,6 +100,7 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     const isAdmin = <%= isAdmin ? "true" : "false" %>;
+    const isVendor = !isAdmin;
     const panelUserId = <%= Number(panelUser.id) %>;
     const TAB_ORDER = ["products", "home", "about", "services", "process", "gallery", "contact", "footer"];
     const TAB_LABEL = {
@@ -120,6 +129,7 @@
       books: ["All"],
       photography: ["All"],
     };
+    const VISIBLE_TABS = isAdmin ? TAB_ORDER : ["products"];
 
     if (window.APP && typeof APP.attachSignOutHandler === "function") {
       APP.attachSignOutHandler("signoutBtn");
@@ -227,6 +237,7 @@
         rating: toNumberOrNull(source.rating),
         rating_count: String(source.rating_count || ""),
         base_price: toNumberOrNull(source.base_price),
+        owner_user_id: toNumberOrNull(source.owner_user_id),
       };
     }
 
@@ -237,6 +248,7 @@
         gallery_type: "art",
         category: "Artwork",
         status: "active",
+        owner_user_id: isAdmin ? null : panelUserId,
       });
     }
 
@@ -265,7 +277,10 @@
     }
 
     function renderNav() {
-      navEl.innerHTML = TAB_ORDER.map((tab) => {
+      if (!VISIBLE_TABS.includes(activeTab)) {
+        activeTab = "products";
+      }
+      navEl.innerHTML = VISIBLE_TABS.map((tab) => {
         const active = tab === activeTab ? "active" : "";
         return `<button class="workspace-nav-btn ${active}" data-tab="${tab}">${TAB_LABEL[tab]}</button>`;
       }).join("");
@@ -274,8 +289,11 @@
     function getFilteredProducts() {
       const filter = String((productTypeFilter && productTypeFilter.value) || "all").toLowerCase();
       const products = Array.isArray(currentState.products) ? currentState.products : [];
-      if (filter === "all") return products;
-      return products.filter((product) => {
+      const scopedProducts = isAdmin
+        ? products
+        : products.filter((product) => Number(product.owner_user_id) === Number(panelUserId));
+      if (filter === "all") return scopedProducts;
+      return scopedProducts.filter((product) => {
         const type = toGalleryType(product.gallery_type);
         if (filter === "art") {
           return type === "art" || type === "sculpture";
@@ -294,13 +312,16 @@
         const active = product.id === selectedProductId ? "active" : "";
         const type = toGalleryType(product.gallery_type);
         const typeLabel = GALLERY_TYPE_LABELS[type] || "Art";
+        const actionsHtml = isAdmin
+          ? `<button type="button" class="workspace-item-btn" data-item-action="edit" data-product-id="${escapeHtml(product.id)}">Edit</button>
+             <button type="button" class="workspace-item-btn" data-item-action="delete" data-product-id="${escapeHtml(product.id)}">Delete</button>`
+          : `<button type="button" class="workspace-item-btn" data-item-action="edit" data-product-id="${escapeHtml(product.id)}">Edit</button>`;
         return `
           <div class="workspace-item ${active}" data-product-id="${escapeHtml(product.id)}">
             <div class="workspace-item-name">${escapeHtml(product.name || "Untitled Product")}</div>
-            <div class="workspace-item-meta">${escapeHtml(typeLabel.toUpperCase())} · ${escapeHtml((product.status || "active").toUpperCase())}</div>
+            <div class="workspace-item-meta">${escapeHtml(typeLabel.toUpperCase())} - ${escapeHtml((product.status || "active").toUpperCase())}</div>
             <div class="workspace-item-actions">
-              <button type="button" class="workspace-item-btn" data-item-action="edit" data-product-id="${escapeHtml(product.id)}">Edit</button>
-              <button type="button" class="workspace-item-btn" data-item-action="delete" data-product-id="${escapeHtml(product.id)}">Delete</button>
+              ${actionsHtml}
             </div>
           </div>
         `;
@@ -707,12 +728,12 @@
       });
 
       actionRowEl.innerHTML = `
-        <button type="button" id="deleteProductBtn" class="ghost">${isAdmin ? "Delete Product" : "Remove Product"}</button>
-        ${isAdmin ? '<button type="button" id="saveLiveBtn" class="primary">Save Product</button>' : '<button type="button" id="submitApprovalBtn" class="primary">Submit Product Edit</button>'}
+        ${isAdmin ? '<button type="button" id="deleteProductBtn" class="ghost">Delete Product</button>' : ""}
+        ${isAdmin ? '<button type="button" id="saveLiveBtn" class="primary">Save Product</button>' : '<button type="button" id="submitApprovalBtn" class="primary">Submit Product For Approval</button>'}
       `;
 
-      const deleteBtn = document.getElementById("deleteProductBtn");
-      if (deleteBtn) {
+      const deleteBtn = isAdmin ? document.getElementById("deleteProductBtn") : null;
+      if (deleteBtn && isAdmin) {
         deleteBtn.addEventListener("click", async () => {
           const selected = getSelectedProduct();
           if (!selected) return;
@@ -722,12 +743,8 @@
           selectedProductId = currentState.products[0] ? currentState.products[0].id : null;
           renderWorkspace();
           try {
-            if (isAdmin) {
-              await saveLive();
-              setStatus("Product deleted.", "success");
-            } else {
-              await submitForApproval(`Product delete: ${selected.name || "Untitled Product"}`, "User requested product deletion.");
-            }
+            await saveLive("Product deleted.");
+            setStatus("Product deleted.", "success");
           } catch (error) {
             setStatus(error.message || "Could not delete product.", "error");
           }
@@ -800,6 +817,9 @@
 
     function renderWorkspace() {
       renderNav();
+      if (!isAdmin) {
+        activeTab = "products";
+      }
       listTitleEl.textContent = activeTab === "products" ? "Products" : `${TAB_LABEL[activeTab]} Fields`;
       addProductBtn.style.display = activeTab === "products" ? "inline-flex" : "none";
       if (productFilterRow) {
@@ -827,7 +847,7 @@
       };
       const noSections = Object.keys(currentState.sections).length === 0;
       const noProducts = currentState.products.length === 0;
-      if (noSections && noProducts) {
+      if (isAdmin && noSections && noProducts) {
         const templateResult = await sendApiRequest("/api/content/template");
         const template = templateResult.template || {};
         currentState = {
@@ -860,7 +880,7 @@
       await loadEdits();
     }
 
-    async function submitForApproval(customTitle, customDescription) {
+    async function submitForApproval(customTitle, customDescription, customPayload) {
       const title = String(customTitle || `Content update: ${TAB_LABEL[activeTab]}`).trim();
       const description = String(customDescription || `User update for ${TAB_LABEL[activeTab]}.`).trim();
 
@@ -869,7 +889,7 @@
         return;
       }
 
-      const payload = {
+      const payload = customPayload || {
         target: "full_website",
         sections: currentState.sections,
         products: currentState.products,
@@ -929,13 +949,30 @@
           submitBtn.disabled = true;
           try {
             if (!syncProductDraftFromEditor()) return;
-            const title = activeTab === "products"
-              ? `Product update: ${getSelectedProduct() ? getSelectedProduct().name : "Untitled Product"}`
-              : `Section update: ${TAB_LABEL[activeTab]}`;
-            const description = activeTab === "products"
-              ? "User submitted product changes for admin approval."
-              : `User submitted ${TAB_LABEL[activeTab]} section changes for admin approval.`;
-            await submitForApproval(title, description);
+            if (isVendor) {
+              const selectedProduct = getSelectedProduct();
+              if (!selectedProduct) {
+                setStatus("Select a product to submit.", "error");
+                return;
+              }
+              const payload = {
+                target: "vendor_products",
+                product_changes: [selectedProduct],
+              };
+              await submitForApproval(
+                `Product update: ${selectedProduct.name || "Untitled Product"}`,
+                "Vendor submitted product changes for admin approval.",
+                payload
+              );
+            } else {
+              const title = activeTab === "products"
+                ? `Product update: ${getSelectedProduct() ? getSelectedProduct().name : "Untitled Product"}`
+                : `Section update: ${TAB_LABEL[activeTab]}`;
+              const description = activeTab === "products"
+                ? "User submitted product changes for admin approval."
+                : `User submitted ${TAB_LABEL[activeTab]} section changes for admin approval.`;
+              await submitForApproval(title, description);
+            }
           } catch (error) {
             setStatus(error.message || "Could not submit approval request.", "error");
           } finally {
@@ -997,7 +1034,7 @@
           renderWorkspace();
           return;
         }
-        if (action === "delete") {
+        if (action === "delete" && isAdmin) {
           const target = currentState.products.find((product) => product.id === productId);
           if (!target) return;
           const shouldDelete = window.confirm(`Delete "${target.name || "Untitled Product"}"?`);
@@ -1007,11 +1044,7 @@
           renderWorkspace();
           (async () => {
             try {
-              if (isAdmin) {
-                await saveLive("Product deleted.");
-              } else {
-                await submitForApproval(`Product delete: ${target.name || "Untitled Product"}`, "User requested product deletion.");
-              }
+              await saveLive("Product deleted.");
             } catch (error) {
               setStatus(error.message || "Could not delete product.", "error");
             }
