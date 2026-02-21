@@ -1,5 +1,5 @@
 const path = require("path");
-const password = require("./password");
+const passwordUtils = require("./password");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
@@ -1242,7 +1242,7 @@ app.post("/api/auth/signup", (req, res) => {
 });
 
 app.post("/api/auth/signin", (req, res) => {
-  const { email, password, errors } = validateSignInInput(req.body);
+  const { email, password: plainPassword, errors } = validateSignInInput(req.body);
   if (errors.length) {
     return res.status(400).json({ error: errors.join(" ") });
   }
@@ -1250,7 +1250,7 @@ app.post("/api/auth/signin", (req, res) => {
   const user = db
     .prepare("select id, name, email, role, slug, password_hash from users where email = ?")
     .get(email);
-  if (!user || !password.compareSync(password, user.password_hash)) {
+  if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
     return res.status(401).json({ error: "Invalid email or password." });
   }
   if (user.role === "user") {
@@ -1305,7 +1305,7 @@ app.post("/api/auth/user/signup", (req, res) => {
 });
 
 app.post("/api/auth/user/signin", (req, res) => {
-  const { email, password, errors } = validateSignInInput(req.body);
+  const { email, password: plainPassword, errors } = validateSignInInput(req.body);
   if (errors.length) {
     return res.status(400).json({ error: errors.join(" ") });
   }
@@ -1313,7 +1313,7 @@ app.post("/api/auth/user/signin", (req, res) => {
   const user = db
     .prepare("select id, name, email, role, slug, password_hash from users where email = ?")
     .get(email);
-  if (!user || !password.compareSync(password, user.password_hash)) {
+  if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
     return res.status(401).json({ error: "Invalid email or password." });
   }
   if (user.role !== "user") {
