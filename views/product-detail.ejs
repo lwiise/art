@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= product.name %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <a class="auth-back" href="/products">&larr; Back to Products</a>
+    <section class="card" style="margin-bottom:14px;">
+      <div class="topbar">
+        <div>
+          <h1 style="margin:0;"><%= product.name %></h1>
+          <div class="muted small"><%= (product.gallery_type || '').toUpperCase() %> - <%= product.category || "Uncategorized" %></div>
+        </div>
+        <div class="actions">
+          <% if (currentUser && currentUser.role === "user") { %>
+            <button type="button" id="likeBtn"><%= likedByMe ? "Unlike" : "Like" %> (<span id="likeCount"><%= likesCount || 0 %></span>)</button>
+            <button type="button" id="addCartBtn">Add to Cart</button>
+            <a class="btn-link" href="/user/panel">User Panel</a>
+          <% } else { %>
+            <a class="btn-link" href="/user/log">User Login</a>
+          <% } %>
+        </div>
+      </div>
+      <% if (product.image_url) { %>
+        <img src="<%= product.image_url %>" alt="<%= product.name %>" style="width:100%;max-height:520px;object-fit:contain;border:1px solid #e3e3e3;border-radius:14px;background:#fafafa;" />
+      <% } %>
+      <div class="grid two" style="margin-top:12px;">
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Artist</span>
+          <span><%= product.artist_name || "Unknown" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Period</span>
+          <span><%= product.period || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Material</span>
+          <span><%= product.material || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Dimensions</span>
+          <span><%= product.dimensions || "-" %></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 8px;">Comments</h2>
+      <% if (currentUser && currentUser.role === "user") { %>
+        <form id="commentForm">
+          <div class="field-row">
+            <textarea id="commentInput" rows="4" maxlength="1200" placeholder="Share your thoughts..."></textarea>
+          </div>
+          <div class="actions">
+            <button class="primary" id="commentSubmitBtn" type="submit">Post Comment</button>
+          </div>
+          <div id="commentMsg" class="error"></div>
+        </form>
+        <hr class="auth-divider">
+      <% } else { %>
+        <p class="small muted">Login as a user to post comments.</p>
+      <% } %>
+      <div id="commentsWrap" class="grid">
+        <% if (!comments.length) { %>
+          <div class="muted small">No comments yet.</div>
+        <% } %>
+        <% comments.forEach((comment) => { %>
+          <article class="workspace-field-row">
+            <div class="workspace-field-key"><%= comment.userName %></div>
+            <div><%= comment.content %></div>
+            <div class="muted small"><%= comment.createdAt %></div>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    const productId = "<%= product.id %>";
+    const isUser = <%= currentUser && currentUser.role === "user" ? "true" : "false" %>;
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load."); };
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    const commentsWrap = document.getElementById("commentsWrap");
+
+    function renderComments(comments) {
+      if (!Array.isArray(comments) || !comments.length) {
+        commentsWrap.innerHTML = `<div class="muted small">No comments yet.</div>`;
+        return;
+      }
+      commentsWrap.innerHTML = comments.map((comment) => `
+        <article class="workspace-field-row">
+          <div class="workspace-field-key">${escapeHtml(comment.userName)}</div>
+          <div>${escapeHtml(comment.content)}</div>
+          <div class="muted small">${escapeHtml(comment.createdAt)}</div>
+        </article>
+      `).join("");
+    }
+
+    async function refreshComments() {
+      const result = await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/comments`);
+      renderComments(result.comments || []);
+    }
+
+    if (isUser) {
+      const likeBtn = document.getElementById("likeBtn");
+      const addCartBtn = document.getElementById("addCartBtn");
+      const commentForm = document.getElementById("commentForm");
+      const commentInput = document.getElementById("commentInput");
+      const commentSubmitBtn = document.getElementById("commentSubmitBtn");
+      const commentMsg = document.getElementById("commentMsg");
+
+      likeBtn?.addEventListener("click", async () => {
+        likeBtn.disabled = true;
+        try {
+          const result = await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/like`, { method: "POST" });
+          likeBtn.innerHTML = `${result.liked ? "Unlike" : "Like"} (<span id="likeCount">${Number(result.likesCount || 0)}</span>)`;
+        } catch (error) {
+          alert(error.message || "Could not update like.");
+        } finally {
+          likeBtn.disabled = false;
+        }
+      });
+
+      addCartBtn?.addEventListener("click", async () => {
+        addCartBtn.disabled = true;
+        try {
+          await sendApiRequest("/api/cart/items", {
+            method: "POST",
+            body: JSON.stringify({ productId, quantity: 1 }),
+          });
+          addCartBtn.textContent = "Added";
+        } catch (error) {
+          alert(error.message || "Could not add to cart.");
+        } finally {
+          setTimeout(() => {
+            addCartBtn.textContent = "Add to Cart";
+            addCartBtn.disabled = false;
+          }, 700);
+        }
+      });
+
+      commentForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        commentMsg.textContent = "";
+        commentSubmitBtn.disabled = true;
+        try {
+          await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/comments`, {
+            method: "POST",
+            body: JSON.stringify({ content: commentInput.value }),
+          });
+          commentInput.value = "";
+          commentMsg.className = "success";
+          commentMsg.textContent = "Comment posted.";
+          await refreshComments();
+        } catch (error) {
+          commentMsg.className = "error";
+          commentMsg.textContent = error.message || "Could not post comment.";
+        } finally {
+          commentSubmitBtn.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

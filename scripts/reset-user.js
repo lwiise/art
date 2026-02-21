@@ -19,7 +19,7 @@ const role = (readArg("role") || "user").toLowerCase();
 
 if (!email) fail("Missing required arg: --email");
 if (!password) fail("Missing required arg: --password");
-if (!["user", "admin"].includes(role)) fail("Role must be user or admin.");
+if (!["user", "vendor", "admin"].includes(role)) fail("Role must be user, vendor, or admin.");
 
 const id = upsertUser({
   name,

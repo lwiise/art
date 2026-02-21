@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Panel - <%= panelUser.name %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Welcome, <%= panelUser.name %></h1>
+        <p class="muted small" style="margin:6px 0 0;">Like products, comment, and manage your cart.</p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="/products">Browse Products</a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:14px;">
+      <div class="topbar">
+        <h2 style="margin:0;">Cart</h2>
+        <button type="button" id="clearCartBtn">Clear Cart</button>
+      </div>
+      <div id="cartMsg" class="small muted"></div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Updated</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cartTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px;">
+      <h2 style="margin:0 0 10px;">Liked Products</h2>
+      <div id="likedGrid" class="grid two"></div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px;">Your Comments</h2>
+      <div id="commentsList" class="grid"></div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn", "/user/log");
+    }
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
+
+    const cartMsg = document.getElementById("cartMsg");
+    const cartTableBody = document.getElementById("cartTableBody");
+    const clearCartBtn = document.getElementById("clearCartBtn");
+    const likedGrid = document.getElementById("likedGrid");
+    const commentsList = document.getElementById("commentsList");
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function renderCart(cart) {
+      const items = Array.isArray(cart && cart.items) ? cart.items : [];
+      if (!items.length) {
+        cartTableBody.innerHTML = `<tr><td colspan="4" class="muted small">Cart is empty.</td></tr>`;
+        cartMsg.textContent = "No products in your cart yet.";
+        return;
+      }
+      cartMsg.textContent = `Total items: ${cart.totalItems} (${cart.uniqueItems} products)`;
+      cartTableBody.innerHTML = items.map((item) => `
+        <tr data-product-id="${escapeHtml(item.productId)}">
+          <td>${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}</td>
+          <td>${Number(item.quantity || 0)}</td>
+          <td>${escapeHtml(item.updatedAt || "")}</td>
+          <td><button type="button" data-action="remove-item">Remove</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderLikedProducts(items) {
+      if (!Array.isArray(items) || !items.length) {
+        likedGrid.innerHTML = `<div class="muted small">No liked products yet.</div>`;
+        return;
+      }
+      likedGrid.innerHTML = items.map((item) => `
+        <article class="workspace-item">
+          <div class="workspace-item-name">${escapeHtml(item.product?.name || item.productId)}</div>
+          <div class="workspace-item-meta">${escapeHtml(item.product?.gallery_type || "")}</div>
+          <div class="actions"><a class="btn-link" href="/products/${encodeURIComponent(item.productId)}">Open</a></div>
+        </article>
+      `).join("");
+    }
+
+    function renderComments(items) {
+      if (!Array.isArray(items) || !items.length) {
+        commentsList.innerHTML = `<div class="muted small">No comments yet.</div>`;
+        return;
+      }
+      commentsList.innerHTML = items.map((item) => `
+        <article class="workspace-field-row">
+          <div class="workspace-field-key">${escapeHtml(item.product?.name || item.productId)}</div>
+          <div>${escapeHtml(item.content)}</div>
+          <div class="muted small">${escapeHtml(item.createdAt || "")}</div>
+        </article>
+      `).join("");
+    }
+
+    async function loadDashboard() {
+      const result = await sendApiRequest("/api/user/dashboard");
+      renderCart(result.cart || { items: [], totalItems: 0, uniqueItems: 0 });
+      renderLikedProducts(result.likedProducts || []);
+      renderComments(result.comments || []);
+    }
+
+    clearCartBtn.addEventListener("click", async () => {
+      clearCartBtn.disabled = true;
+      try {
+        const result = await sendApiRequest("/api/cart", { method: "DELETE" });
+        renderCart(result.cart || { items: [], totalItems: 0, uniqueItems: 0 });
+      } catch (error) {
+        cartMsg.textContent = error.message || "Could not clear cart.";
+      } finally {
+        clearCartBtn.disabled = false;
+      }
+    });
+
+    cartTableBody.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action='remove-item']");
+      if (!button) return;
+      const row = event.target.closest("tr[data-product-id]");
+      if (!row) return;
+      const productId = row.getAttribute("data-product-id");
+      button.disabled = true;
+      try {
+        const result = await sendApiRequest(`/api/cart/items/${encodeURIComponent(productId)}`, { method: "DELETE" });
+        renderCart(result.cart || { items: [], totalItems: 0, uniqueItems: 0 });
+      } catch (error) {
+        cartMsg.textContent = error.message || "Could not remove item.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    loadDashboard().catch((error) => {
+      cartMsg.textContent = error.message || "Could not load dashboard.";
+    });
+  </script>
+</body>
+</html>

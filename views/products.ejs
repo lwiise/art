@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Products</title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Products</h1>
+        <p class="muted small" style="margin:6px 0 0;">Explore artworks, designs, books, and photography.</p>
+      </div>
+      <div class="actions">
+        <% if (!currentUser) { %>
+          <a class="btn-link" href="/user/log">User Login</a>
+          <a class="btn-link" href="/log">Vendor/Admin</a>
+        <% } else if (currentUser.role === "user") { %>
+          <a class="btn-link" href="/user/panel">User Panel</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else if (currentUser.role === "admin") { %>
+          <a class="btn-link" href="/admin">Admin Panel</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else { %>
+          <a class="btn-link" href="/panel/<%= currentUser.slug %>">Vendors Panel</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } %>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:14px;">
+      <form method="get" action="/products" class="workspace-form-grid three">
+        <div class="field-row">
+          <label for="search">Search</label>
+          <input id="search" name="search" value="<%= query.search || '' %>" placeholder="Name, artist, category..." />
+        </div>
+        <div class="field-row">
+          <label for="galleryType">Category</label>
+          <select id="galleryType" name="galleryType">
+            <option value="">All</option>
+            <option value="art" <%= (query.galleryType || query.gallery_type) === 'art' ? 'selected' : '' %>>Art</option>
+            <option value="designs" <%= (query.galleryType || query.gallery_type) === 'designs' ? 'selected' : '' %>>Designs</option>
+            <option value="books" <%= (query.galleryType || query.gallery_type) === 'books' ? 'selected' : '' %>>Books</option>
+            <option value="photography" <%= (query.galleryType || query.gallery_type) === 'photography' ? 'selected' : '' %>>Photography</option>
+            <option value="sculpture" <%= (query.galleryType || query.gallery_type) === 'sculpture' ? 'selected' : '' %>>Sculpture</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label for="pageSize">Page Size</label>
+          <select id="pageSize" name="pageSize">
+            <option value="12" <%= String(query.pageSize || '') === '12' ? 'selected' : '' %>>12</option>
+            <option value="24" <%= !query.pageSize || String(query.pageSize) === '24' ? 'selected' : '' %>>24</option>
+            <option value="48" <%= String(query.pageSize || '') === '48' ? 'selected' : '' %>>48</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit">Apply</button>
+          <a class="btn-link" href="/products">Reset</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="grid three">
+      <% if (!products.length) { %>
+        <div class="card"><p class="muted small" style="margin:0;">No products found.</p></div>
+      <% } %>
+      <% products.forEach((product) => { %>
+        <article class="card">
+          <div class="workspace-item-name" style="margin-bottom:6px;"><%= product.name %></div>
+          <div class="workspace-item-meta" style="margin-bottom:10px;"><%= (product.gallery_type || '').toUpperCase() %> - <%= (product.category || '').toUpperCase() %></div>
+          <% if (product.image_url) { %>
+            <img src="<%= product.image_url %>" alt="<%= product.name %>" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid #e5e5e5;margin-bottom:10px;" />
+          <% } %>
+          <div class="actions" style="margin-top:10px;">
+            <a class="btn-link" href="/products/<%= encodeURIComponent(product.id) %>">Open</a>
+            <button type="button" class="likeBtn" data-product-id="<%= product.id %>" <%= !(currentUser && currentUser.role === 'user') ? 'disabled' : '' %>>
+              <%= product.likedByMe ? "Unlike" : "Like" %> (<span><%= product.likesCount || 0 %></span>)
+            </button>
+            <button type="button" class="cartBtn" data-product-id="<%= product.id %>" <%= !(currentUser && currentUser.role === 'user') ? 'disabled' : '' %>>Add to Cart</button>
+          </div>
+        </article>
+      <% }); %>
+    </section>
+
+    <section class="card" style="margin-top:14px;">
+      <div class="topbar">
+        <div class="small muted">
+          Showing page <%= paging.page %> / <%= paging.totalPages %> | Total products: <%= paging.total %>
+        </div>
+        <div class="actions">
+          <% const queryBase = new URLSearchParams(query || {}); %>
+          <% queryBase.set('pageSize', String(paging.pageSize)); %>
+          <% if (paging.hasPrev) { queryBase.set('page', String(paging.page - 1)); %>
+            <a class="btn-link" href="/products?<%= queryBase.toString() %>">Prev</a>
+          <% } %>
+          <% if (paging.hasNext) { queryBase.set('page', String(paging.page + 1)); %>
+            <a class="btn-link" href="/products?<%= queryBase.toString() %>">Next</a>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    const isUser = <%= currentUser && currentUser.role === "user" ? "true" : "false" %>;
+    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
+      APP.attachSignOutHandler("signoutBtn", isUser ? "/user/log" : "/log");
+    }
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load."); };
+
+    document.querySelectorAll(".likeBtn").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const productId = button.getAttribute("data-product-id");
+        if (!productId) return;
+        button.disabled = true;
+        try {
+          const result = await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/like`, { method: "POST" });
+          const label = result.liked ? "Unlike" : "Like";
+          const count = Number(result.likesCount || 0);
+          button.innerHTML = `${label} (<span>${count}</span>)`;
+        } catch (error) {
+          alert(error.message || "Could not update like.");
+        } finally {
+          button.disabled = false;
+        }
+      });
+    });
+
+    document.querySelectorAll(".cartBtn").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const productId = button.getAttribute("data-product-id");
+        if (!productId) return;
+        button.disabled = true;
+        try {
+          await sendApiRequest("/api/cart/items", {
+            method: "POST",
+            body: JSON.stringify({ productId, quantity: 1 }),
+          });
+          button.textContent = "Added";
+        } catch (error) {
+          alert(error.message || "Could not add to cart.");
+        } finally {
+          setTimeout(() => {
+            button.textContent = "Add to Cart";
+            button.disabled = false;
+          }, 700);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

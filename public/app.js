@@ -20,18 +20,18 @@ async function apiRequest(url, options = {}) {
   return body;
 }
 
-async function signOutCurrentUser() {
+async function signOutCurrentUser(redirectTo = "/log") {
   await apiRequest("/api/auth/signout", { method: "POST" });
-  window.location.href = "/log";
+  window.location.href = redirectTo;
 }
 
-function attachSignOutHandler(buttonId) {
+function attachSignOutHandler(buttonId, redirectTo = "/log") {
   const button = document.getElementById(buttonId);
   if (!button) return;
   button.addEventListener("click", async () => {
     button.disabled = true;
     try {
-      await signOutCurrentUser();
+      await signOutCurrentUser(redirectTo);
     } catch (err) {
       alert(err.message || "Could not sign out.");
       button.disabled = false;

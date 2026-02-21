@@ -65,33 +65,63 @@ function wantsHtml(req) {
   return !String(req.originalUrl || "").startsWith("/api/") && !!req.accepts("html");
 }
 
+function loginPathForRequest(req) {
+  const originalUrl = String(req.originalUrl || "");
+  if (originalUrl.startsWith("/user")) return "/user/log";
+  return "/log";
+}
+
 function requireAuth(req, res, next) {
   if (!req.user) {
     if (wantsHtml(req)) {
-      return res.redirect("/log");
+      return res.redirect(loginPathForRequest(req));
     }
     return res.status(401).json({ error: "Authentication required." });
   }
   return next();
 }
 
+function requireRole(allowedRoles, options = {}) {
+  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  const failureMessage = options.failureMessage || "Access denied.";
+  return (req, res, next) => {
+    if (!req.user) {
+      if (wantsHtml(req)) {
+        return res.redirect(loginPathForRequest(req));
+      }
+      return res.status(401).json({ error: "Authentication required." });
+    }
+    if (!roles.includes(req.user.role)) {
+      if (wantsHtml(req)) {
+        return res.status(403).render("error", {
+          title: "Access denied",
+          message: failureMessage,
+        });
+      }
+      return res.status(403).json({ error: failureMessage });
+    }
+    return next();
+  };
+}
+
 function requireAdmin(req, res, next) {
-  if (!req.user) {
-    if (wantsHtml(req)) {
-      return res.redirect("/log");
-    }
-    return res.status(401).json({ error: "Authentication required." });
-  }
-  if (req.user.role !== "admin") {
-    if (wantsHtml(req)) {
-      return res.status(403).render("error", {
-        title: "Access denied",
-        message: "Admin access is required for this page.",
-      });
-    }
-    return res.status(403).json({ error: "Admin access required." });
-  }
-  return next();
+  return requireRole("admin", { failureMessage: "Admin access required." })(req, res, next);
+}
+
+function requireVendor(req, res, next) {
+  return requireRole("vendor", { failureMessage: "Vendor access required." })(req, res, next);
+}
+
+function requireUser(req, res, next) {
+  return requireRole("user", { failureMessage: "User access required." })(req, res, next);
+}
+
+function requireAdminOrVendor(req, res, next) {
+  return requireRole(["admin", "vendor"], { failureMessage: "Admin or vendor access required." })(req, res, next);
+}
+
+function requireAdminOrUser(req, res, next) {
+  return requireRole(["admin", "user"], { failureMessage: "Admin or user access required." })(req, res, next);
 }
 
 module.exports = {
@@ -99,7 +129,12 @@ module.exports = {
   attachCurrentUser,
   buildSessionUser,
   clearSessionCookie,
+  requireRole,
   requireAdmin,
+  requireVendor,
+  requireUser,
+  requireAdminOrVendor,
+  requireAdminOrUser,
   requireAuth,
   setSessionCookie,
   signSessionToken,

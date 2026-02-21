@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const bcrypt = require("bcryptjs");
+const password = require("./password");
 const Database = require("better-sqlite3");
 
 const dataDir = path.join(process.cwd(), "data");
@@ -8,9 +8,60 @@ if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const dbPath = path.join(dataDir, "app.db");
+const dbPath = process.env.APP_DB_PATH
+  ? path.resolve(process.env.APP_DB_PATH)
+  : path.join(dataDir, "app.db");
 const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
+
+function tableSql(tableName) {
+  const row = db
+    .prepare("select sql from sqlite_master where type = 'table' and name = ?")
+    .get(tableName);
+  return row ? String(row.sql || "") : "";
+}
+
+function hasColumn(tableName, columnName) {
+  const rows = db.prepare(`pragma table_info(${tableName})`).all();
+  return rows.some((row) => String(row.name) === String(columnName));
+}
+
+function migrateLegacyUsersTable() {
+  const sql = tableSql("users").toLowerCase();
+  if (!sql) return;
+  if (sql.includes("'vendor'")) return;
+
+  db.exec(`
+    pragma foreign_keys = off;
+    begin transaction;
+
+    create table users_new (
+      id integer primary key autoincrement,
+      name text not null,
+      email text not null unique,
+      password_hash text not null,
+      role text not null check (role in ('admin', 'vendor', 'user')),
+      slug text not null unique,
+      created_at text not null default (datetime('now'))
+    );
+
+    insert into users_new (id, name, email, password_hash, role, slug)
+    select
+      id,
+      name,
+      email,
+      password_hash,
+      case when role = 'admin' then 'admin' else 'vendor' end as role,
+      slug
+    from users;
+
+    drop table users;
+    alter table users_new rename to users;
+
+    commit;
+    pragma foreign_keys = on;
+  `);
+}
 
 db.exec(`
   create table if not exists users (
@@ -18,8 +69,9 @@ db.exec(`
     name text not null,
     email text not null unique,
     password_hash text not null,
-    role text not null check (role in ('user', 'admin')),
-    slug text not null unique
+    role text not null check (role in ('admin', 'vendor', 'user')),
+    slug text not null unique,
+    created_at text not null default (datetime('now'))
   );
 
   create table if not exists edits (
@@ -42,13 +94,49 @@ db.exec(`
     updated_by integer references users(id)
   );
 
+  create table if not exists likes (
+    user_id integer not null references users(id) on delete cascade,
+    product_id text not null,
+    created_at text not null default (datetime('now')),
+    primary key (user_id, product_id)
+  );
+
+  create table if not exists comments (
+    id integer primary key autoincrement,
+    user_id integer not null references users(id) on delete cascade,
+    product_id text not null,
+    content text not null,
+    created_at text not null default (datetime('now')),
+    updated_at text not null default (datetime('now'))
+  );
+
+  create table if not exists cart_items (
+    user_id integer not null references users(id) on delete cascade,
+    product_id text not null,
+    quantity integer not null check (quantity >= 1),
+    created_at text not null default (datetime('now')),
+    updated_at text not null default (datetime('now')),
+    primary key (user_id, product_id)
+  );
+
   create index if not exists idx_users_slug on users(slug);
   create index if not exists idx_edits_user_id on edits(user_id);
   create index if not exists idx_edits_status on edits(status);
+  create index if not exists idx_likes_product_id on likes(product_id);
+  create index if not exists idx_comments_product_id on comments(product_id);
+  create index if not exists idx_comments_user_created on comments(user_id, created_at desc);
+  create index if not exists idx_cart_items_user_id on cart_items(user_id);
 
   insert or ignore into site_state (id, sections_json, products_json)
   values (1, '{}', '[]');
 `);
+
+migrateLegacyUsersTable();
+
+if (!hasColumn("users", "created_at")) {
+  db.exec("alter table users add column created_at text;");
+  db.exec("update users set created_at = coalesce(created_at, datetime('now'));");
+}
 
 function slugifyName(name) {
   return String(name || "")
@@ -76,7 +164,7 @@ function upsertUser({ name, email, password, role }) {
   const existing = db
     .prepare("select id, slug from users where email = ?")
     .get(normalizedEmail);
-  const passwordHash = bcrypt.hashSync(String(password || ""), 12);
+  const passwordHash = password.hashSync(String(password || ""), 12);
 
   if (existing) {
     db.prepare(
@@ -108,7 +196,7 @@ function createUser({ name, email, password, role, allowExisting = false }) {
   }
   const baseSlug = slugifyName(name);
   const slug = uniqueSlug(baseSlug);
-  const passwordHash = bcrypt.hashSync(password, 12);
+  const passwordHash = password.hashSync(password, 12);
   const info = db
     .prepare(
       "insert into users (name, email, password_hash, role, slug) values (?, ?, ?, ?, ?)"
@@ -127,7 +215,15 @@ function seedDefaultUsers() {
   });
 
   createUser({
-    name: process.env.SEED_USER_NAME || "John Doe",
+    name: process.env.SEED_VENDOR_NAME || "Vendor User",
+    email: process.env.SEED_VENDOR_EMAIL || "vendor@example.com",
+    password: process.env.SEED_VENDOR_PASSWORD || "Vendor123!",
+    role: "vendor",
+    allowExisting: true,
+  });
+
+  createUser({
+    name: process.env.SEED_USER_NAME || "Site User",
     email: process.env.SEED_USER_EMAIL || "user@example.com",
     password: process.env.SEED_USER_PASSWORD || "User123!",
     role: "user",

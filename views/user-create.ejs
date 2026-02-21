@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create Vendor Account</title>
+  <title>Create User Account</title>
   <link rel="stylesheet" href="/auth-assets/styles.css" />
 </head>
 <body>
   <main class="container auth-shell">
     <a class="auth-back" href="/products">&larr; Back to Website</a>
     <div class="card auth-card">
-      <div class="auth-mark">FNN ART</div>
-      <h1>Create Vendor</h1>
-      <p class="muted">Create your vendor account and start submitting product updates for admin approval.</p>
+      <div class="auth-mark">FNN ART USER</div>
+      <h1>Create User</h1>
+      <p class="muted">Create your user account to like artworks, comment, and use cart.</p>
 
-      <form id="createForm">
+      <form id="userCreateForm">
         <div class="field-row">
           <label for="name">Name</label>
-          <input id="name" name="name" required maxlength="120" />
+          <input id="name" name="name" maxlength="120" required />
         </div>
         <div class="field-row">
           <label for="email">Email</label>
@@ -25,19 +25,14 @@
         </div>
         <div class="field-row">
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" required minlength="8" />
+          <input id="password" name="password" type="password" minlength="8" required />
         </div>
         <div class="actions">
-          <button class="primary" type="submit" id="createBtn">Create account</button>
-          <a href="/log" class="btn-link">Back to login</a>
+          <button class="primary" type="submit" id="userCreateBtn">Create Account</button>
+          <a class="btn-link" href="/user/log">Back to login</a>
         </div>
-        <div id="createMsg" class="error" role="alert"></div>
+        <div id="userCreateMsg" class="error" role="alert"></div>
       </form>
-
-      <hr class="auth-divider">
-      <p class="small auth-line">
-        Need a standard user account? <a href="/user/create">Create user account</a>
-      </p>
     </div>
   </main>
 
@@ -46,33 +41,27 @@
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
-    const form = document.getElementById("createForm");
-    const btn = document.getElementById("createBtn");
-    const msg = document.getElementById("createMsg");
+    const form = document.getElementById("userCreateForm");
+    const btn = document.getElementById("userCreateBtn");
+    const msg = document.getElementById("userCreateMsg");
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      msg.className = "error";
       msg.textContent = "";
       btn.disabled = true;
-
       const data = new FormData(form);
       const payload = {
         name: data.get("name"),
         email: data.get("email"),
         password: data.get("password"),
       };
-
       try {
-        const result = await sendApiRequest("/api/auth/signup", {
+        const result = await sendApiRequest("/api/auth/user/signup", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        msg.className = "success";
-        msg.textContent = result.message || "Account created.";
-        window.location.href = result.redirect || "/log";
+        window.location.href = result.redirect || "/user/panel";
       } catch (error) {
-        msg.className = "error";
         msg.textContent = error.message || "Could not create account.";
       } finally {
         btn.disabled = false;
