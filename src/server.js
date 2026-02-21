@@ -2520,17 +2520,21 @@ app.get("/panel/:slug", requireAdminOrVendor, (req, res) => {
 });
 
 app.get("/admin", requireAdmin, (req, res) => {
-  const counts = getAdminDashboardCounts();
-  return res.render("admin-dashboard-counts", {
-    counts,
-  });
-});
-
-app.get("/admin/content", requireAdmin, (req, res) => {
   return res.render("workspace", {
     panelUser: req.user,
     isAdmin: true,
     isOwnPanel: true,
+  });
+});
+
+app.get("/admin/content", requireAdmin, (req, res) => {
+  return res.redirect("/admin");
+});
+
+app.get("/admin/dashboard", requireAdmin, (req, res) => {
+  const counts = getAdminDashboardCounts();
+  return res.render("admin-dashboard-counts", {
+    counts,
   });
 });
 
@@ -2701,7 +2705,7 @@ app.get("/admin/submissions/:id", requireAdmin, (req, res) => {
 });
 
 app.get("/admin/overview", requireAdmin, (req, res) => {
-  return res.redirect("/admin");
+  return res.redirect("/admin/dashboard");
 });
 
 app.get("/admin/edits", requireAdmin, (req, res) => {

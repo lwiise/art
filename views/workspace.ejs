@@ -26,6 +26,10 @@
           <button type="button" id="refreshContentBtn">Refresh</button>
         </div>
         <div class="workspace-toolbar-right">
+          <% if (isAdmin) { %>
+            <a class="btn-link" href="/admin/users">Users</a>
+            <a class="btn-link" href="/admin/vendors">Vendors</a>
+          <% } %>
           <span class="workspace-user"><%= (currentUser && currentUser.email) || panelUser.email %></span>
           <button type="button" id="signoutBtn">Logout</button>
         </div>
@@ -34,7 +38,7 @@
       <div class="workspace-card-title"><%= isAdmin ? "Admin Sections" : "Vendor Products" %></div>
       <p class="workspace-card-sub">
         <%= isAdmin
-          ? "Use the side menu to switch between Products and website blocks."
+          ? "Use the side menu to switch between website blocks and Products."
           : "Use this page to add new products and edit only your own products." %>
       </p>
 
@@ -125,7 +129,7 @@
     const isAdmin = <%= isAdmin ? "true" : "false" %>;
     const isVendor = !isAdmin;
     const panelUserId = <%= Number(panelUser.id) %>;
-    const TAB_ORDER = ["products", "home", "about", "services", "process", "gallery", "contact", "footer"];
+    const TAB_ORDER = ["home", "about", "services", "process", "gallery", "contact", "footer", "products"];
     const TAB_LABEL = {
       products: "Products",
       home: "Home",
@@ -209,7 +213,7 @@
     const refreshEditsBtn = document.getElementById("refreshEditsBtn");
 
     let currentState = { sections: {}, products: [] };
-    let activeTab = "products";
+    let activeTab = isAdmin ? "home" : "products";
     let selectedProductId = null;
     let productPage = 1;
     let serverProductIds = new Set();
