@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const password = require("./password");
+const passwordUtils = require("./password");
 const Database = require("better-sqlite3");
 
 const dataDir = path.join(process.cwd(), "data");
@@ -164,7 +164,7 @@ function upsertUser({ name, email, password, role }) {
   const existing = db
     .prepare("select id, slug from users where email = ?")
     .get(normalizedEmail);
-  const passwordHash = password.hashSync(String(password || ""), 12);
+  const passwordHash = passwordUtils.hashSync(String(password || ""), 12);
 
   if (existing) {
     db.prepare(
@@ -196,7 +196,7 @@ function createUser({ name, email, password, role, allowExisting = false }) {
   }
   const baseSlug = slugifyName(name);
   const slug = uniqueSlug(baseSlug);
-  const passwordHash = password.hashSync(password, 12);
+  const passwordHash = passwordUtils.hashSync(password, 12);
   const info = db
     .prepare(
       "insert into users (name, email, password_hash, role, slug) values (?, ?, ?, ?, ?)"
