@@ -1,4 +1,6 @@
+const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 const passwordUtils = require("./password");
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -66,6 +68,375 @@ function makeDefaultProcessSteps() {
   ];
 }
 
+function toOptionalNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function mapDesignCategory(category) {
+  const key = String(category || "").trim().toLowerCase();
+  if (key === "cabinet") return "Cabinets";
+  if (key === "sideboard") return "Sideboards";
+  if (key === "decor") return "Decor";
+  return "All";
+}
+
+function extractArrayLiteral(source, variableName) {
+  const marker = `let ${variableName} = [`;
+  const markerIndex = source.indexOf(marker);
+  if (markerIndex === -1) return null;
+
+  let cursor = source.indexOf("[", markerIndex);
+  if (cursor === -1) return null;
+
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inTemplate = false;
+  let escaped = false;
+
+  for (; cursor < source.length; cursor += 1) {
+    const char = source[cursor];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (!inDouble && !inTemplate && char === "'") {
+      inSingle = !inSingle;
+      continue;
+    }
+    if (!inSingle && !inTemplate && char === "\"") {
+      inDouble = !inDouble;
+      continue;
+    }
+    if (!inSingle && !inDouble && char === "`") {
+      inTemplate = !inTemplate;
+      continue;
+    }
+    if (inSingle || inDouble || inTemplate) {
+      continue;
+    }
+    if (char === "[") {
+      depth += 1;
+      continue;
+    }
+    if (char === "]") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(source.indexOf("[", markerIndex), cursor + 1);
+      }
+    }
+  }
+  return null;
+}
+
+function parseLegacyArray(source, variableName) {
+  const literal = extractArrayLiteral(source, variableName);
+  if (!literal) return [];
+  try {
+    const parsed = vm.runInNewContext(literal, Object.create(null), { timeout: 500 });
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function loadLegacyWebsiteProducts() {
+  const indexPath = path.join(__dirname, "..", "index.html");
+  if (!fs.existsSync(indexPath)) return [];
+
+  let htmlSource = "";
+  try {
+    htmlSource = fs.readFileSync(indexPath, "utf8");
+  } catch {
+    return [];
+  }
+
+  const legacyDesigns = parseLegacyArray(htmlSource, "PRODUCTS");
+  const legacyBooks = parseLegacyArray(htmlSource, "BOOKS");
+  const legacyArt = parseLegacyArray(htmlSource, "ARTWORKS");
+  const legacySculptures = parseLegacyArray(htmlSource, "SCULPTURES");
+
+  if (!legacyDesigns.length && !legacyBooks.length && !legacyArt.length && !legacySculptures.length) {
+    return [];
+  }
+
+  const mapped = [];
+  let sortOrder = 1;
+
+  legacyDesigns.forEach((item) => {
+    const coords = Array.isArray(item?.store?.coords) ? item.store.coords : [];
+    mapped.push({
+      id: String(item?.id || `design-${sortOrder}`),
+      name: String(item?.name || "Untitled Product"),
+      gallery_type: "designs",
+      category: mapDesignCategory(item?.category),
+      status: "active",
+      sort_order: sortOrder,
+      artist_name: String(item?.artist?.name || ""),
+      artist_role: String(item?.artist?.role || ""),
+      artist_image_url: String(item?.artist?.img || ""),
+      artist_bio: String(item?.artist?.bio || ""),
+      image_url: String(item?.img || ""),
+      media_images: Array.isArray(item?.images) ? item.images.map((value) => String(value || "").trim()).filter(Boolean) : [],
+      model_url: String(item?.model || ""),
+      theme: "",
+      color: "",
+      size: "",
+      tag: "",
+      kicker: "",
+      material: String(item?.specs?.mat || ""),
+      dimensions: String(item?.specs?.dim || ""),
+      store_name: String(item?.store?.name || ""),
+      store_lng: toOptionalNumber(coords[0]),
+      store_lat: toOptionalNumber(coords[1]),
+      medium: "",
+      period: "",
+      era: "",
+      year: null,
+      rating: null,
+      rating_count: "",
+      base_price: null,
+      owner_user_id: null,
+    });
+    sortOrder += 1;
+  });
+
+  legacyBooks.forEach((item) => {
+    mapped.push({
+      id: String(item?.id || `book-${sortOrder}`),
+      name: String(item?.name || "Untitled Product"),
+      gallery_type: "books",
+      category: "Books",
+      status: "active",
+      sort_order: sortOrder,
+      artist_name: "",
+      artist_role: "",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: String(item?.img || ""),
+      media_images: Array.isArray(item?.images) ? item.images.map((value) => String(value || "").trim()).filter(Boolean) : [],
+      model_url: "",
+      theme: String(item?.theme || ""),
+      color: String(item?.color || ""),
+      size: String(item?.size || ""),
+      tag: String(item?.tag || ""),
+      kicker: String(item?.kicker || ""),
+      material: "",
+      dimensions: "",
+      store_name: "",
+      store_lng: null,
+      store_lat: null,
+      medium: "",
+      period: "",
+      era: "",
+      year: null,
+      rating: null,
+      rating_count: "",
+      base_price: toOptionalNumber(item?.priceValue),
+      owner_user_id: null,
+    });
+    sortOrder += 1;
+  });
+
+  legacyArt.forEach((item) => {
+    mapped.push({
+      id: String(item?.id || `art-${sortOrder}`),
+      name: String(item?.name || "Untitled Product"),
+      gallery_type: "art",
+      category: "Artwork",
+      status: "active",
+      sort_order: sortOrder,
+      artist_name: String(item?.artist || ""),
+      artist_role: "",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: String(item?.img || ""),
+      media_images: Array.isArray(item?.images) ? item.images.map((value) => String(value || "").trim()).filter(Boolean) : [],
+      model_url: String(item?.model || ""),
+      theme: "",
+      color: "",
+      size: "",
+      tag: "",
+      kicker: "",
+      material: String(item?.medium || ""),
+      dimensions: "",
+      store_name: "",
+      store_lng: null,
+      store_lat: null,
+      medium: String(item?.medium || ""),
+      period: String(item?.period || ""),
+      era: "",
+      year: toOptionalNumber(item?.year),
+      rating: toOptionalNumber(item?.rating),
+      rating_count: String(item?.ratingCount || ""),
+      base_price: toOptionalNumber(item?.basePrice),
+      owner_user_id: null,
+    });
+    sortOrder += 1;
+  });
+
+  legacySculptures.forEach((item) => {
+    mapped.push({
+      id: String(item?.id || `sculpture-${sortOrder}`),
+      name: String(item?.name || "Untitled Product"),
+      gallery_type: "sculpture",
+      category: "Sculpture",
+      status: "active",
+      sort_order: sortOrder,
+      artist_name: String(item?.artist || ""),
+      artist_role: "",
+      artist_image_url: "",
+      artist_bio: "",
+      image_url: String(item?.img || ""),
+      media_images: Array.isArray(item?.images) ? item.images.map((value) => String(value || "").trim()).filter(Boolean) : [],
+      model_url: String(item?.model || ""),
+      theme: "",
+      color: "",
+      size: "",
+      tag: "",
+      kicker: "",
+      material: String(item?.material || item?.medium || ""),
+      dimensions: "",
+      store_name: "",
+      store_lng: null,
+      store_lat: null,
+      medium: String(item?.medium || item?.material || ""),
+      period: String(item?.period || ""),
+      era: String(item?.era || ""),
+      year: toOptionalNumber(item?.year),
+      rating: toOptionalNumber(item?.rating),
+      rating_count: String(item?.ratingCount || ""),
+      base_price: toOptionalNumber(item?.basePrice),
+      owner_user_id: null,
+    });
+    sortOrder += 1;
+  });
+
+  return mapped;
+}
+
+const FALLBACK_BOOTSTRAP_PRODUCTS = [
+  {
+    id: "prod-praying-girl",
+    name: "Praying Girl (19th Century)",
+    gallery_type: "art",
+    category: "Artwork",
+    status: "active",
+    sort_order: 1,
+    artist_name: "Roberto Ferruzzi",
+    artist_role: "Painter",
+    artist_image_url: "",
+    artist_bio: "",
+    image_url: "",
+    media_images: [],
+    model_url: "",
+    theme: "",
+    color: "",
+    size: "",
+    tag: "",
+    kicker: "",
+    material: "Oil on canvas",
+    dimensions: "12 x 16",
+    store_name: "",
+    store_lng: null,
+    store_lat: null,
+    medium: "Oil",
+    period: "19th Century",
+    era: "",
+    year: 1890,
+    rating: 4.8,
+    rating_count: "50+",
+    base_price: 153,
+    owner_user_id: null,
+  },
+  {
+    id: "prod-arch-cabinet",
+    name: "Arch Cabinet",
+    gallery_type: "designs",
+    category: "Cabinets",
+    status: "active",
+    sort_order: 2,
+    artist_name: "",
+    artist_role: "",
+    artist_image_url: "",
+    artist_bio: "",
+    image_url: "",
+    media_images: [],
+    model_url: "",
+    theme: "",
+    color: "",
+    size: "",
+    tag: "",
+    kicker: "",
+    material: "Oak wood",
+    dimensions: "180 x 45 x 95",
+    store_name: "FNN Store",
+    store_lng: null,
+    store_lat: null,
+    medium: "",
+    period: "",
+    era: "",
+    year: null,
+    rating: null,
+    rating_count: "",
+    base_price: null,
+    owner_user_id: null,
+  },
+  {
+    id: "prod-hajj-arts",
+    name: "Hajj and the Arts of Pilgrimage",
+    gallery_type: "books",
+    category: "Books",
+    status: "active",
+    sort_order: 3,
+    artist_name: "",
+    artist_role: "",
+    artist_image_url: "",
+    artist_bio: "",
+    image_url: "",
+    media_images: [],
+    model_url: "",
+    theme: "Heritage",
+    color: "Warm",
+    size: "Classic",
+    tag: "",
+    kicker: "",
+    material: "",
+    dimensions: "",
+    store_name: "",
+    store_lng: null,
+    store_lat: null,
+    medium: "",
+    period: "",
+    era: "",
+    year: null,
+    rating: null,
+    rating_count: "",
+    base_price: null,
+    owner_user_id: null,
+  },
+];
+
+function makeDefaultCatalogProducts() {
+  const legacyProducts = loadLegacyWebsiteProducts();
+  if (legacyProducts.length) return legacyProducts;
+  return FALLBACK_BOOTSTRAP_PRODUCTS.map((product) => ({
+    ...product,
+    media_images: Array.isArray(product.media_images) ? product.media_images.slice() : [],
+  }));
+}
+
+const AUTO_EXPAND_BOOTSTRAP_IDS = new Set(FALLBACK_BOOTSTRAP_PRODUCTS.map((product) => String(product.id)));
+const AUTO_EXPAND_BOOTSTRAP_NAMES = new Set(
+  FALLBACK_BOOTSTRAP_PRODUCTS.map((product) => String(product.name || "").trim().toLowerCase())
+);
+const DEFAULT_CATALOG_PRODUCTS = makeDefaultCatalogProducts();
+
 const DEFAULT_SITE_STATE = Object.freeze({
   sections: {
     home: {
@@ -130,107 +501,7 @@ const DEFAULT_SITE_STATE = Object.freeze({
       copyright: "(c) 2025 FNN ART. All rights reserved.",
     },
   },
-  products: [
-    {
-      id: "prod-praying-girl",
-      name: "Praying Girl (19th Century)",
-      gallery_type: "art",
-      category: "Artwork",
-      status: "active",
-      sort_order: 1,
-      artist_name: "Roberto Ferruzzi",
-      artist_role: "Painter",
-      artist_image_url: "",
-      artist_bio: "",
-      image_url: "",
-      media_images: [],
-      model_url: "",
-      theme: "",
-      color: "",
-      size: "",
-      tag: "",
-      kicker: "",
-      material: "Oil on canvas",
-      dimensions: "12 x 16",
-      store_name: "",
-      store_lng: null,
-      store_lat: null,
-      medium: "Oil",
-      period: "19th Century",
-      era: "",
-      year: 1890,
-      rating: 4.8,
-      rating_count: "50+",
-      base_price: 153,
-      owner_user_id: null
-    },
-    {
-      id: "prod-arch-cabinet",
-      name: "Arch Cabinet",
-      gallery_type: "designs",
-      category: "Cabinets",
-      status: "active",
-      sort_order: 2,
-      artist_name: "",
-      artist_role: "",
-      artist_image_url: "",
-      artist_bio: "",
-      image_url: "",
-      media_images: [],
-      model_url: "",
-      theme: "",
-      color: "",
-      size: "",
-      tag: "",
-      kicker: "",
-      material: "Oak wood",
-      dimensions: "180 x 45 x 95",
-      store_name: "FNN Store",
-      store_lng: null,
-      store_lat: null,
-      medium: "",
-      period: "",
-      era: "",
-      year: null,
-      rating: null,
-      rating_count: "",
-      base_price: null,
-      owner_user_id: null
-    },
-    {
-      id: "prod-hajj-arts",
-      name: "Hajj and the Arts of Pilgrimage",
-      gallery_type: "books",
-      category: "Books",
-      status: "active",
-      sort_order: 3,
-      artist_name: "",
-      artist_role: "",
-      artist_image_url: "",
-      artist_bio: "",
-      image_url: "",
-      media_images: [],
-      model_url: "",
-      theme: "Heritage",
-      color: "Warm",
-      size: "Classic",
-      tag: "",
-      kicker: "",
-      material: "",
-      dimensions: "",
-      store_name: "",
-      store_lng: null,
-      store_lat: null,
-      medium: "",
-      period: "",
-      era: "",
-      year: null,
-      rating: null,
-      rating_count: "",
-      base_price: null,
-      owner_user_id: null
-    }
-  ]
+  products: DEFAULT_CATALOG_PRODUCTS
 });
 
 const WEBSITE_EDIT_TEMPLATE = Object.freeze({
@@ -447,7 +718,20 @@ function getSiteState() {
     products: safeJsonParseText(row.products_json, deepCloneJson(DEFAULT_SITE_STATE.products)),
   });
 
-  if (!Array.isArray(normalized.products) || normalized.products.length === 0) {
+  const hasOnlyBootstrapSeed =
+    Array.isArray(normalized.products) &&
+    normalized.products.length > 0 &&
+    normalized.products.length <= AUTO_EXPAND_BOOTSTRAP_IDS.size &&
+    normalized.products.every((product) =>
+      AUTO_EXPAND_BOOTSTRAP_IDS.has(String(product.id)) ||
+      AUTO_EXPAND_BOOTSTRAP_NAMES.has(String(product.name || "").trim().toLowerCase())
+    );
+
+  if (
+    !Array.isArray(normalized.products) ||
+    normalized.products.length === 0 ||
+    hasOnlyBootstrapSeed
+  ) {
     normalized.products = deepCloneJson(DEFAULT_SITE_STATE.products).map((product, index) =>
       normalizeProduct(product, index)
     );
