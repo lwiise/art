@@ -130,6 +130,31 @@ db.exec(`
     created_at text not null default (datetime('now'))
   );
 
+  create table if not exists password_reset_tokens (
+    id integer primary key autoincrement,
+    user_id integer not null references users(id) on delete cascade,
+    token_hash text not null unique,
+    expires_at text not null,
+    used_at text,
+    created_at text not null default (datetime('now')),
+    created_by_admin_id integer references users(id) on delete set null
+  );
+
+  create table if not exists product_submissions (
+    id integer primary key autoincrement,
+    vendor_id integer not null references users(id) on delete cascade,
+    product_id text not null,
+    submission_type text not null check (submission_type in ('create', 'update')),
+    snapshot_json text not null,
+    base_snapshot_json text,
+    vendor_note text,
+    status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+    rejection_reason text,
+    created_at text not null default (datetime('now')),
+    reviewed_at text,
+    reviewed_by integer references users(id) on delete set null
+  );
+
   create index if not exists idx_users_slug on users(slug);
   create index if not exists idx_edits_user_id on edits(user_id);
   create index if not exists idx_edits_status on edits(status);
@@ -139,6 +164,11 @@ db.exec(`
   create index if not exists idx_cart_items_user_id on cart_items(user_id);
   create index if not exists idx_activity_log_actor_role_created on activity_log(actor_role, created_at desc);
   create index if not exists idx_activity_log_actor_user_created on activity_log(actor_user_id, created_at desc);
+  create index if not exists idx_password_reset_user_created on password_reset_tokens(user_id, created_at desc);
+  create index if not exists idx_password_reset_expires on password_reset_tokens(expires_at);
+  create index if not exists idx_product_submissions_vendor_created on product_submissions(vendor_id, created_at desc);
+  create index if not exists idx_product_submissions_status_created on product_submissions(status, created_at desc);
+  create index if not exists idx_product_submissions_product_created on product_submissions(product_id, created_at desc);
 
   insert or ignore into site_state (id, sections_json, products_json)
   values (1, '{}', '[]');
@@ -149,6 +179,25 @@ migrateLegacyUsersTable();
 if (!hasColumn("users", "created_at")) {
   db.exec("alter table users add column created_at text;");
   db.exec("update users set created_at = coalesce(created_at, datetime('now'));");
+}
+
+if (!hasColumn("users", "status")) {
+  db.exec("alter table users add column status text;");
+  db.exec("update users set status = coalesce(status, 'active');");
+}
+
+if (!hasColumn("users", "last_login_at")) {
+  db.exec("alter table users add column last_login_at text;");
+}
+
+if (!hasColumn("users", "password_changed_at")) {
+  db.exec("alter table users add column password_changed_at text;");
+  db.exec("update users set password_changed_at = coalesce(password_changed_at, created_at, datetime('now'));");
+}
+
+if (!hasColumn("users", "session_version")) {
+  db.exec("alter table users add column session_version integer;");
+  db.exec("update users set session_version = coalesce(session_version, 0);");
 }
 
 function slugifyName(name) {
@@ -181,7 +230,7 @@ function upsertUser({ name, email, password, role }) {
 
   if (existing) {
     db.prepare(
-      "update users set name = ?, password_hash = ?, role = ? where id = ?"
+      "update users set name = ?, password_hash = ?, role = ?, status = coalesce(status, 'active'), password_changed_at = datetime('now') where id = ?"
     ).run(name, passwordHash, role, existing.id);
     return existing.id;
   }
@@ -190,7 +239,7 @@ function upsertUser({ name, email, password, role }) {
   const slug = uniqueSlug(baseSlug);
   const info = db
     .prepare(
-      "insert into users (name, email, password_hash, role, slug) values (?, ?, ?, ?, ?)"
+      "insert into users (name, email, password_hash, role, slug, status, password_changed_at, session_version) values (?, ?, ?, ?, ?, 'active', datetime('now'), 0)"
     )
     .run(name, normalizedEmail, passwordHash, role, slug);
   return info.lastInsertRowid;
@@ -212,7 +261,7 @@ function createUser({ name, email, password, role, allowExisting = false }) {
   const passwordHash = passwordUtils.hashSync(password, 12);
   const info = db
     .prepare(
-      "insert into users (name, email, password_hash, role, slug) values (?, ?, ?, ?, ?)"
+      "insert into users (name, email, password_hash, role, slug, status, password_changed_at, session_version) values (?, ?, ?, ?, ?, 'active', datetime('now'), 0)"
     )
     .run(name, normalizedEmail, passwordHash, role, slug);
   return info.lastInsertRowid;

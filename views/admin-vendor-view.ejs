@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Vendor - <%= targetVendor.name %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container workspace-container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;"><%= targetVendor.name %></h1>
+        <p class="muted small" style="margin:6px 0 0;"><%= targetVendor.email %></p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="/admin/vendors">Back to Vendors</a>
+        <a class="btn-link" href="/admin/users">Users</a>
+        <a class="btn-link" href="/admin/submissions">Submissions</a>
+        <a class="btn-link" href="/admin/content">Content</a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin-top:0;">Profile</h2>
+      <div class="workspace-form-grid three">
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Role</span>
+          <span class="workspace-field-preview"><%= targetVendor.role %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Status</span>
+          <span class="workspace-field-preview"><%= targetVendor.status %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Created</span>
+          <span class="workspace-field-preview"><%= targetVendor.createdAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Last Login</span>
+          <span class="workspace-field-preview"><%= targetVendor.lastLoginAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Has Password</span>
+          <span class="workspace-field-preview"><%= authMeta.hasPasswordSet ? "Yes" : "No" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Password Changed</span>
+          <span class="workspace-field-preview"><%= authMeta.passwordChangedAt || "-" %></span>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <button type="button" id="toggleStatusBtn"><%= targetVendor.status === "active" ? "Disable Vendor" : "Enable Vendor" %></button>
+        <button type="button" id="revokeSessionsBtn">Revoke Sessions</button>
+        <button type="button" id="resetPasswordBtn">Generate Reset Link</button>
+        <button type="button" id="deleteVendorBtn" class="ghost">Delete Vendor</button>
+      </div>
+      <div id="resetLinkWrap" class="workspace-field-row" style="margin-top:10px; display:none;">
+        <label>One-Time Reset Link</label>
+        <input id="resetLinkValue" readonly />
+      </div>
+      <div id="vendorActionMsg" class="small muted"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin-top:0;">Vendor Products</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!products.length) { %>
+              <tr><td colspan="4" class="muted small">No vendor products.</td></tr>
+            <% } %>
+            <% products.forEach((item) => { %>
+              <tr>
+                <td><%= item.name %></td>
+                <td><%= item.gallery_type %></td>
+                <td><span class="status <%= item.status === "active" ? "approved" : "pending" %>"><%= item.status %></span></td>
+                <td><%= item.updated_at || "-" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Vendor Submissions</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Review</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!submissions.items.length) { %>
+              <tr><td colspan="6" class="muted small">No submissions yet.</td></tr>
+            <% } %>
+            <% submissions.items.forEach((item) => { %>
+              <tr>
+                <td>#<%= item.id %></td>
+                <td><%= item.snapshot && item.snapshot.name ? item.snapshot.name : item.productId %></td>
+                <td><%= item.submissionType %></td>
+                <td><span class="status <%= item.status === "approved" ? "approved" : item.status === "rejected" ? "rejected" : "pending" %>"><%= item.status %></span></td>
+                <td><%= item.createdAt || "-" %></td>
+                <td><a class="btn-link" href="/admin/submissions/<%= item.id %>">Open</a></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
+
+    const vendorId = <%= Number(targetVendor.id) %>;
+    const currentStatus = "<%= targetVendor.status %>";
+    const msgEl = document.getElementById("vendorActionMsg");
+    const resetLinkWrap = document.getElementById("resetLinkWrap");
+    const resetLinkValue = document.getElementById("resetLinkValue");
+
+    function setMessage(text) {
+      msgEl.textContent = text || "";
+    }
+
+    document.getElementById("toggleStatusBtn").addEventListener("click", async () => {
+      const targetStatus = currentStatus === "active" ? "disabled" : "active";
+      const confirmed = window.confirm(`Set vendor status to ${targetStatus}?`);
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/vendors/${vendorId}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: targetStatus }),
+        });
+        window.location.reload();
+      } catch (error) {
+        setMessage(error.message || "Status update failed.");
+      }
+    });
+
+    document.getElementById("revokeSessionsBtn").addEventListener("click", async () => {
+      const confirmed = window.confirm("Revoke all active sessions for this vendor?");
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/vendors/${vendorId}/revoke-sessions`, { method: "POST" });
+        setMessage("Sessions revoked.");
+      } catch (error) {
+        setMessage(error.message || "Could not revoke sessions.");
+      }
+    });
+
+    document.getElementById("resetPasswordBtn").addEventListener("click", async () => {
+      try {
+        const result = await sendApiRequest(`/api/admin/vendors/${vendorId}/password-reset`, { method: "POST" });
+        resetLinkWrap.style.display = "block";
+        resetLinkValue.value = result.resetLink || "";
+        setMessage("Reset link generated.");
+      } catch (error) {
+        setMessage(error.message || "Could not generate reset link.");
+      }
+    });
+
+    document.getElementById("deleteVendorBtn").addEventListener("click", async () => {
+      const confirmed = window.confirm("Delete this vendor and vendor-owned products? This cannot be undone.");
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/vendors/${vendorId}`, { method: "DELETE" });
+        window.location.href = "/admin/vendors";
+      } catch (error) {
+        setMessage(error.message || "Could not delete vendor.");
+      }
+    });
+  </script>
+</body>
+</html>

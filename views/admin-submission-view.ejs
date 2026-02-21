@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Submission #<%= submission.id %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container workspace-container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Submission #<%= submission.id %></h1>
+        <p class="muted small" style="margin:6px 0 0;">
+          Vendor: <%= submission.vendorName %> (<%= submission.vendorEmail %>) - Status: <%= submission.status %>
+        </p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="/admin">Dashboard</a>
+        <a class="btn-link" href="/admin/users">Users</a>
+        <a class="btn-link" href="/admin/vendors">Vendors</a>
+        <a class="btn-link" href="/admin/submissions">Back to Submissions</a>
+        <a class="btn-link" href="/admin/vendors/<%= submission.vendorId %>">Vendor</a>
+        <a class="btn-link" href="/admin/content">Content</a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin:0 0 10px;">Submission Meta</h2>
+      <div class="workspace-form-grid three">
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Submission Type</span>
+          <span class="workspace-field-preview"><%= submission.submissionType %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Product ID</span>
+          <span class="workspace-field-preview"><%= submission.productId %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Created</span>
+          <span class="workspace-field-preview"><%= submission.createdAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Reviewed At</span>
+          <span class="workspace-field-preview"><%= submission.reviewedAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Reviewed By</span>
+          <span class="workspace-field-preview"><%= submission.reviewedByName || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Vendor Note</span>
+          <span class="workspace-field-preview"><%= submission.vendorNote || "-" %></span>
+        </div>
+      </div>
+      <% if (submission.rejectionReason) { %>
+        <div class="error" style="margin-top:10px;">Rejection reason: <%= submission.rejectionReason %></div>
+      <% } %>
+    </section>
+
+    <section class="grid two" style="margin-bottom:12px;">
+      <article class="card">
+        <h2 style="margin:0 0 10px;">Current Product Snapshot</h2>
+        <pre class="payload-preview" style="max-width:100%;max-height:520px;"><%= JSON.stringify(submission.baseSnapshot || {}, null, 2) %></pre>
+      </article>
+      <article class="card">
+        <h2 style="margin:0 0 10px;">Requested Snapshot</h2>
+        <pre class="payload-preview" style="max-width:100%;max-height:520px;"><%= JSON.stringify(submission.snapshot || {}, null, 2) %></pre>
+      </article>
+    </section>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin:0 0 10px;">Field Diff</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Current</th>
+              <th>Requested</th>
+              <th>Changed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!Array.isArray(submission.diff) || !submission.diff.length) { %>
+              <tr><td colspan="4" class="muted small">No diff available.</td></tr>
+            <% } %>
+            <% (submission.diff || []).forEach((item) => { %>
+              <tr>
+                <td class="mono"><%= item.field %></td>
+                <td class="mono"><%= typeof item.currentValue === "string" ? item.currentValue : JSON.stringify(item.currentValue) %></td>
+                <td class="mono"><%= typeof item.requestedValue === "string" ? item.requestedValue : JSON.stringify(item.requestedValue) %></td>
+                <td>
+                  <span class="status <%= item.changed ? "pending" : "approved" %>">
+                    <%= item.changed ? "Changed" : "Same" %>
+                  </span>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 10px;">Review Actions</h2>
+      <% const isPending = submission.status === "pending"; %>
+      <div class="actions">
+        <button type="button" id="approveBtn" <%= isPending ? "" : "disabled" %>>Approve</button>
+        <button type="button" id="rejectBtn" class="ghost" <%= isPending ? "" : "disabled" %>>Reject</button>
+      </div>
+      <div class="field-row" style="margin-top:10px;">
+        <label for="rejectReason">Reject Reason (required for reject)</label>
+        <textarea id="rejectReason" maxlength="2000" placeholder="Explain why this submission is rejected"></textarea>
+      </div>
+      <div id="reviewMsg" class="small muted"></div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
+
+    const submissionId = <%= Number(submission.id) %>;
+    const reviewMsg = document.getElementById("reviewMsg");
+    const rejectReason = document.getElementById("rejectReason");
+    const approveBtn = document.getElementById("approveBtn");
+    const rejectBtn = document.getElementById("rejectBtn");
+
+    function setMessage(text, type) {
+      reviewMsg.className = type === "error" ? "error" : type === "success" ? "success" : "small muted";
+      reviewMsg.textContent = text || "";
+    }
+
+    async function reviewSubmission(action) {
+      try {
+        approveBtn.disabled = true;
+        rejectBtn.disabled = true;
+        setMessage("");
+        const confirmed = window.confirm(`Confirm ${action} for this submission?`);
+        if (!confirmed) {
+          approveBtn.disabled = false;
+          rejectBtn.disabled = false;
+          return;
+        }
+
+        if (action === "reject") {
+          const reason = String(rejectReason.value || "").trim();
+          if (!reason) {
+            throw new Error("Reject reason is required.");
+          }
+          await sendApiRequest(`/api/admin/submissions/${submissionId}/reject`, {
+            method: "PATCH",
+            body: JSON.stringify({ reason }),
+          });
+          setMessage("Submission rejected.", "success");
+        } else {
+          await sendApiRequest(`/api/admin/submissions/${submissionId}/approve`, {
+            method: "PATCH",
+            body: JSON.stringify({}),
+          });
+          setMessage("Submission approved and applied.", "success");
+        }
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 700);
+      } catch (error) {
+        setMessage(error.message || "Could not review submission.", "error");
+        approveBtn.disabled = false;
+        rejectBtn.disabled = false;
+      }
+    }
+
+    approveBtn.addEventListener("click", () => reviewSubmission("approve"));
+    rejectBtn.addEventListener("click", () => reviewSubmission("reject"));
+  </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const crypto = require("crypto");
 const passwordUtils = require("./password");
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -25,6 +26,7 @@ const SECTION_KEYS = ["home", "about", "services", "process", "gallery", "contac
 const GALLERY_TYPES = new Set(["art", "designs", "books", "photography", "sculpture"]);
 const PRODUCT_STATUSES = new Set(["active", "inactive", "draft"]);
 const PRODUCT_SORT_FIELDS = new Set(["sort_order", "name", "gallery_type", "status", "created_at"]);
+const ACCOUNT_STATUSES = new Set(["active", "disabled"]);
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "..", "views"));
@@ -622,6 +624,67 @@ function parseMediaImages(value) {
   return [];
 }
 
+const PRODUCT_NORMALIZED_FIELDS = new Set([
+  "id",
+  "name",
+  "gallery_type",
+  "category",
+  "status",
+  "sort_order",
+  "artist_name",
+  "artist_role",
+  "artist_image_url",
+  "artist_bio",
+  "image_url",
+  "media_images",
+  "model_url",
+  "theme",
+  "color",
+  "size",
+  "tag",
+  "kicker",
+  "material",
+  "dimensions",
+  "store_name",
+  "store_lng",
+  "store_lat",
+  "medium",
+  "period",
+  "era",
+  "year",
+  "rating",
+  "rating_count",
+  "base_price",
+  "owner_user_id",
+  "created_at",
+  "updated_at",
+  "extra_fields",
+]);
+
+function extractProductExtraFields(product) {
+  const input = (product && typeof product === "object" && !Array.isArray(product))
+    ? product
+    : {};
+  const extrasFromUnknown = {};
+  Object.entries(input).forEach(([key, value]) => {
+    if (PRODUCT_NORMALIZED_FIELDS.has(key)) return;
+    extrasFromUnknown[key] = value;
+  });
+
+  const extrasFromField = (
+    input.extra_fields &&
+    typeof input.extra_fields === "object" &&
+    !Array.isArray(input.extra_fields)
+  ) ? input.extra_fields : {};
+
+  const merged = deepMerge(
+    deepMerge({}, extrasFromUnknown),
+    extrasFromField
+  );
+
+  return Object.keys(merged).length ? merged : {};
+}
+
 function normalizeProduct(product, index = 0) {
   const p = (product && typeof product === "object") ? product : {};
   const galleryType = toGalleryType(p.gallery_type);
@@ -666,6 +729,7 @@ function normalizeProduct(product, index = 0) {
     owner_user_id: toNumberOrNull(p.owner_user_id),
     created_at: String(p.created_at || now),
     updated_at: String(p.updated_at || now),
+    extra_fields: extractProductExtraFields(p),
   };
 }
 
@@ -1250,6 +1314,844 @@ function getAdminPeopleAndActionSummary() {
   };
 }
 
+function normalizeAccountStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (ACCOUNT_STATUSES.has(normalized)) return normalized;
+  return "active";
+}
+
+function parseAccountStatusInput(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return ACCOUNT_STATUSES.has(normalized) ? normalized : null;
+}
+
+function parsePageNumber(value, fallback = 1) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.floor(parsed);
+}
+
+function parsePageSize(value, fallback = 20, max = 200) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(max, Math.floor(parsed));
+}
+
+function compareMaybeDate(a, b, direction = "asc") {
+  const factor = direction === "desc" ? -1 : 1;
+  const dateA = Date.parse(String(a || ""));
+  const dateB = Date.parse(String(b || ""));
+  const safeA = Number.isFinite(dateA) ? dateA : 0;
+  const safeB = Number.isFinite(dateB) ? dateB : 0;
+  if (safeA === safeB) return 0;
+  return safeA > safeB ? factor : -factor;
+}
+
+function compareMaybeText(a, b, direction = "asc") {
+  const factor = direction === "desc" ? -1 : 1;
+  const textA = String(a || "").toLowerCase();
+  const textB = String(b || "").toLowerCase();
+  if (textA === textB) return 0;
+  return textA > textB ? factor : -factor;
+}
+
+function compareMaybeNumber(a, b, direction = "asc") {
+  const factor = direction === "desc" ? -1 : 1;
+  const numA = Number(a || 0);
+  const numB = Number(b || 0);
+  if (numA === numB) return 0;
+  return numA > numB ? factor : -factor;
+}
+
+function buildProductsCountByOwner() {
+  const counts = new Map();
+  getProductsArray().forEach((product) => {
+    const ownerId = toNumberOrNull(product.owner_user_id);
+    if (!ownerId) return;
+    counts.set(ownerId, Number(counts.get(ownerId) || 0) + 1);
+  });
+  return counts;
+}
+
+function sanitizeRoleListSort(role, sortByRaw) {
+  const normalized = String(sortByRaw || "").trim().toLowerCase();
+  const allowedCommon = new Set(["name", "email", "created_at", "last_login_at", "status"]);
+  if (role === "vendor" && normalized === "products_count") return "products_count";
+  return allowedCommon.has(normalized) ? normalized : "created_at";
+}
+
+function listAccountsByRole({ role, query = {} }) {
+  const page = parsePageNumber(query.page, 1);
+  const pageSize = parsePageSize(query.page_size ?? query.pageSize, 20, 200);
+  const search = String(query.search || "").trim().toLowerCase();
+  const status = String(query.status || "").trim().toLowerCase();
+  const sortBy = sanitizeRoleListSort(role, query.sort_by || query.sortBy);
+  const sortDir = String(query.sort_dir || query.sortDir || "desc").trim().toLowerCase() === "asc" ? "asc" : "desc";
+
+  const where = ["role = ?"];
+  const params = [role];
+  if (search) {
+    where.push("(lower(name) like ? or lower(email) like ?)");
+    params.push(`%${search}%`, `%${search}%`);
+  }
+  if (status && ACCOUNT_STATUSES.has(status)) {
+    where.push("coalesce(lower(status), 'active') = ?");
+    params.push(status);
+  }
+
+  const whereSql = where.join(" and ");
+  const countRow = db.prepare(`select count(*) as total from users where ${whereSql}`).get(...params) || {};
+  const total = Number(countRow.total || 0);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const normalizedPage = Math.min(page, totalPages);
+  const offset = (normalizedPage - 1) * pageSize;
+
+  const productsCountByOwner = role === "vendor" ? buildProductsCountByOwner() : new Map();
+
+  let rows;
+  if (sortBy === "products_count" && role === "vendor") {
+    rows = db.prepare(
+      `select
+        id,
+        name,
+        email,
+        role,
+        slug,
+        coalesce(status, 'active') as status,
+        created_at,
+        last_login_at,
+        password_changed_at,
+        coalesce(session_version, 0) as session_version
+      from users
+      where ${whereSql}`
+    ).all(...params);
+  } else {
+    const sortColumn = (
+      sortBy === "name" ||
+      sortBy === "email" ||
+      sortBy === "created_at" ||
+      sortBy === "last_login_at" ||
+      sortBy === "status"
+    ) ? sortBy : "created_at";
+
+    rows = db.prepare(
+      `select
+        id,
+        name,
+        email,
+        role,
+        slug,
+        coalesce(status, 'active') as status,
+        created_at,
+        last_login_at,
+        password_changed_at,
+        coalesce(session_version, 0) as session_version
+      from users
+      where ${whereSql}
+      order by ${sortColumn} ${sortDir}, id asc
+      limit ? offset ?`
+    ).all(...params, pageSize, offset);
+  }
+
+  let items = rows.map((row) => ({
+    id: Number(row.id),
+    name: String(row.name || ""),
+    email: String(row.email || ""),
+    role: String(row.role || ""),
+    slug: String(row.slug || ""),
+    status: normalizeAccountStatus(row.status),
+    createdAt: row.created_at || "",
+    lastLoginAt: row.last_login_at || null,
+    passwordChangedAt: row.password_changed_at || null,
+    productsCount: role === "vendor" ? Number(productsCountByOwner.get(Number(row.id)) || 0) : undefined,
+  }));
+
+  if (sortBy === "products_count" && role === "vendor") {
+    items.sort((a, b) => {
+      const order = compareMaybeNumber(a.productsCount, b.productsCount, sortDir);
+      if (order !== 0) return order;
+      return compareMaybeNumber(a.id, b.id, "asc");
+    });
+    const start = (normalizedPage - 1) * pageSize;
+    items = items.slice(start, start + pageSize);
+  }
+
+  return {
+    items,
+    paging: {
+      total,
+      page: normalizedPage,
+      pageSize,
+      totalPages,
+      hasPrev: normalizedPage > 1,
+      hasNext: normalizedPage < totalPages,
+    },
+    filters: {
+      search,
+      status: status && ACCOUNT_STATUSES.has(status) ? status : "",
+    },
+    sort: {
+      sortBy,
+      sortDir,
+    },
+  };
+}
+
+function getAdminDashboardCounts() {
+  const row = db.prepare(
+    `select
+      sum(case when role = 'user' then 1 else 0 end) as users_count,
+      sum(case when role = 'vendor' then 1 else 0 end) as vendors_count
+    from users`
+  ).get() || {};
+  return {
+    usersCount: Number(row.users_count || 0),
+    vendorsCount: Number(row.vendors_count || 0),
+  };
+}
+
+function getAccountById(role, id) {
+  const userId = Number(id);
+  if (!Number.isInteger(userId) || userId <= 0) return null;
+  const row = db.prepare(
+    `select
+      id,
+      name,
+      email,
+      role,
+      slug,
+      coalesce(status, 'active') as status,
+      created_at,
+      last_login_at,
+      password_changed_at,
+      coalesce(session_version, 0) as session_version
+    from users
+    where id = ? and role = ?`
+  ).get(userId, role);
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    name: String(row.name || ""),
+    email: String(row.email || ""),
+    role: String(row.role || ""),
+    slug: String(row.slug || ""),
+    status: normalizeAccountStatus(row.status),
+    createdAt: row.created_at || "",
+    lastLoginAt: row.last_login_at || null,
+    passwordChangedAt: row.password_changed_at || null,
+    sessionVersion: Number(row.session_version || 0),
+  };
+}
+
+function setAccountStatus({ role, targetId, status, actor }) {
+  const target = getAccountById(role, targetId);
+  if (!target) {
+    const err = new Error(role === "vendor" ? "Vendor not found." : "User not found.");
+    err.statusCode = 404;
+    throw err;
+  }
+  const normalizedStatus = parseAccountStatusInput(status);
+  if (!normalizedStatus) {
+    const err = new Error("Status must be either 'active' or 'disabled'.");
+    err.statusCode = 400;
+    throw err;
+  }
+  db.prepare(
+    `update users
+     set status = ?,
+         session_version = case when ? = 'disabled' then coalesce(session_version, 0) + 1 else coalesce(session_version, 0) end
+     where id = ?`
+  ).run(normalizedStatus, normalizedStatus, Number(target.id));
+
+  const updated = getAccountById(role, target.id);
+  logActivity({
+    actor,
+    actionType: normalizedStatus === "disabled" ? "disable_account" : "enable_account",
+    targetType: "account",
+    targetId: target.id,
+    details: { role },
+  });
+  return updated;
+}
+
+function revokeAccountSessions({ role, targetId, actor }) {
+  const target = getAccountById(role, targetId);
+  if (!target) {
+    const err = new Error(role === "vendor" ? "Vendor not found." : "User not found.");
+    err.statusCode = 404;
+    throw err;
+  }
+  db.prepare("update users set session_version = coalesce(session_version, 0) + 1 where id = ?")
+    .run(Number(target.id));
+  logActivity({
+    actor,
+    actionType: "revoke_sessions",
+    targetType: "account",
+    targetId: target.id,
+    details: { role },
+  });
+}
+
+function deleteAccount({ role, targetId, actor }) {
+  const target = getAccountById(role, targetId);
+  if (!target) {
+    const err = new Error(role === "vendor" ? "Vendor not found." : "User not found.");
+    err.statusCode = 404;
+    throw err;
+  }
+  if (Number(target.id) === Number(actor.id)) {
+    const err = new Error("You cannot delete your own account.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  if (role === "vendor") {
+    const state = getSiteState();
+    state.products = (state.products || []).filter((product) => Number(product.owner_user_id) !== Number(target.id));
+    saveSiteState(state, actor.id);
+  }
+
+  db.prepare("delete from users where id = ? and role = ?").run(Number(target.id), role);
+  logActivity({
+    actor,
+    actionType: "delete_account",
+    targetType: "account",
+    targetId: target.id,
+    details: { role, email: target.email },
+  });
+  return target;
+}
+
+function getPublicProductByIdMap() {
+  return new Map(getProductsArray().map((product) => [String(product.id), product]));
+}
+
+function getUserActivityDetails(userId) {
+  const byProductId = getPublicProductByIdMap();
+  const likes = db.prepare(
+    `select product_id as productId, created_at as createdAt
+     from likes
+     where user_id = ?
+     order by created_at desc`
+  ).all(Number(userId)).map((row) => ({
+    productId: String(row.productId || ""),
+    productName: byProductId.get(String(row.productId || ""))?.name || "",
+    createdAt: row.createdAt || "",
+  }));
+
+  const comments = db.prepare(
+    `select
+      id,
+      product_id as productId,
+      content,
+      created_at as createdAt
+     from comments
+     where user_id = ?
+     order by created_at desc`
+  ).all(Number(userId)).map((row) => ({
+    id: Number(row.id),
+    productId: String(row.productId || ""),
+    productName: byProductId.get(String(row.productId || ""))?.name || "",
+    content: String(row.content || ""),
+    createdAt: row.createdAt || "",
+  }));
+
+  const cart = serializeCart(userId);
+  const cartUpdates = db.prepare(
+    `select
+      id,
+      action_type as actionType,
+      target_id as targetId,
+      created_at as createdAt
+     from activity_log
+     where actor_user_id = ?
+       and action_type like 'cart_%'
+     order by created_at desc
+     limit 100`
+  ).all(Number(userId)).map((row) => ({
+    id: Number(row.id),
+    actionType: String(row.actionType || ""),
+    targetId: String(row.targetId || ""),
+    createdAt: row.createdAt || "",
+  }));
+
+  return {
+    likes,
+    comments,
+    cart,
+    cartUpdates,
+  };
+}
+
+function listVendorProducts(vendorId) {
+  const current = getProductsArray();
+  return current
+    .filter((product) => Number(product.owner_user_id) === Number(vendorId))
+    .sort((a, b) => compareProducts(a, b, "sort_order", "asc"));
+}
+
+function createTokenHash(token) {
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+}
+
+function buildBaseOrigin(req) {
+  const host = String(req.get("host") || `localhost:${PORT}`);
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "")
+    .split(",")[0]
+    .trim();
+  const protocol = forwardedProto || req.protocol || "http";
+  return `${protocol}://${host}`;
+}
+
+function createPasswordResetForUser({ targetUser, adminUser, req }) {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = createTokenHash(rawToken);
+  const expiresAt = new Date(Date.now() + (60 * 60 * 1000)).toISOString();
+
+  db.prepare(
+    `insert into password_reset_tokens (user_id, token_hash, expires_at, created_by_admin_id)
+     values (?, ?, ?, ?)`
+  ).run(Number(targetUser.id), tokenHash, expiresAt, Number(adminUser.id));
+
+  const resetLink = `${buildBaseOrigin(req)}/reset-password?token=${encodeURIComponent(rawToken)}`;
+  return { resetLink, expiresAt };
+}
+
+function validateNewPassword(password) {
+  const raw = String(password || "");
+  if (!raw) {
+    const err = new Error("Password is required.");
+    err.statusCode = 400;
+    throw err;
+  }
+  if (raw.length < 8) {
+    const err = new Error("Password must be at least 8 characters.");
+    err.statusCode = 400;
+    throw err;
+  }
+  if (raw.length > 200) {
+    const err = new Error("Password is too long.");
+    err.statusCode = 400;
+    throw err;
+  }
+  return raw;
+}
+
+function consumePasswordResetToken({ token, password }) {
+  const tokenHash = createTokenHash(token);
+  const row = db.prepare(
+    `select
+      prt.id,
+      prt.user_id,
+      prt.expires_at,
+      prt.used_at,
+      u.id as account_id,
+      u.name as account_name,
+      u.email as account_email,
+      u.role as account_role
+    from password_reset_tokens prt
+    join users u on u.id = prt.user_id
+    where prt.token_hash = ?`
+  ).get(tokenHash);
+
+  if (!row) {
+    const err = new Error("Reset link is invalid.");
+    err.statusCode = 400;
+    throw err;
+  }
+  if (row.used_at) {
+    const err = new Error("Reset link has already been used.");
+    err.statusCode = 400;
+    throw err;
+  }
+  const expiry = Date.parse(String(row.expires_at || ""));
+  if (!Number.isFinite(expiry) || expiry <= Date.now()) {
+    const err = new Error("Reset link has expired.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const newPassword = validateNewPassword(password);
+  const passwordHash = passwordUtils.hashSync(newPassword, 12);
+  db.prepare(
+    `update users
+     set password_hash = ?, password_changed_at = datetime('now'), session_version = coalesce(session_version, 0) + 1
+     where id = ?`
+  ).run(passwordHash, Number(row.account_id));
+  db.prepare("update password_reset_tokens set used_at = datetime('now') where id = ?")
+    .run(Number(row.id));
+
+  return {
+    user: {
+      id: Number(row.account_id),
+      name: String(row.account_name || ""),
+      email: String(row.account_email || ""),
+      role: String(row.account_role || ""),
+    },
+  };
+}
+
+function flattenForDiff(value, prefix, output) {
+  if (Array.isArray(value)) {
+    if (!value.length) {
+      output[prefix] = [];
+      return;
+    }
+    value.forEach((item, index) => {
+      const nextPrefix = prefix ? `${prefix}[${index}]` : `[${index}]`;
+      flattenForDiff(item, nextPrefix, output);
+    });
+    return;
+  }
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+    if (!keys.length) {
+      output[prefix] = {};
+      return;
+    }
+    keys.forEach((key) => {
+      const nextPrefix = prefix ? `${prefix}.${key}` : key;
+      flattenForDiff(value[key], nextPrefix, output);
+    });
+    return;
+  }
+  output[prefix || "(root)"] = value;
+}
+
+function buildSubmissionDiff(baseSnapshot, requestedSnapshot) {
+  const baseFlat = {};
+  const requestedFlat = {};
+  flattenForDiff(baseSnapshot || {}, "", baseFlat);
+  flattenForDiff(requestedSnapshot || {}, "", requestedFlat);
+
+  const keys = Array.from(new Set([...Object.keys(baseFlat), ...Object.keys(requestedFlat)])).sort();
+  return keys.map((field) => {
+    const currentValue = Object.prototype.hasOwnProperty.call(baseFlat, field) ? baseFlat[field] : null;
+    const requestedValue = Object.prototype.hasOwnProperty.call(requestedFlat, field) ? requestedFlat[field] : null;
+    return {
+      field,
+      currentValue,
+      requestedValue,
+      changed: JSON.stringify(currentValue) !== JSON.stringify(requestedValue),
+    };
+  });
+}
+
+function serializeSubmissionRow(row) {
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    vendorId: Number(row.vendor_id),
+    vendorName: String(row.vendor_name || ""),
+    vendorEmail: String(row.vendor_email || ""),
+    productId: String(row.product_id || ""),
+    submissionType: String(row.submission_type || "update"),
+    snapshot: safeJsonParseText(row.snapshot_json, {}),
+    baseSnapshot: row.base_snapshot_json ? safeJsonParseText(row.base_snapshot_json, null) : null,
+    vendorNote: row.vendor_note || "",
+    status: String(row.status || "pending"),
+    rejectionReason: row.rejection_reason || "",
+    createdAt: row.created_at || "",
+    reviewedAt: row.reviewed_at || null,
+    reviewedBy: row.reviewed_by == null ? null : Number(row.reviewed_by),
+    reviewedByName: row.reviewer_name || null,
+  };
+}
+
+function submissionToLegacyEdit(submission) {
+  if (!submission) return null;
+  const snapshot = submission.snapshot || {};
+  return {
+    id: submission.id,
+    userId: submission.vendorId,
+    userName: submission.vendorName,
+    userEmail: submission.vendorEmail,
+    title: `Product submission: ${snapshot.name || submission.productId}`,
+    description: submission.vendorNote || "",
+    payload: {
+      target: "vendor_products",
+      product_changes: [snapshot],
+      product_submission_id: submission.id,
+      product_id: submission.productId,
+      submission_type: submission.submissionType,
+    },
+    status: submission.status,
+    createdAt: submission.createdAt,
+    approvedAt: submission.reviewedAt,
+    approvedBy: submission.reviewedBy,
+    approvedByName: submission.reviewedByName,
+    rejectionReason: submission.rejectionReason || "",
+  };
+}
+
+function getSubmissionRowById(submissionId) {
+  return db.prepare(
+    `select
+      ps.id,
+      ps.vendor_id,
+      v.name as vendor_name,
+      v.email as vendor_email,
+      ps.product_id,
+      ps.submission_type,
+      ps.snapshot_json,
+      ps.base_snapshot_json,
+      ps.vendor_note,
+      ps.status,
+      ps.rejection_reason,
+      ps.created_at,
+      ps.reviewed_at,
+      ps.reviewed_by,
+      r.name as reviewer_name
+    from product_submissions ps
+    join users v on v.id = ps.vendor_id
+    left join users r on r.id = ps.reviewed_by
+    where ps.id = ?`
+  ).get(Number(submissionId));
+}
+
+function getSubmissionForActor(submissionId, actor) {
+  const row = getSubmissionRowById(submissionId);
+  const submission = serializeSubmissionRow(row);
+  if (!submission) return null;
+  if (actor.role === "vendor" && Number(submission.vendorId) !== Number(actor.id)) {
+    return null;
+  }
+  return {
+    ...submission,
+    diff: buildSubmissionDiff(submission.baseSnapshot || {}, submission.snapshot || {}),
+  };
+}
+
+function listProductSubmissions({ actor, query = {} }) {
+  const page = parsePageNumber(query.page, 1);
+  const pageSize = parsePageSize(query.page_size ?? query.pageSize, 20, 200);
+  const search = String(query.search || "").trim().toLowerCase();
+  const status = normalizeStatus(query.status) || "";
+  const sortByRaw = String(query.sort_by || query.sortBy || "created_at").trim().toLowerCase();
+  const sortBy = ["created_at", "status", "product_id"].includes(sortByRaw) ? sortByRaw : "created_at";
+  const sortDir = String(query.sort_dir || query.sortDir || "desc").trim().toLowerCase() === "asc" ? "asc" : "desc";
+
+  const where = [];
+  const params = [];
+  if (actor.role === "vendor") {
+    where.push("ps.vendor_id = ?");
+    params.push(Number(actor.id));
+  } else if (actor.role === "admin") {
+    const vendorIdFilter = Number(query.vendor_id || query.vendorId || 0);
+    if (Number.isInteger(vendorIdFilter) && vendorIdFilter > 0) {
+      where.push("ps.vendor_id = ?");
+      params.push(vendorIdFilter);
+    }
+  }
+  if (status) {
+    where.push("ps.status = ?");
+    params.push(status);
+  }
+  if (search) {
+    where.push("(lower(v.name) like ? or lower(v.email) like ? or lower(ps.product_id) like ?)");
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+
+  const whereSql = where.length ? `where ${where.join(" and ")}` : "";
+  const countRow = db.prepare(
+    `select count(*) as total
+     from product_submissions ps
+     join users v on v.id = ps.vendor_id
+     ${whereSql}`
+  ).get(...params) || {};
+  const total = Number(countRow.total || 0);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const normalizedPage = Math.min(page, totalPages);
+  const offset = (normalizedPage - 1) * pageSize;
+
+  const rows = db.prepare(
+    `select
+      ps.id,
+      ps.vendor_id,
+      v.name as vendor_name,
+      v.email as vendor_email,
+      ps.product_id,
+      ps.submission_type,
+      ps.snapshot_json,
+      ps.base_snapshot_json,
+      ps.vendor_note,
+      ps.status,
+      ps.rejection_reason,
+      ps.created_at,
+      ps.reviewed_at,
+      ps.reviewed_by,
+      r.name as reviewer_name
+    from product_submissions ps
+    join users v on v.id = ps.vendor_id
+    left join users r on r.id = ps.reviewed_by
+    ${whereSql}
+    order by ps.${sortBy} ${sortDir}, ps.id ${sortDir}
+    limit ? offset ?`
+  ).all(...params, pageSize, offset);
+
+  return {
+    items: rows.map(serializeSubmissionRow),
+    paging: {
+      total,
+      page: normalizedPage,
+      pageSize,
+      totalPages,
+      hasPrev: normalizedPage > 1,
+      hasNext: normalizedPage < totalPages,
+    },
+    filters: { search, status },
+    sort: { sortBy, sortDir },
+  };
+}
+
+function createProductSubmissionsFromVendorPayload({ vendorUser, payload, title, description }) {
+  const currentState = getSiteState();
+  const existingById = new Map((currentState.products || []).map((product) => [String(product.id), product]));
+  const incoming = Array.isArray(payload?.product_changes) ? payload.product_changes : [];
+  if (!incoming.length) {
+    const err = new Error("At least one product change is required.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const created = [];
+  incoming.forEach((product, index) => {
+    const normalizedSnapshot = normalizeProduct(
+      { ...product, owner_user_id: Number(vendorUser.id) },
+      index
+    );
+    const existing = existingById.get(String(normalizedSnapshot.id));
+    if (existing && Number(existing.owner_user_id) !== Number(vendorUser.id)) {
+      const err = new Error("You can edit only your own products.");
+      err.statusCode = 403;
+      throw err;
+    }
+
+    const submissionType = existing ? "update" : "create";
+    const baseSnapshot = existing ? normalizeProduct(existing) : null;
+    const info = db.prepare(
+      `insert into product_submissions (
+        vendor_id,
+        product_id,
+        submission_type,
+        snapshot_json,
+        base_snapshot_json,
+        vendor_note,
+        status,
+        created_at
+      ) values (?, ?, ?, ?, ?, ?, 'pending', datetime('now'))`
+    ).run(
+      Number(vendorUser.id),
+      String(normalizedSnapshot.id),
+      submissionType,
+      JSON.stringify(normalizedSnapshot),
+      baseSnapshot ? JSON.stringify(baseSnapshot) : null,
+      String(description || title || "").trim()
+    );
+
+    const inserted = serializeSubmissionRow(getSubmissionRowById(Number(info.lastInsertRowid)));
+    if (inserted) {
+      created.push(inserted);
+      logActivity({
+        actor: vendorUser,
+        actionType: "submit_product_submission",
+        targetType: "product_submission",
+        targetId: inserted.id,
+        details: {
+          submissionType,
+          productId: inserted.productId,
+        },
+      });
+    }
+  });
+
+  return created;
+}
+
+function approveSubmission({ submissionId, adminUser }) {
+  const existingRow = getSubmissionRowById(submissionId);
+  const existing = serializeSubmissionRow(existingRow);
+  if (!existing) {
+    const err = new Error("Submission not found.");
+    err.statusCode = 404;
+    throw err;
+  }
+  if (existing.status !== "pending") {
+    const err = new Error("Only pending submissions can be reviewed.");
+    err.statusCode = 409;
+    throw err;
+  }
+
+  const snapshot = normalizeProduct(existing.snapshot || {});
+  const current = getSiteState();
+  current.products = mergeProductChanges(current.products, [snapshot]);
+  saveSiteState(current, adminUser.id);
+
+  db.prepare(
+    `update product_submissions
+     set status = 'approved',
+         rejection_reason = null,
+         reviewed_at = datetime('now'),
+         reviewed_by = ?
+     where id = ?`
+  ).run(Number(adminUser.id), Number(submissionId));
+
+  logActivity({
+    actor: adminUser,
+    actionType: "approve_submission",
+    targetType: "product_submission",
+    targetId: Number(submissionId),
+    details: { vendorId: existing.vendorId, productId: existing.productId },
+  });
+
+  return serializeSubmissionRow(getSubmissionRowById(submissionId));
+}
+
+function rejectSubmission({ submissionId, adminUser, reason }) {
+  const cleanReason = String(reason || "").trim();
+  if (!cleanReason) {
+    const err = new Error("Reject reason is required.");
+    err.statusCode = 400;
+    throw err;
+  }
+  if (cleanReason.length > 2000) {
+    const err = new Error("Reject reason must be 2000 characters or fewer.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const existing = serializeSubmissionRow(getSubmissionRowById(submissionId));
+  if (!existing) {
+    const err = new Error("Submission not found.");
+    err.statusCode = 404;
+    throw err;
+  }
+  if (existing.status !== "pending") {
+    const err = new Error("Only pending submissions can be reviewed.");
+    err.statusCode = 409;
+    throw err;
+  }
+
+  db.prepare(
+    `update product_submissions
+     set status = 'rejected',
+         rejection_reason = ?,
+         reviewed_at = datetime('now'),
+         reviewed_by = ?
+     where id = ?`
+  ).run(cleanReason, Number(adminUser.id), Number(submissionId));
+
+  logActivity({
+    actor: adminUser,
+    actionType: "reject_submission",
+    targetType: "product_submission",
+    targetId: Number(submissionId),
+    details: { vendorId: existing.vendorId, productId: existing.productId },
+  });
+
+  return serializeSubmissionRow(getSubmissionRowById(submissionId));
+}
+
 function mergeProductChanges(currentProducts, productChanges) {
   const baseProducts = Array.isArray(currentProducts)
     ? currentProducts.map((product, index) => normalizeProduct(product, index))
@@ -1577,6 +2479,12 @@ app.get("/user/create", (req, res) => {
   return res.render("user-create");
 });
 
+app.get("/reset-password", (req, res) => {
+  return res.render("reset-password", {
+    token: String(req.query.token || ""),
+  });
+});
+
 app.get("/panel/:slug", requireAdminOrVendor, (req, res) => {
   const requestedSlug = String(req.params.slug || "").trim().toLowerCase();
   const panelUser = db
@@ -1612,6 +2520,13 @@ app.get("/panel/:slug", requireAdminOrVendor, (req, res) => {
 });
 
 app.get("/admin", requireAdmin, (req, res) => {
+  const counts = getAdminDashboardCounts();
+  return res.render("admin-dashboard-counts", {
+    counts,
+  });
+});
+
+app.get("/admin/content", requireAdmin, (req, res) => {
   return res.render("workspace", {
     panelUser: req.user,
     isAdmin: true,
@@ -1681,77 +2596,116 @@ app.get("/products/:id", (req, res) => {
   });
 });
 
-app.get("/admin/overview", requireAdmin, (req, res) => {
-  const stats = db
-    .prepare(
-      `select
-        (select count(*) from users) as total_users,
-        (select count(*) from users where role = 'user') as total_regular_users,
-        (select count(*) from edits) as total_edits,
-        (select count(*) from edits where status = 'pending') as pending_edits`
-    )
-    .get();
-
-  const recentUsers = db
-    .prepare("select id, name, email, role, slug from users order by id desc limit 10")
-    .all();
-  const recentEdits = listEditsForAdmin(null).slice(0, 10);
-
-  return res.render("admin-dashboard", {
-    stats,
-    recentUsers,
-    recentEdits,
+app.get("/admin/users", requireAdmin, (req, res) => {
+  const result = listAccountsByRole({
+    role: "user",
+    query: req.query || {},
+  });
+  return res.render("admin-user-list", {
+    listing: result,
+    query: req.query || {},
   });
 });
 
-app.get("/admin/users", requireAdmin, (req, res) => {
-  const users = db
-    .prepare(
-      `select
-        u.id,
-        u.name,
-        u.email,
-        u.role,
-        u.slug,
-        sum(case when e.status = 'pending' then 1 else 0 end) as pending_edits,
-        count(e.id) as total_edits
-      from users u
-      left join edits e on e.user_id = u.id
-      group by u.id
-      order by u.name collate nocase asc`
-    )
-    .all();
-
-  return res.render("admin-users", { users });
-});
-
 app.get("/admin/users/:id", requireAdmin, (req, res) => {
-  const userId = Number(req.params.id);
-  if (!Number.isInteger(userId) || userId <= 0) {
-    return res.status(400).render("error", {
-      title: "Invalid user id",
-      message: "User id must be a positive integer.",
-    });
-  }
-
-  const targetUser = db
-    .prepare("select id, name, email, role, slug from users where id = ?")
-    .get(userId);
+  const targetUser = getAccountById("user", req.params.id);
   if (!targetUser) {
     return res.status(404).render("error", {
       title: "User not found",
       message: "This user does not exist.",
     });
   }
+  const activity = getUserActivityDetails(targetUser.id);
+  const authMeta = {
+    hasPasswordSet: true,
+    provider: "password",
+    passwordChangedAt: targetUser.passwordChangedAt,
+    lastLoginAt: targetUser.lastLoginAt,
+  };
 
-  const edits = listEditsForUser(userId);
-  return res.render("admin-user-detail", { targetUser, edits });
+  return res.render("admin-user-view", {
+    targetUser,
+    activity,
+    authMeta,
+  });
+});
+
+app.get("/admin/vendors", requireAdmin, (req, res) => {
+  const result = listAccountsByRole({
+    role: "vendor",
+    query: req.query || {},
+  });
+  return res.render("admin-vendor-list", {
+    listing: result,
+    query: req.query || {},
+  });
+});
+
+app.get("/admin/vendors/:id", requireAdmin, (req, res) => {
+  const targetVendor = getAccountById("vendor", req.params.id);
+  if (!targetVendor) {
+    return res.status(404).render("error", {
+      title: "Vendor not found",
+      message: "This vendor does not exist.",
+    });
+  }
+
+  const products = listVendorProducts(targetVendor.id);
+  const submissions = listProductSubmissions({
+    actor: req.user,
+    query: {
+      vendor_id: targetVendor.id,
+      page: req.query.page || 1,
+      page_size: req.query.page_size || 50,
+      status: req.query.status || "",
+      sort_by: "created_at",
+      sort_dir: "desc",
+    },
+  });
+
+  const authMeta = {
+    hasPasswordSet: true,
+    provider: "password",
+    passwordChangedAt: targetVendor.passwordChangedAt,
+    lastLoginAt: targetVendor.lastLoginAt,
+  };
+
+  return res.render("admin-vendor-view", {
+    targetVendor,
+    products,
+    submissions,
+    authMeta,
+  });
+});
+
+app.get("/admin/submissions", requireAdmin, (req, res) => {
+  const result = listProductSubmissions({
+    actor: req.user,
+    query: req.query || {},
+  });
+  return res.render("admin-submission-list", {
+    listing: result,
+    query: req.query || {},
+  });
+});
+
+app.get("/admin/submissions/:id", requireAdmin, (req, res) => {
+  const submission = getSubmissionForActor(req.params.id, req.user);
+  if (!submission) {
+    return res.status(404).render("error", {
+      title: "Submission not found",
+      message: "This submission does not exist.",
+    });
+  }
+  return res.render("admin-submission-view", { submission });
+});
+
+app.get("/admin/overview", requireAdmin, (req, res) => {
+  return res.redirect("/admin");
 });
 
 app.get("/admin/edits", requireAdmin, (req, res) => {
-  const filterStatus = normalizeStatus(req.query.status) || "all";
-  const edits = filterStatus === "all" ? listEditsForAdmin(null) : listEditsForAdmin(filterStatus);
-  return res.render("admin-edits", { edits, filterStatus });
+  return res.redirect("/admin/submissions");
 });
 
 app.post("/api/auth/signup", (req, res) => {
@@ -1778,7 +2732,7 @@ app.post("/api/auth/signup", (req, res) => {
   }
 
   const user = db
-    .prepare("select id, name, email, role, slug from users where id = ?")
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
     .get(createdId);
 
   const token = signSessionToken(user);
@@ -1805,22 +2759,30 @@ app.post("/api/auth/signin", (req, res) => {
   }
 
   const user = db
-    .prepare("select id, name, email, role, slug, password_hash from users where email = ?")
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version, password_hash from users where email = ?")
     .get(email);
   if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
     return res.status(401).json({ error: "Invalid email or password." });
+  }
+  if (normalizeAccountStatus(user.status) !== "active") {
+    return res.status(403).json({ error: "This account is disabled." });
   }
   if (user.role === "user") {
     return res.status(403).json({ error: "Use the User login page for this account." });
   }
 
-  const token = signSessionToken(user);
+  db.prepare("update users set last_login_at = datetime('now') where id = ?").run(Number(user.id));
+  const refreshedUser = db
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
+    .get(Number(user.id));
+
+  const token = signSessionToken(refreshedUser);
   setSessionCookie(res, token);
 
   return res.json({
     message: "Signed in successfully.",
-    user: buildSessionUser(user),
-    redirect: user.role === "admin" ? "/admin" : `/panel/${user.slug}`,
+    user: buildSessionUser(refreshedUser),
+    redirect: refreshedUser.role === "admin" ? "/admin" : `/panel/${refreshedUser.slug}`,
   });
 });
 
@@ -1848,7 +2810,7 @@ app.post("/api/auth/user/signup", (req, res) => {
   }
 
   const user = db
-    .prepare("select id, name, email, role, slug from users where id = ?")
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
     .get(createdId);
 
   const token = signSessionToken(user);
@@ -1875,23 +2837,55 @@ app.post("/api/auth/user/signin", (req, res) => {
   }
 
   const user = db
-    .prepare("select id, name, email, role, slug, password_hash from users where email = ?")
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version, password_hash from users where email = ?")
     .get(email);
   if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
     return res.status(401).json({ error: "Invalid email or password." });
+  }
+  if (normalizeAccountStatus(user.status) !== "active") {
+    return res.status(403).json({ error: "This account is disabled." });
   }
   if (user.role !== "user") {
     return res.status(403).json({ error: "This account is not a standard user account." });
   }
 
-  const token = signSessionToken(user);
+  db.prepare("update users set last_login_at = datetime('now') where id = ?").run(Number(user.id));
+  const refreshedUser = db
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
+    .get(Number(user.id));
+
+  const token = signSessionToken(refreshedUser);
   setSessionCookie(res, token);
 
   return res.json({
     message: "Signed in successfully.",
-    user: buildSessionUser(user),
+    user: buildSessionUser(refreshedUser),
     redirect: "/user/panel",
   });
+});
+
+app.post("/api/auth/reset-password", (req, res) => {
+  const token = String(req.body?.token || "").trim();
+  const password = String(req.body?.password || "");
+  if (!token) {
+    return res.status(400).json({ error: "Reset token is required." });
+  }
+
+  const result = consumePasswordResetToken({ token, password });
+  logActivity({
+    actor: {
+      id: result.user.id,
+      role: result.user.role,
+      name: result.user.name,
+      email: result.user.email,
+    },
+    actionType: "password_reset_complete",
+    targetType: "account",
+    targetId: result.user.id,
+    details: {},
+  });
+
+  return res.json({ message: "Password has been reset successfully. Please sign in." });
 });
 
 app.post("/api/auth/signout", (req, res) => {
@@ -1901,6 +2895,192 @@ app.post("/api/auth/signout", (req, res) => {
 
 app.get("/api/me", requireAuth, (req, res) => {
   return res.json({ user: buildSessionUser(req.user) });
+});
+
+app.get("/api/admin/dashboard-counts", requireAdmin, (req, res) => {
+  return res.json(getAdminDashboardCounts());
+});
+
+app.get("/api/admin/users", requireAdmin, (req, res) => {
+  const result = listAccountsByRole({
+    role: "user",
+    query: req.query || {},
+  });
+  return res.json(result);
+});
+
+app.get("/api/admin/users/:id", requireAdmin, (req, res) => {
+  const targetUser = getAccountById("user", req.params.id);
+  if (!targetUser) {
+    return res.status(404).json({ error: "User not found." });
+  }
+  return res.json({
+    user: targetUser,
+    auth: {
+      hasPasswordSet: true,
+      provider: "password",
+      passwordChangedAt: targetUser.passwordChangedAt,
+      lastLoginAt: targetUser.lastLoginAt,
+    },
+    activity: getUserActivityDetails(targetUser.id),
+  });
+});
+
+app.patch("/api/admin/users/:id/status", requireAdmin, (req, res) => {
+  const status = req.body?.status;
+  const updated = setAccountStatus({
+    role: "user",
+    targetId: req.params.id,
+    status,
+    actor: req.user,
+  });
+  return res.json({ message: "User status updated.", user: updated });
+});
+
+app.post("/api/admin/users/:id/revoke-sessions", requireAdmin, (req, res) => {
+  revokeAccountSessions({
+    role: "user",
+    targetId: req.params.id,
+    actor: req.user,
+  });
+  return res.json({ message: "User sessions revoked." });
+});
+
+app.post("/api/admin/users/:id/password-reset", requireAdmin, (req, res) => {
+  const targetUser = getAccountById("user", req.params.id);
+  if (!targetUser) {
+    return res.status(404).json({ error: "User not found." });
+  }
+  const reset = createPasswordResetForUser({
+    targetUser,
+    adminUser: req.user,
+    req,
+  });
+  logActivity({
+    actor: req.user,
+    actionType: "trigger_password_reset",
+    targetType: "account",
+    targetId: targetUser.id,
+    details: { role: "user" },
+  });
+  return res.json({
+    message: "Password reset link generated.",
+    resetLink: reset.resetLink,
+    expiresAt: reset.expiresAt,
+  });
+});
+
+app.delete("/api/admin/users/:id", requireAdmin, (req, res) => {
+  const deleted = deleteAccount({
+    role: "user",
+    targetId: req.params.id,
+    actor: req.user,
+  });
+  return res.json({
+    message: "User deleted.",
+    deleted: {
+      id: deleted.id,
+      name: deleted.name,
+      email: deleted.email,
+    },
+  });
+});
+
+app.get("/api/admin/vendors", requireAdmin, (req, res) => {
+  const result = listAccountsByRole({
+    role: "vendor",
+    query: req.query || {},
+  });
+  return res.json(result);
+});
+
+app.get("/api/admin/vendors/:id", requireAdmin, (req, res) => {
+  const targetVendor = getAccountById("vendor", req.params.id);
+  if (!targetVendor) {
+    return res.status(404).json({ error: "Vendor not found." });
+  }
+  const submissions = listProductSubmissions({
+    actor: req.user,
+    query: {
+      vendor_id: targetVendor.id,
+      page: req.query.page || 1,
+      page_size: req.query.page_size || 100,
+      status: req.query.status || "",
+      sort_by: req.query.sort_by || "created_at",
+      sort_dir: req.query.sort_dir || "desc",
+    },
+  });
+  return res.json({
+    vendor: targetVendor,
+    auth: {
+      hasPasswordSet: true,
+      provider: "password",
+      passwordChangedAt: targetVendor.passwordChangedAt,
+      lastLoginAt: targetVendor.lastLoginAt,
+    },
+    products: listVendorProducts(targetVendor.id),
+    submissions,
+  });
+});
+
+app.patch("/api/admin/vendors/:id/status", requireAdmin, (req, res) => {
+  const status = req.body?.status;
+  const updated = setAccountStatus({
+    role: "vendor",
+    targetId: req.params.id,
+    status,
+    actor: req.user,
+  });
+  return res.json({ message: "Vendor status updated.", vendor: updated });
+});
+
+app.post("/api/admin/vendors/:id/revoke-sessions", requireAdmin, (req, res) => {
+  revokeAccountSessions({
+    role: "vendor",
+    targetId: req.params.id,
+    actor: req.user,
+  });
+  return res.json({ message: "Vendor sessions revoked." });
+});
+
+app.post("/api/admin/vendors/:id/password-reset", requireAdmin, (req, res) => {
+  const targetVendor = getAccountById("vendor", req.params.id);
+  if (!targetVendor) {
+    return res.status(404).json({ error: "Vendor not found." });
+  }
+  const reset = createPasswordResetForUser({
+    targetUser: targetVendor,
+    adminUser: req.user,
+    req,
+  });
+  logActivity({
+    actor: req.user,
+    actionType: "trigger_password_reset",
+    targetType: "account",
+    targetId: targetVendor.id,
+    details: { role: "vendor" },
+  });
+  return res.json({
+    message: "Password reset link generated.",
+    resetLink: reset.resetLink,
+    expiresAt: reset.expiresAt,
+  });
+});
+
+app.delete("/api/admin/vendors/:id", requireAdmin, (req, res) => {
+  const deleted = deleteAccount({
+    role: "vendor",
+    targetId: req.params.id,
+    actor: req.user,
+  });
+  return res.json({
+    message: "Vendor deleted.",
+    deleted: {
+      id: deleted.id,
+      name: deleted.name,
+      email: deleted.email,
+    },
+  });
 });
 
 app.get("/api/public/content", (req, res) => {
@@ -1932,6 +3112,13 @@ app.put("/api/content/current", requireAdmin, (req, res) => {
     products: incoming.products,
   });
   const saved = saveSiteState(normalized, req.user.id);
+  logActivity({
+    actor: req.user,
+    actionType: "save_site_content",
+    targetType: "site",
+    targetId: "current",
+    details: {},
+  });
   return res.json({
     message: "Website content saved.",
     state: saved,
@@ -1948,6 +3135,13 @@ app.put("/api/content/sections/:sectionKey", requireAdmin, (req, res) => {
     return res.status(400).json({ error: "Section content must be an object." });
   }
   const saved = saveSection(sectionKey, content, req.user.id);
+  logActivity({
+    actor: req.user,
+    actionType: "save_site_section",
+    targetType: "site_section",
+    targetId: sectionKey,
+    details: {},
+  });
   return res.json({
     message: "Section saved.",
     sectionKey,
@@ -2044,6 +3238,13 @@ app.post("/api/products", requireAdmin, (req, res) => {
   state.products = mergeProductChanges(state.products, [product]);
   const saved = saveSiteState(state, req.user.id);
   const created = saved.products.find((item) => String(item.id) === String(product.id));
+  logActivity({
+    actor: req.user,
+    actionType: "admin_create_product",
+    targetType: "product",
+    targetId: product.id,
+    details: {},
+  });
   return res.status(201).json({
     message: "Product created.",
     product: created || product,
@@ -2069,6 +3270,13 @@ app.patch("/api/products/:id", requireAdmin, (req, res) => {
   state.products = mergeProductChanges(state.products, [merged]);
   const saved = saveSiteState(state, req.user.id);
   const updated = saved.products.find((item) => String(item.id) === productId);
+  logActivity({
+    actor: req.user,
+    actionType: "admin_update_product",
+    targetType: "product",
+    targetId: productId,
+    details: {},
+  });
   return res.json({
     message: "Product updated.",
     product: updated || merged,
@@ -2084,6 +3292,13 @@ app.delete("/api/products/:id", requireAdmin, (req, res) => {
     return res.status(404).json({ error: "Product not found." });
   }
   saveSiteState(state, req.user.id);
+  logActivity({
+    actor: req.user,
+    actionType: "admin_delete_product",
+    targetType: "product",
+    targetId: productId,
+    details: {},
+  });
   return res.json({ message: "Product deleted." });
 });
 
@@ -2101,39 +3316,34 @@ app.post("/api/edits", requireVendor, (req, res) => {
     return res.status(statusCode).json({ error: error.message || "Invalid vendor payload." });
   }
 
-  const info = db
-    .prepare(
-      `insert into edits (user_id, title, description, payload, status)
-       values (?, ?, ?, ?, 'pending')`
-    )
-    .run(req.user.id, title, description, JSON.stringify(payloadToSave));
-
-  const created = getEditById(Number(info.lastInsertRowid));
-  logActivity({
-    actor: req.user,
-    actionType: "submit_edit",
-    targetType: "edit",
-    targetId: created?.id || Number(info.lastInsertRowid),
-    details: {
-      title,
-      status: "pending",
-      productChanges: Array.isArray(payloadToSave?.product_changes) ? payloadToSave.product_changes.length : 0,
-    },
+  const createdSubmissions = createProductSubmissionsFromVendorPayload({
+    vendorUser: req.user,
+    payload: payloadToSave,
+    title,
+    description,
   });
+
   return res.status(201).json({
-    message: "Edit submitted. Status is now Pending.",
-    edit: created,
+    message: "Submission sent for admin approval.",
+    edit: submissionToLegacyEdit(createdSubmissions[0]),
+    submissions: createdSubmissions,
   });
 });
 
 app.get("/api/edits", requireAuth, (req, res) => {
-  if (req.user.role === "admin") {
-    return res.json({ edits: listEditsForAdmin(req.query.status) });
-  }
-  if (req.user.role === "user") {
-    return res.json({ edits: [] });
-  }
-  return res.json({ edits: listEditsForUser(req.user.id) });
+  if (req.user.role === "user") return res.json({ edits: [] });
+  const submissions = listProductSubmissions({
+    actor: req.user,
+    query: {
+      status: req.query.status,
+      page: 1,
+      page_size: 500,
+      search: req.query.search || "",
+      sort_by: "created_at",
+      sort_dir: "desc",
+    },
+  });
+  return res.json({ edits: submissions.items.map(submissionToLegacyEdit) });
 });
 
 function setEditDecision(decision) {
@@ -2142,37 +3352,113 @@ function setEditDecision(decision) {
     if (!Number.isInteger(editId) || editId <= 0) {
       return res.status(400).json({ error: "Edit id must be a positive integer." });
     }
-
-    const existing = getEditById(editId);
-    if (!existing) {
-      return res.status(404).json({ error: "Edit not found." });
+    try {
+      const submission = decision === "approved"
+        ? approveSubmission({ submissionId: editId, adminUser: req.user })
+        : rejectSubmission({
+            submissionId: editId,
+            adminUser: req.user,
+            reason: req.body?.reason,
+          });
+      return res.json({
+        message: decision === "approved" ? "Submission approved." : "Submission rejected.",
+        edit: submissionToLegacyEdit(submission),
+      });
+    } catch (error) {
+      return res.status(Number(error.statusCode) || 400).json({ error: error.message || "Could not review submission." });
     }
-    if (existing.status !== "pending") {
-      return res.status(409).json({ error: "Only pending edits can be reviewed." });
-    }
-
-    db.prepare(
-      `update edits
-       set status = ?, approved_at = datetime('now'), approved_by = ?
-       where id = ?`
-    ).run(decision, req.user.id, editId);
-
-    const updated = getEditById(editId);
-    let message = decision === "approved" ? "Edit approved." : "Edit rejected.";
-    if (decision === "approved") {
-      const applied = applyPayloadToSiteState(updated.payload, req.user.id);
-      if (applied) {
-        message = "Edit approved and applied to live content.";
-      } else {
-        message = "Edit approved. No applicable content payload found.";
-      }
-    }
-    return res.json({ message, edit: updated });
   };
 }
 
 app.patch("/api/edits/:id/approve", requireAdmin, setEditDecision("approved"));
 app.patch("/api/edits/:id/reject", requireAdmin, setEditDecision("rejected"));
+
+app.get("/api/submissions", requireAdminOrVendor, (req, res) => {
+  const result = listProductSubmissions({
+    actor: req.user,
+    query: req.query || {},
+  });
+  return res.json(result);
+});
+
+app.post("/api/submissions", requireVendor, (req, res) => {
+  const payloadInput = req.body?.payload;
+  const payload = payloadInput && typeof payloadInput === "object" ? payloadInput : req.body;
+  let validatedPayload;
+  try {
+    validatedPayload = buildVendorProductPayload(payload, req.user.id);
+  } catch (error) {
+    return res.status(Number(error.statusCode) || 400).json({ error: error.message || "Invalid submission payload." });
+  }
+
+  const title = String(req.body?.title || "Product submission").trim() || "Product submission";
+  const description = String(req.body?.description || req.body?.vendor_note || "").trim();
+  const created = createProductSubmissionsFromVendorPayload({
+    vendorUser: req.user,
+    payload: validatedPayload,
+    title,
+    description,
+  });
+
+  return res.status(201).json({
+    message: "Submission created.",
+    submissions: created,
+  });
+});
+
+app.get("/api/admin/submissions", requireAdmin, (req, res) => {
+  const result = listProductSubmissions({
+    actor: req.user,
+    query: req.query || {},
+  });
+  return res.json(result);
+});
+
+app.get("/api/admin/submissions/:id", requireAdmin, (req, res) => {
+  const submission = getSubmissionForActor(req.params.id, req.user);
+  if (!submission) {
+    return res.status(404).json({ error: "Submission not found." });
+  }
+  return res.json({ submission });
+});
+
+app.patch("/api/admin/submissions/:id/approve", requireAdmin, (req, res) => {
+  try {
+    const submission = approveSubmission({
+      submissionId: req.params.id,
+      adminUser: req.user,
+    });
+    return res.json({
+      message: "Submission approved and applied.",
+      submission: {
+        ...submission,
+        diff: buildSubmissionDiff(submission.baseSnapshot || {}, submission.snapshot || {}),
+      },
+    });
+  } catch (error) {
+    return res.status(Number(error.statusCode) || 400).json({ error: error.message || "Could not approve submission." });
+  }
+});
+
+app.patch("/api/admin/submissions/:id/reject", requireAdmin, (req, res) => {
+  const reason = String(req.body?.reason || "").trim();
+  try {
+    const submission = rejectSubmission({
+      submissionId: req.params.id,
+      adminUser: req.user,
+      reason,
+    });
+    return res.json({
+      message: "Submission rejected.",
+      submission: {
+        ...submission,
+        diff: buildSubmissionDiff(submission.baseSnapshot || {}, submission.snapshot || {}),
+      },
+    });
+  } catch (error) {
+    return res.status(Number(error.statusCode) || 400).json({ error: error.message || "Could not reject submission." });
+  }
+});
 
 app.get("/api/admin/activity", requireAdmin, (req, res) => {
   const summary = getAdminPeopleAndActionSummary();

@@ -14,13 +14,22 @@ function buildSessionUser(user) {
     email: user.email,
     role: user.role,
     slug: user.slug,
+    status: user.status || "active",
   };
 }
 
 function signSessionToken(user) {
-  return jwt.sign(buildSessionUser(user), sessionSecret(), {
+  const sessionVersion = Number(user?.session_version || 0);
+  return jwt.sign(
+    {
+      ...buildSessionUser(user),
+      sv: Number.isFinite(sessionVersion) ? sessionVersion : 0,
+    },
+    sessionSecret(),
+    {
     expiresIn: "7d",
-  });
+    }
+  );
 }
 
 function setSessionCookie(res, token) {
@@ -45,8 +54,14 @@ function loadUserFromToken(token) {
   try {
     const payload = jwt.verify(token, sessionSecret());
     const user = db
-      .prepare("select id, name, email, role, slug from users where id = ?")
+      .prepare("select id, name, email, role, slug, status, session_version from users where id = ?")
       .get(payload.id);
+    if (!user) return null;
+    if (String(user.status || "active").toLowerCase() !== "active") return null;
+    const tokenVersion = Number(payload.sv);
+    if (Number.isFinite(tokenVersion) && tokenVersion !== Number(user.session_version || 0)) {
+      return null;
+    }
     return user || null;
   } catch {
     return null;

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container workspace-container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Admin Dashboard</h1>
+        <p class="muted small" style="margin:6px 0 0;">Account overview.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="grid two">
+      <a class="card" href="/admin/users" style="text-decoration:none;">
+        <div class="workspace-card-title">Users</div>
+        <h2 style="margin-top:8px;"><%= Number(counts.usersCount || 0) %></h2>
+      </a>
+      <a class="card" href="/admin/vendors" style="text-decoration:none;">
+        <div class="workspace-card-title">Vendors</div>
+        <h2 style="margin-top:8px;"><%= Number(counts.vendorsCount || 0) %></h2>
+      </a>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Users</title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container workspace-container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;">Users</h1>
+        <p class="muted small" style="margin:6px 0 0;">Manage standard user accounts.</p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="/admin">Dashboard</a>
+        <a class="btn-link" href="/admin/vendors">Vendors</a>
+        <a class="btn-link" href="/admin/submissions">Submissions</a>
+        <a class="btn-link" href="/admin/content">Content</a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:12px;">
+      <form method="get" class="workspace-form-grid three">
+        <div class="field-row" style="margin:0;">
+          <label for="search">Search</label>
+          <input id="search" name="search" value="<%= query.search || '' %>" placeholder="Name or email" />
+        </div>
+        <div class="field-row" style="margin:0;">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="">All</option>
+            <option value="active" <%= (query.status === "active" ? "selected" : "") %>>Active</option>
+            <option value="disabled" <%= (query.status === "disabled" ? "selected" : "") %>>Disabled</option>
+          </select>
+        </div>
+        <div class="field-row" style="margin:0;">
+          <label for="sort_by">Sort</label>
+          <div class="workspace-form-grid two">
+            <select id="sort_by" name="sort_by">
+              <option value="created_at" <%= listing.sort.sortBy === "created_at" ? "selected" : "" %>>Created</option>
+              <option value="name" <%= listing.sort.sortBy === "name" ? "selected" : "" %>>Name</option>
+              <option value="email" <%= listing.sort.sortBy === "email" ? "selected" : "" %>>Email</option>
+              <option value="last_login_at" <%= listing.sort.sortBy === "last_login_at" ? "selected" : "" %>>Last Login</option>
+              <option value="status" <%= listing.sort.sortBy === "status" ? "selected" : "" %>>Status</option>
+            </select>
+            <select name="sort_dir">
+              <option value="desc" <%= listing.sort.sortDir === "desc" ? "selected" : "" %>>Desc</option>
+              <option value="asc" <%= listing.sort.sortDir === "asc" ? "selected" : "" %>>Asc</option>
+            </select>
+          </div>
+        </div>
+        <input type="hidden" name="page_size" value="<%= listing.paging.pageSize %>" />
+        <div class="actions">
+          <button type="submit" class="primary">Apply</button>
+          <a class="btn-link" href="/admin/users">Reset</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="workspace-page-meta" style="margin-top:0;">
+        Showing <%= listing.items.length %> of <%= listing.paging.total %> users.
+      </div>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (!listing.items.length) { %>
+              <tr><td colspan="5" class="muted small">No users found.</td></tr>
+            <% } %>
+            <% listing.items.forEach((item) => { %>
+              <tr>
+                <td><a href="/admin/users/<%= item.id %>"><%= item.name %></a></td>
+                <td><%= item.email %></td>
+                <td><%= item.role %></td>
+                <td><%= item.createdAt || "-" %></td>
+                <td><span class="status <%= item.status === "active" ? "approved" : "rejected" %>"><%= item.status %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <% if (listing.paging.hasPrev) { %>
+          <a class="btn-link" href="?search=<%= encodeURIComponent(query.search || '') %>&status=<%= encodeURIComponent(query.status || '') %>&sort_by=<%= encodeURIComponent(listing.sort.sortBy) %>&sort_dir=<%= encodeURIComponent(listing.sort.sortDir) %>&page_size=<%= listing.paging.pageSize %>&page=<%= listing.paging.page - 1 %>">Prev</a>
+        <% } %>
+        <span class="small muted">Page <%= listing.paging.page %> / <%= listing.paging.totalPages %></span>
+        <% if (listing.paging.hasNext) { %>
+          <a class="btn-link" href="?search=<%= encodeURIComponent(query.search || '') %>&status=<%= encodeURIComponent(query.status || '') %>&sort_by=<%= encodeURIComponent(listing.sort.sortBy) %>&sort_dir=<%= encodeURIComponent(listing.sort.sortDir) %>&page_size=<%= listing.paging.pageSize %>&page=<%= listing.paging.page + 1 %>">Next</a>
+        <% } %>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+  </script>
+</body>
+</html>

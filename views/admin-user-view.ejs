@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - User - <%= targetUser.name %></title>
+  <link rel="stylesheet" href="/auth-assets/styles.css" />
+</head>
+<body>
+  <main class="container workspace-container">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;"><%= targetUser.name %></h1>
+        <p class="muted small" style="margin:6px 0 0;"><%= targetUser.email %></p>
+      </div>
+      <div class="actions">
+        <a class="btn-link" href="/admin/users">Back to Users</a>
+        <a class="btn-link" href="/admin/vendors">Vendors</a>
+        <a class="btn-link" href="/admin/submissions">Submissions</a>
+        <a class="btn-link" href="/admin/content">Content</a>
+        <button type="button" id="signoutBtn">Sign out</button>
+      </div>
+    </div>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin-top:0;">Profile</h2>
+      <div class="workspace-form-grid three">
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Role</span>
+          <span class="workspace-field-preview"><%= targetUser.role %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Status</span>
+          <span class="workspace-field-preview" id="userStatusValue"><%= targetUser.status %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Created</span>
+          <span class="workspace-field-preview"><%= targetUser.createdAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Last Login</span>
+          <span class="workspace-field-preview"><%= targetUser.lastLoginAt || "-" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Has Password</span>
+          <span class="workspace-field-preview"><%= authMeta.hasPasswordSet ? "Yes" : "No" %></span>
+        </div>
+        <div class="workspace-field-row">
+          <span class="workspace-field-key">Password Changed</span>
+          <span class="workspace-field-preview"><%= authMeta.passwordChangedAt || "-" %></span>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <button type="button" id="toggleStatusBtn"><%= targetUser.status === "active" ? "Disable User" : "Enable User" %></button>
+        <button type="button" id="revokeSessionsBtn">Revoke Sessions</button>
+        <button type="button" id="resetPasswordBtn">Generate Reset Link</button>
+        <button type="button" id="deleteUserBtn" class="ghost">Delete User</button>
+      </div>
+      <div id="resetLinkWrap" class="workspace-field-row" style="margin-top:10px; display:none;">
+        <label>One-Time Reset Link</label>
+        <input id="resetLinkValue" readonly />
+      </div>
+      <div id="userActionMsg" class="small muted"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin-top:0;">Likes</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead><tr><th>Product</th><th>At</th></tr></thead>
+          <tbody>
+            <% if (!activity.likes.length) { %>
+              <tr><td colspan="2" class="muted small">No likes yet.</td></tr>
+            <% } %>
+            <% activity.likes.forEach((item) => { %>
+              <tr>
+                <td>
+                  <% if (item.productId) { %>
+                    <a href="/products/<%= encodeURIComponent(item.productId) %>"><%= item.productName || item.productId %></a>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><%= item.createdAt || "-" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom:12px;">
+      <h2 style="margin-top:0;">Comments</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead><tr><th>Product</th><th>Comment</th><th>At</th></tr></thead>
+          <tbody>
+            <% if (!activity.comments.length) { %>
+              <tr><td colspan="3" class="muted small">No comments yet.</td></tr>
+            <% } %>
+            <% activity.comments.forEach((item) => { %>
+              <tr>
+                <td>
+                  <% if (item.productId) { %>
+                    <a href="/products/<%= encodeURIComponent(item.productId) %>"><%= item.productName || item.productId %></a>
+                  <% } else { %>-<% } %>
+                </td>
+                <td><%= item.content %></td>
+                <td><%= item.createdAt || "-" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;">Cart Activity</h2>
+      <div class="workspace-form-grid two">
+        <div>
+          <h3 class="workspace-card-title">Current Cart</h3>
+          <div style="overflow:auto;">
+            <table>
+              <thead><tr><th>Product</th><th>Qty</th><th>Updated</th></tr></thead>
+              <tbody>
+                <% if (!activity.cart.items.length) { %>
+                  <tr><td colspan="3" class="muted small">No cart items.</td></tr>
+                <% } %>
+                <% activity.cart.items.forEach((item) => { %>
+                  <tr>
+                    <td><%= item.product ? item.product.name : item.productId %></td>
+                    <td><%= item.quantity %></td>
+                    <td><%= item.updatedAt || "-" %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="workspace-card-title">Recent Cart Updates</h3>
+          <div style="overflow:auto;">
+            <table>
+              <thead><tr><th>Action</th><th>Target</th><th>At</th></tr></thead>
+              <tbody>
+                <% if (!activity.cartUpdates.length) { %>
+                  <tr><td colspan="3" class="muted small">No cart updates.</td></tr>
+                <% } %>
+                <% activity.cartUpdates.forEach((item) => { %>
+                  <tr>
+                    <td><%= item.actionType %></td>
+                    <td><%= item.targetId || "-" %></td>
+                    <td><%= item.createdAt || "-" %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/auth-assets/app.js"></script>
+  <script>
+    if (window.APP && typeof APP.attachSignOutHandler === "function") {
+      APP.attachSignOutHandler("signoutBtn");
+    }
+    const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
+      ? APP.apiRequest
+      : async () => { throw new Error("Client assets failed to load. Please refresh and try again."); };
+
+    const userId = <%= Number(targetUser.id) %>;
+    const currentStatus = "<%= targetUser.status %>";
+    const msgEl = document.getElementById("userActionMsg");
+    const resetLinkWrap = document.getElementById("resetLinkWrap");
+    const resetLinkValue = document.getElementById("resetLinkValue");
+    const statusValueEl = document.getElementById("userStatusValue");
+    const toggleStatusBtn = document.getElementById("toggleStatusBtn");
+
+    async function refreshPage() {
+      window.location.reload();
+    }
+
+    function setMessage(text) {
+      msgEl.textContent = text || "";
+    }
+
+    document.getElementById("toggleStatusBtn").addEventListener("click", async () => {
+      const targetStatus = currentStatus === "active" ? "disabled" : "active";
+      const confirmed = window.confirm(`Set user status to ${targetStatus}?`);
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/users/${userId}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: targetStatus }),
+        });
+        setMessage("Status updated.");
+        await refreshPage();
+      } catch (error) {
+        setMessage(error.message || "Status update failed.");
+      }
+    });
+
+    document.getElementById("revokeSessionsBtn").addEventListener("click", async () => {
+      const confirmed = window.confirm("Revoke all active sessions for this user?");
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/users/${userId}/revoke-sessions`, { method: "POST" });
+        setMessage("Sessions revoked.");
+      } catch (error) {
+        setMessage(error.message || "Could not revoke sessions.");
+      }
+    });
+
+    document.getElementById("resetPasswordBtn").addEventListener("click", async () => {
+      try {
+        const result = await sendApiRequest(`/api/admin/users/${userId}/password-reset`, { method: "POST" });
+        resetLinkWrap.style.display = "block";
+        resetLinkValue.value = result.resetLink || "";
+        setMessage("Reset link generated.");
+      } catch (error) {
+        setMessage(error.message || "Could not generate reset link.");
+      }
+    });
+
+    document.getElementById("deleteUserBtn").addEventListener("click", async () => {
+      const confirmed = window.confirm("Delete this user? This cannot be undone.");
+      if (!confirmed) return;
+      try {
+        await sendApiRequest(`/api/admin/users/${userId}`, { method: "DELETE" });
+        window.location.href = "/admin/users";
+      } catch (error) {
+        setMessage(error.message || "Could not delete user.");
+      }
+    });
+  </script>
+</body>
+</html>

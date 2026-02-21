@@ -10,7 +10,7 @@ process.env.APP_DB_PATH = dbPath;
 process.env.SESSION_SECRET = "test-session-secret";
 
 const { app } = require("../src/server");
-const { db } = require("../src/db");
+const { db, createUser } = require("../src/db");
 
 let server;
 let baseUrl;
@@ -69,6 +69,9 @@ function clearRuntimeTables() {
   db.prepare("delete from comments").run();
   db.prepare("delete from cart_items").run();
   db.prepare("delete from edits").run();
+  db.prepare("delete from activity_log").run();
+  db.prepare("delete from password_reset_tokens").run();
+  db.prepare("delete from product_submissions").run();
 }
 
 function createClient() {
@@ -134,6 +137,23 @@ async function signupUser(client, suffix) {
   return res.body.user;
 }
 
+async function signupVendor(client, suffix) {
+  const res = await client.post("/api/auth/signup", {
+    name: `Vendor ${suffix}`,
+    email: `vendor-${suffix}@example.com`,
+    password: "Vendor12345!",
+  });
+  assert.equal(res.status, 201);
+  return res.body.user;
+}
+
+function objectContainsKey(value, targetKey) {
+  if (!value || typeof value !== "object") return false;
+  if (Object.prototype.hasOwnProperty.call(value, targetKey)) return true;
+  if (Array.isArray(value)) return value.some((item) => objectContainsKey(item, targetKey));
+  return Object.values(value).some((item) => objectContainsKey(item, targetKey));
+}
+
 test.before(async () => {
   server = app.listen(0);
   await once(server, "listening");
@@ -149,6 +169,219 @@ test.after(async () => {
   if (fs.existsSync(dbPath)) {
     fs.unlinkSync(dbPath);
   }
+});
+
+test("admin dashboard counts endpoint returns accurate users/vendors totals", async () => {
+  clearRuntimeTables();
+  const suffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  createUser({
+    name: `Count User ${suffix}`,
+    email: `count-user-${suffix}@example.com`,
+    password: "User12345!",
+    role: "user",
+  });
+  createUser({
+    name: `Count Vendor ${suffix}`,
+    email: `count-vendor-${suffix}@example.com`,
+    password: "Vendor12345!",
+    role: "vendor",
+  });
+
+  const expected = db.prepare(
+    `select
+      sum(case when role = 'user' then 1 else 0 end) as users_count,
+      sum(case when role = 'vendor' then 1 else 0 end) as vendors_count
+     from users`
+  ).get();
+
+  const admin = createClient();
+  await loginAdmin(admin);
+
+  const res = await admin.get("/api/admin/dashboard-counts");
+  assert.equal(res.status, 200);
+  assert.equal(Number(res.body.usersCount), Number(expected.users_count));
+  assert.equal(Number(res.body.vendorsCount), Number(expected.vendors_count));
+});
+
+test("admin can list users and vendors with pagination, search, and sorting", async () => {
+  clearRuntimeTables();
+  const suffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  createUser({
+    name: `List User ${suffix}`,
+    email: `list-user-${suffix}@example.com`,
+    password: "User12345!",
+    role: "user",
+  });
+  createUser({
+    name: `List Vendor ${suffix}`,
+    email: `list-vendor-${suffix}@example.com`,
+    password: "Vendor12345!",
+    role: "vendor",
+  });
+
+  const admin = createClient();
+  await loginAdmin(admin);
+
+  const usersRes = await admin.get(`/api/admin/users?search=${encodeURIComponent(`list-user-${suffix}`)}&sort_by=email&sort_dir=asc&page_size=10`);
+  assert.equal(usersRes.status, 200);
+  assert.equal(Array.isArray(usersRes.body.items), true);
+  assert.equal(usersRes.body.items.length >= 1, true);
+  assert.equal(usersRes.body.items.every((item) => item.role === "user"), true);
+  assert.equal(Number(usersRes.body.paging.total) >= 1, true);
+
+  const vendorsRes = await admin.get(`/api/admin/vendors?search=${encodeURIComponent(`list-vendor-${suffix}`)}&sort_by=products_count&sort_dir=desc&page_size=10`);
+  assert.equal(vendorsRes.status, 200);
+  assert.equal(Array.isArray(vendorsRes.body.items), true);
+  assert.equal(vendorsRes.body.items.length >= 1, true);
+  assert.equal(vendorsRes.body.items.every((item) => item.role === "vendor"), true);
+  assert.equal(Number(vendorsRes.body.paging.total) >= 1, true);
+});
+
+test("admin user detail endpoint returns aggregated likes/comments/cart activity", async () => {
+  clearRuntimeTables();
+  const product = makeProduct(301, { status: "active" });
+  setProducts([product]);
+
+  const userClient = createClient();
+  const user = await signupUser(userClient, `activity-${Date.now()}`);
+
+  const likeRes = await userClient.post(`/api/products/${encodeURIComponent(product.id)}/like`, {});
+  assert.equal(likeRes.status, 200);
+
+  const commentRes = await userClient.post(`/api/products/${encodeURIComponent(product.id)}/comments`, {
+    content: "Activity test comment",
+  });
+  assert.equal(commentRes.status, 201);
+
+  const cartRes = await userClient.post("/api/cart/items", {
+    productId: product.id,
+    quantity: 2,
+  });
+  assert.equal(cartRes.status, 201);
+
+  const admin = createClient();
+  await loginAdmin(admin);
+
+  const detail = await admin.get(`/api/admin/users/${user.id}`);
+  assert.equal(detail.status, 200);
+  assert.equal(detail.body.user.id, user.id);
+  assert.equal(Array.isArray(detail.body.activity.likes), true);
+  assert.equal(Array.isArray(detail.body.activity.comments), true);
+  assert.equal(Array.isArray(detail.body.activity.cart.items), true);
+  assert.equal(detail.body.activity.likes.length, 1);
+  assert.equal(detail.body.activity.comments.length, 1);
+  assert.equal(detail.body.activity.cart.items.length, 1);
+  assert.equal(detail.body.activity.cart.items[0].quantity, 2);
+});
+
+test("product submissions store complete snapshot and support approve/reject review workflow", async () => {
+  clearRuntimeTables();
+  setProducts([]);
+
+  const vendorClient = createClient();
+  const vendor = await signupVendor(vendorClient, `submission-${Date.now()}`);
+
+  const submissionPayload = {
+    product_changes: [
+      {
+        id: `submission-product-${Date.now()}`,
+        name: "Submission Product",
+        gallery_type: "art",
+        category: "Artwork",
+        status: "active",
+        sort_order: 11,
+        material: "Oil",
+        dimensions: "70 x 50",
+        base_price: 500,
+        attributes: { frame: "oak", finish: "matte" },
+        variants: [{ size: "L", sku: "SUB-L", price: 650 }],
+        inventory: 9,
+      },
+    ],
+  };
+
+  const createSubmission = await vendorClient.post("/api/submissions", {
+    title: "Vendor submission create",
+    description: "Please approve.",
+    payload: submissionPayload,
+  });
+  assert.equal(createSubmission.status, 201);
+  assert.equal(Array.isArray(createSubmission.body.submissions), true);
+  assert.equal(createSubmission.body.submissions.length, 1);
+  const firstSubmission = createSubmission.body.submissions[0];
+
+  const admin = createClient();
+  await loginAdmin(admin);
+
+  const firstDetail = await admin.get(`/api/admin/submissions/${firstSubmission.id}`);
+  assert.equal(firstDetail.status, 200);
+  assert.equal(firstDetail.body.submission.vendorId, vendor.id);
+  assert.equal(firstDetail.body.submission.snapshot.name, "Submission Product");
+  assert.equal(firstDetail.body.submission.snapshot.extra_fields.inventory, 9);
+  assert.equal(firstDetail.body.submission.snapshot.extra_fields.attributes.frame, "oak");
+  assert.equal(Array.isArray(firstDetail.body.submission.snapshot.extra_fields.variants), true);
+
+  const rejectWithoutReason = await admin.patch(`/api/admin/submissions/${firstSubmission.id}/reject`, {});
+  assert.equal(rejectWithoutReason.status, 400);
+
+  const rejected = await admin.patch(`/api/admin/submissions/${firstSubmission.id}/reject`, {
+    reason: "Image quality is too low.",
+  });
+  assert.equal(rejected.status, 200);
+  assert.equal(rejected.body.submission.status, "rejected");
+  assert.equal(rejected.body.submission.rejectionReason, "Image quality is too low.");
+
+  const approvedPayload = {
+    product_changes: [
+      {
+        id: `submission-approved-${Date.now()}`,
+        name: "Approved Product",
+        gallery_type: "designs",
+        category: "Decor",
+        status: "active",
+        sort_order: 12,
+        inventory: 4,
+      },
+    ],
+  };
+  const secondSubmissionRes = await vendorClient.post("/api/submissions", {
+    title: "Second vendor submission",
+    description: "Approve this one.",
+    payload: approvedPayload,
+  });
+  assert.equal(secondSubmissionRes.status, 201);
+  const secondSubmission = secondSubmissionRes.body.submissions[0];
+
+  const approved = await admin.patch(`/api/admin/submissions/${secondSubmission.id}/approve`, {});
+  assert.equal(approved.status, 200);
+  assert.equal(approved.body.submission.status, "approved");
+
+  const productsAfterApprove = await admin.get(`/api/products?search=${encodeURIComponent("Approved Product")}&pageSize=50`);
+  assert.equal(productsAfterApprove.status, 200);
+  assert.equal(productsAfterApprove.body.items.some((item) => item.name === "Approved Product"), true);
+});
+
+test("admin APIs never expose password hashes", async () => {
+  clearRuntimeTables();
+  const admin = createClient();
+  await loginAdmin(admin);
+
+  const users = await admin.get("/api/admin/users?page_size=10");
+  assert.equal(users.status, 200);
+  assert.equal(objectContainsKey(users.body, "password_hash"), false);
+  assert.equal(objectContainsKey(users.body, "passwordHash"), false);
+
+  const vendors = await admin.get("/api/admin/vendors?page_size=10");
+  assert.equal(vendors.status, 200);
+  assert.equal(objectContainsKey(vendors.body, "password_hash"), false);
+  assert.equal(objectContainsKey(vendors.body, "passwordHash"), false);
+
+  const firstUserId = users.body.items[0] && users.body.items[0].id;
+  assert.equal(Boolean(firstUserId), true);
+  const userDetail = await admin.get(`/api/admin/users/${firstUserId}`);
+  assert.equal(userDetail.status, 200);
+  assert.equal(objectContainsKey(userDetail.body, "password_hash"), false);
+  assert.equal(objectContainsKey(userDetail.body, "passwordHash"), false);
 });
 
 test("admin products API returns full dataset with accurate pagination and counts", async () => {
