@@ -442,10 +442,23 @@ function getSiteState() {
     return fallback;
   }
 
-  return normalizeSiteState({
+  const normalized = normalizeSiteState({
     sections: safeJsonParseText(row.sections_json, deepCloneJson(DEFAULT_SITE_STATE.sections)),
     products: safeJsonParseText(row.products_json, deepCloneJson(DEFAULT_SITE_STATE.products)),
   });
+
+  if (!Array.isArray(normalized.products) || normalized.products.length === 0) {
+    normalized.products = deepCloneJson(DEFAULT_SITE_STATE.products).map((product, index) =>
+      normalizeProduct(product, index)
+    );
+    db.prepare(
+      `update site_state
+       set sections_json = ?, products_json = ?, updated_at = datetime('now'), updated_by = null
+       where id = 1`
+    ).run(JSON.stringify(normalized.sections), JSON.stringify(normalized.products));
+  }
+
+  return normalized;
 }
 
 function saveSiteState(state, updatedBy) {

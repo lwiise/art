@@ -49,6 +49,10 @@ a:hover {
   margin: 26px auto 42px;
 }
 
+.workspace-container {
+  width: min(95vw, 1800px);
+}
+
 .auth-shell {
   width: min(580px, 92vw);
   margin-top: 34px;
@@ -693,6 +697,10 @@ th {
 @media (max-width: 900px) {
   .container {
     width: min(96vw, 1140px);
+  }
+
+  .workspace-container {
+    width: 95vw;
   }
 
   .card {

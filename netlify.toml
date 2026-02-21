@@ -32,6 +32,18 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/products"
+to = "https://art-production-6dda.up.railway.app/products"
+status = 200
+force = true
+
+[[redirects]]
+from = "/products/*"
+to = "https://art-production-6dda.up.railway.app/products/:splat"
+status = 200
+force = true
+
+[[redirects]]
 from = "/user/*"
 to = "https://art-production-6dda.up.railway.app/user/:splat"
 status = 200
