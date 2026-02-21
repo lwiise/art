@@ -119,6 +119,17 @@ db.exec(`
     primary key (user_id, product_id)
   );
 
+  create table if not exists activity_log (
+    id integer primary key autoincrement,
+    actor_user_id integer references users(id) on delete set null,
+    actor_role text not null check (actor_role in ('admin', 'vendor', 'user')),
+    action_type text not null,
+    target_type text,
+    target_id text,
+    details_json text not null default '{}',
+    created_at text not null default (datetime('now'))
+  );
+
   create index if not exists idx_users_slug on users(slug);
   create index if not exists idx_edits_user_id on edits(user_id);
   create index if not exists idx_edits_status on edits(status);
@@ -126,6 +137,8 @@ db.exec(`
   create index if not exists idx_comments_product_id on comments(product_id);
   create index if not exists idx_comments_user_created on comments(user_id, created_at desc);
   create index if not exists idx_cart_items_user_id on cart_items(user_id);
+  create index if not exists idx_activity_log_actor_role_created on activity_log(actor_role, created_at desc);
+  create index if not exists idx_activity_log_actor_user_created on activity_log(actor_user_id, created_at desc);
 
   insert or ignore into site_state (id, sections_json, products_json)
   values (1, '{}', '[]');

@@ -997,6 +997,259 @@ function serializeCart(userId) {
   };
 }
 
+function logActivity({ actor, actionType, targetType = null, targetId = null, details = {} }) {
+  if (!actor || !actionType) return;
+  const actorRole = String(actor.role || "").trim().toLowerCase();
+  if (!["admin", "vendor", "user"].includes(actorRole)) return;
+  const safeDetails = details && typeof details === "object" ? details : {};
+  try {
+    db.prepare(
+      `insert into activity_log (
+        actor_user_id,
+        actor_role,
+        action_type,
+        target_type,
+        target_id,
+        details_json,
+        created_at
+      )
+      values (?, ?, ?, ?, ?, ?, datetime('now'))`
+    ).run(
+      Number(actor.id) || null,
+      actorRole,
+      String(actionType),
+      targetType ? String(targetType) : null,
+      targetId != null ? String(targetId) : null,
+      JSON.stringify(safeDetails)
+    );
+  } catch (error) {
+    console.warn("Activity log write failed:", error.message);
+  }
+}
+
+function listRecentRoleActivities(roles = ["vendor", "user"], limit = 50) {
+  const cleanRoles = Array.isArray(roles)
+    ? roles
+        .map((role) => String(role || "").trim().toLowerCase())
+        .filter((role) => role === "vendor" || role === "user" || role === "admin")
+    : [];
+  if (!cleanRoles.length) return [];
+
+  const placeholders = cleanRoles.map(() => "?").join(",");
+  const safeLimit = Math.min(200, Math.max(1, Number(limit) || 50));
+
+  const rows = db.prepare(
+    `select
+      al.id,
+      al.actor_user_id as actorUserId,
+      al.actor_role as actorRole,
+      al.action_type as actionType,
+      al.target_type as targetType,
+      al.target_id as targetId,
+      al.details_json as detailsJson,
+      al.created_at as createdAt,
+      u.name as userName,
+      u.email as userEmail
+    from activity_log al
+    left join users u on u.id = al.actor_user_id
+    where al.actor_role in (${placeholders})
+    order by al.created_at desc, al.id desc
+    limit ?`
+  ).all(...cleanRoles, safeLimit);
+
+  let mergedRows = rows;
+  if (!mergedRows.length) {
+    mergedRows = db.prepare(
+      `select
+        x.id,
+        x.actorUserId,
+        x.actorRole,
+        x.actionType,
+        x.targetType,
+        x.targetId,
+        x.detailsJson,
+        x.createdAt,
+        x.userName,
+        x.userEmail
+       from (
+         select
+           e.id as id,
+           u.id as actorUserId,
+           u.role as actorRole,
+           'submit_edit' as actionType,
+           'edit' as targetType,
+           cast(e.id as text) as targetId,
+           '{}' as detailsJson,
+           e.created_at as createdAt,
+           u.name as userName,
+           u.email as userEmail
+         from edits e
+         join users u on u.id = e.user_id
+         where u.role = 'vendor'
+         union all
+         select
+           c.id as id,
+           u.id as actorUserId,
+           u.role as actorRole,
+           'comment_product' as actionType,
+           'product' as targetType,
+           c.product_id as targetId,
+           '{}' as detailsJson,
+           c.created_at as createdAt,
+           u.name as userName,
+           u.email as userEmail
+         from comments c
+         join users u on u.id = c.user_id
+         where u.role = 'user'
+         union all
+         select
+           l.rowid as id,
+           u.id as actorUserId,
+           u.role as actorRole,
+           'like_product' as actionType,
+           'product' as targetType,
+           l.product_id as targetId,
+           '{}' as detailsJson,
+           l.created_at as createdAt,
+           u.name as userName,
+           u.email as userEmail
+         from likes l
+         join users u on u.id = l.user_id
+         where u.role = 'user'
+       ) x
+       where x.actorRole in (${placeholders})
+       order by x.createdAt desc, x.id desc
+       limit ?`
+    ).all(...cleanRoles, safeLimit);
+  }
+
+  return mergedRows.map((row) => ({
+    id: Number(row.id),
+    actorUserId: row.actorUserId == null ? null : Number(row.actorUserId),
+    actorRole: String(row.actorRole || ""),
+    userName: row.userName || "",
+    userEmail: row.userEmail || "",
+    actionType: String(row.actionType || ""),
+    targetType: row.targetType ? String(row.targetType) : "",
+    targetId: row.targetId ? String(row.targetId) : "",
+    details: safeJsonParseText(row.detailsJson, {}),
+    createdAt: row.createdAt || "",
+  }));
+}
+
+function getAdminPeopleAndActionSummary() {
+  const counts = db.prepare(
+    `select
+      sum(case when role = 'vendor' then 1 else 0 end) as totalVendors,
+      sum(case when role = 'user' then 1 else 0 end) as totalUsers
+     from users`
+  ).get() || {};
+
+  const actionsByRoleRows = db.prepare(
+    `select
+      actor_role as role,
+      count(*) as total
+     from activity_log
+     where actor_role in ('vendor', 'user')
+     group by actor_role`
+  ).all();
+
+  const actionBreakdownRows = db.prepare(
+    `select
+      actor_role as role,
+      action_type as actionType,
+      count(*) as total
+     from activity_log
+     where actor_role in ('vendor', 'user')
+     group by actor_role, action_type
+     order by actor_role asc, total desc, action_type asc`
+  ).all();
+
+  const vendorEditRows = db.prepare(
+    `select
+      e.status as status,
+      count(*) as total
+     from edits e
+     join users u on u.id = e.user_id
+     where u.role = 'vendor'
+     group by e.status`
+  ).all();
+
+  const vendorEditTotalRow = db.prepare(
+    `select count(*) as total
+     from edits e
+     join users u on u.id = e.user_id
+     where u.role = 'vendor'`
+  ).get() || {};
+
+  const userActionSnapshot = db.prepare(
+    `select
+      (select count(*)
+       from likes l
+       join users u on u.id = l.user_id
+       where u.role = 'user') as likesTotal,
+      (select count(*)
+       from comments c
+       join users u on u.id = c.user_id
+       where u.role = 'user') as commentsTotal,
+      (select count(*)
+       from cart_items ci
+       join users u on u.id = ci.user_id
+       where u.role = 'user') as cartItemsTotal`
+  ).get() || {};
+
+  const loggedVendorActions = Number(actionsByRoleRows.find((row) => String(row.role) === "vendor")?.total || 0);
+  const loggedUserActions = Number(actionsByRoleRows.find((row) => String(row.role) === "user")?.total || 0);
+  const fallbackVendorActions = Number(vendorEditTotalRow.total || 0);
+  const fallbackUserActions = Number(userActionSnapshot.likesTotal || 0)
+    + Number(userActionSnapshot.commentsTotal || 0)
+    + Number(userActionSnapshot.cartItemsTotal || 0);
+
+  const mergedBreakdown = actionBreakdownRows.map((row) => ({
+    role: String(row.role || ""),
+    actionType: String(row.actionType || ""),
+    total: Number(row.total || 0),
+  }));
+  if (!loggedVendorActions && fallbackVendorActions > 0) {
+    mergedBreakdown.push({
+      role: "vendor",
+      actionType: "submit_edit",
+      total: fallbackVendorActions,
+    });
+  }
+  if (!loggedUserActions) {
+    const likesTotal = Number(userActionSnapshot.likesTotal || 0);
+    const commentsTotal = Number(userActionSnapshot.commentsTotal || 0);
+    const cartItemsTotal = Number(userActionSnapshot.cartItemsTotal || 0);
+    if (likesTotal > 0) {
+      mergedBreakdown.push({ role: "user", actionType: "like_product", total: likesTotal });
+    }
+    if (commentsTotal > 0) {
+      mergedBreakdown.push({ role: "user", actionType: "comment_product", total: commentsTotal });
+    }
+    if (cartItemsTotal > 0) {
+      mergedBreakdown.push({ role: "user", actionType: "cart_items_active", total: cartItemsTotal });
+    }
+  }
+
+  return {
+    totals: {
+      vendors: Number(counts.totalVendors || 0),
+      users: Number(counts.totalUsers || 0),
+    },
+    actionsByRole: {
+      vendor: loggedVendorActions || fallbackVendorActions,
+      user: loggedUserActions || fallbackUserActions,
+    },
+    actionBreakdown: mergedBreakdown,
+    vendorEditSummary: {
+      pending: Number(vendorEditRows.find((row) => String(row.status) === "pending")?.total || 0),
+      approved: Number(vendorEditRows.find((row) => String(row.status) === "approved")?.total || 0),
+      rejected: Number(vendorEditRows.find((row) => String(row.status) === "rejected")?.total || 0),
+    },
+  };
+}
+
 function mergeProductChanges(currentProducts, productChanges) {
   const baseProducts = Array.isArray(currentProducts)
     ? currentProducts.map((product, index) => normalizeProduct(product, index))
@@ -1530,6 +1783,13 @@ app.post("/api/auth/signup", (req, res) => {
 
   const token = signSessionToken(user);
   setSessionCookie(res, token);
+  logActivity({
+    actor: user,
+    actionType: "vendor_signup",
+    targetType: "account",
+    targetId: user.id,
+    details: { email: user.email },
+  });
 
   return res.status(201).json({
     message: "Vendor account created successfully.",
@@ -1593,6 +1853,13 @@ app.post("/api/auth/user/signup", (req, res) => {
 
   const token = signSessionToken(user);
   setSessionCookie(res, token);
+  logActivity({
+    actor: user,
+    actionType: "user_signup",
+    targetType: "account",
+    targetId: user.id,
+    details: { email: user.email },
+  });
 
   return res.status(201).json({
     message: "User account created successfully.",
@@ -1842,6 +2109,17 @@ app.post("/api/edits", requireVendor, (req, res) => {
     .run(req.user.id, title, description, JSON.stringify(payloadToSave));
 
   const created = getEditById(Number(info.lastInsertRowid));
+  logActivity({
+    actor: req.user,
+    actionType: "submit_edit",
+    targetType: "edit",
+    targetId: created?.id || Number(info.lastInsertRowid),
+    details: {
+      title,
+      status: "pending",
+      productChanges: Array.isArray(payloadToSave?.product_changes) ? payloadToSave.product_changes.length : 0,
+    },
+  });
   return res.status(201).json({
     message: "Edit submitted. Status is now Pending.",
     edit: created,
@@ -1896,6 +2174,15 @@ function setEditDecision(decision) {
 app.patch("/api/edits/:id/approve", requireAdmin, setEditDecision("approved"));
 app.patch("/api/edits/:id/reject", requireAdmin, setEditDecision("rejected"));
 
+app.get("/api/admin/activity", requireAdmin, (req, res) => {
+  const summary = getAdminPeopleAndActionSummary();
+  const recent = listRecentRoleActivities(["vendor", "user"], req.query.limit || 50);
+  return res.json({
+    summary,
+    recent,
+  });
+});
+
 app.post("/api/products/:id/like", requireUser, (req, res) => {
   const productId = String(req.params.id || "").trim();
   const product = findProductById(productId);
@@ -1916,6 +2203,13 @@ app.post("/api/products/:id/like", requireUser, (req, res) => {
     liked = true;
   }
   const likesCount = getProductLikeCounts([productId])[productId] || 0;
+  logActivity({
+    actor: req.user,
+    actionType: liked ? "like_product" : "unlike_product",
+    targetType: "product",
+    targetId: productId,
+    details: { likesCount },
+  });
   return res.json({ liked, likesCount });
 });
 
@@ -1964,6 +2258,14 @@ app.post("/api/products/:id/comments", requireUser, (req, res) => {
     where c.id = ?`
   ).get(Number(info.lastInsertRowid));
 
+  logActivity({
+    actor: req.user,
+    actionType: "comment_product",
+    targetType: "product",
+    targetId: productId,
+    details: { commentId: Number(info.lastInsertRowid) },
+  });
+
   return res.status(201).json({
     message: "Comment posted.",
     comment,
@@ -1995,6 +2297,14 @@ app.post("/api/cart/items", requireUser, (req, res) => {
        updated_at = datetime('now')`
   ).run(req.user.id, productId, nextQuantity);
 
+  logActivity({
+    actor: req.user,
+    actionType: existing ? "cart_update" : "cart_add",
+    targetType: "product",
+    targetId: productId,
+    details: { quantity: nextQuantity },
+  });
+
   return res.status(201).json({
     message: "Cart updated.",
     cart: serializeCart(req.user.id),
@@ -2010,6 +2320,13 @@ app.patch("/api/cart/items/:productId", requireUser, (req, res) => {
   if (quantity <= 0) {
     db.prepare("delete from cart_items where user_id = ? and product_id = ?")
       .run(req.user.id, productId);
+    logActivity({
+      actor: req.user,
+      actionType: "cart_remove",
+      targetType: "product",
+      targetId: productId,
+      details: {},
+    });
     return res.json({
       message: "Item removed from cart.",
       cart: serializeCart(req.user.id),
@@ -2029,6 +2346,14 @@ app.patch("/api/cart/items/:productId", requireUser, (req, res) => {
        updated_at = datetime('now')`
   ).run(req.user.id, productId, Math.floor(quantity));
 
+  logActivity({
+    actor: req.user,
+    actionType: "cart_update",
+    targetType: "product",
+    targetId: productId,
+    details: { quantity: Math.floor(quantity) },
+  });
+
   return res.json({
     message: "Cart updated.",
     cart: serializeCart(req.user.id),
@@ -2039,6 +2364,13 @@ app.delete("/api/cart/items/:productId", requireUser, (req, res) => {
   const productId = String(req.params.productId || "").trim();
   db.prepare("delete from cart_items where user_id = ? and product_id = ?")
     .run(req.user.id, productId);
+  logActivity({
+    actor: req.user,
+    actionType: "cart_remove",
+    targetType: "product",
+    targetId: productId,
+    details: {},
+  });
   return res.json({
     message: "Item removed.",
     cart: serializeCart(req.user.id),
@@ -2047,6 +2379,13 @@ app.delete("/api/cart/items/:productId", requireUser, (req, res) => {
 
 app.delete("/api/cart", requireUser, (req, res) => {
   db.prepare("delete from cart_items where user_id = ?").run(req.user.id);
+  logActivity({
+    actor: req.user,
+    actionType: "cart_clear",
+    targetType: "cart",
+    targetId: String(req.user.id),
+    details: {},
+  });
   return res.json({
     message: "Cart cleared.",
     cart: serializeCart(req.user.id),

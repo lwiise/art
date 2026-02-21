@@ -41,6 +41,22 @@
           : "Use this page to add new products and edit only your own products." %>
       </p>
 
+      <% if (isAdmin) { %>
+        <section class="workspace-insights" id="adminInsights">
+          <div class="workspace-metrics" id="adminMetrics"></div>
+          <div class="workspace-insights-grid">
+            <article class="workspace-insight-card">
+              <h4>Vendor/User Action Breakdown</h4>
+              <div class="workspace-insight-list" id="adminActionBreakdown"></div>
+            </article>
+            <article class="workspace-insight-card">
+              <h4>Recent Vendor/User Actions</h4>
+              <div class="workspace-insight-list" id="adminRecentActions"></div>
+            </article>
+          </div>
+        </section>
+      <% } %>
+
       <div class="workspace-grid">
         <aside class="workspace-nav" id="workspaceNav"></aside>
 
@@ -211,6 +227,9 @@
     const productNextPage = document.getElementById("productNextPage");
     const productFilterRow = document.getElementById("productFilterRow");
     const refreshEditsBtn = document.getElementById("refreshEditsBtn");
+    const adminMetricsEl = document.getElementById("adminMetrics");
+    const adminActionBreakdownEl = document.getElementById("adminActionBreakdown");
+    const adminRecentActionsEl = document.getElementById("adminRecentActions");
 
     let currentState = { sections: {}, products: [] };
     let activeTab = "products";
@@ -228,6 +247,84 @@
     function setStatus(text, type = "muted") {
       statusEl.textContent = text;
       statusEl.className = `workspace-status ${type}`;
+    }
+
+    function formatActionLabel(actionType) {
+      return String(actionType || "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function renderAdminInsights(result) {
+      if (!isAdmin || !adminMetricsEl || !adminActionBreakdownEl || !adminRecentActionsEl) return;
+      const summary = (result && result.summary) || {};
+      const totals = summary.totals || {};
+      const actionsByRole = summary.actionsByRole || {};
+      const vendorEditSummary = summary.vendorEditSummary || {};
+      const actionBreakdown = Array.isArray(summary.actionBreakdown) ? summary.actionBreakdown : [];
+      const recent = Array.isArray(result && result.recent) ? result.recent : [];
+
+      adminMetricsEl.innerHTML = `
+        <article class="workspace-metric-card">
+          <div class="workspace-metric-label">Vendors</div>
+          <div class="workspace-metric-value">${Number(totals.vendors || 0)}</div>
+        </article>
+        <article class="workspace-metric-card">
+          <div class="workspace-metric-label">Users</div>
+          <div class="workspace-metric-value">${Number(totals.users || 0)}</div>
+        </article>
+        <article class="workspace-metric-card">
+          <div class="workspace-metric-label">Vendor Actions</div>
+          <div class="workspace-metric-value">${Number(actionsByRole.vendor || 0)}</div>
+        </article>
+        <article class="workspace-metric-card">
+          <div class="workspace-metric-label">User Actions</div>
+          <div class="workspace-metric-value">${Number(actionsByRole.user || 0)}</div>
+        </article>
+        <article class="workspace-metric-card">
+          <div class="workspace-metric-label">Vendor Edits</div>
+          <div class="workspace-metric-value">${Number(vendorEditSummary.pending || 0)} Pending</div>
+          <div class="workspace-metric-sub">${Number(vendorEditSummary.approved || 0)} Approved · ${Number(vendorEditSummary.rejected || 0)} Rejected</div>
+        </article>
+      `;
+
+      if (!actionBreakdown.length) {
+        adminActionBreakdownEl.innerHTML = `<div class="workspace-empty">No recorded actions yet.</div>`;
+      } else {
+        adminActionBreakdownEl.innerHTML = actionBreakdown.map((row) => `
+          <div class="workspace-insight-row">
+            <span>${escapeHtml(String(row.role || "").toUpperCase())} · ${escapeHtml(formatActionLabel(row.actionType))}</span>
+            <strong>${Number(row.total || 0)}</strong>
+          </div>
+        `).join("");
+      }
+
+      if (!recent.length) {
+        adminRecentActionsEl.innerHTML = `<div class="workspace-empty">No recent actions yet.</div>`;
+      } else {
+        adminRecentActionsEl.innerHTML = recent.slice(0, 20).map((entry) => `
+          <div class="workspace-insight-row">
+            <span>
+              ${escapeHtml(String(entry.actorRole || "").toUpperCase())}
+              · ${escapeHtml(entry.userEmail || entry.userName || "Unknown")}
+              · ${escapeHtml(formatActionLabel(entry.actionType))}
+            </span>
+            <small>${escapeHtml(entry.createdAt || "")}</small>
+          </div>
+        `).join("");
+      }
+    }
+
+    async function loadAdminInsights() {
+      if (!isAdmin || !adminMetricsEl || !adminActionBreakdownEl || !adminRecentActionsEl) return;
+      try {
+        const result = await sendApiRequest("/api/admin/activity?limit=60");
+        renderAdminInsights(result);
+      } catch (error) {
+        adminMetricsEl.innerHTML = "";
+        adminActionBreakdownEl.innerHTML = `<div class="workspace-empty">${escapeHtml(error.message || "Could not load insights.")}</div>`;
+        adminRecentActionsEl.innerHTML = `<div class="workspace-empty">-</div>`;
+      }
     }
 
     function toNumberOrNull(value) {
@@ -1134,6 +1231,7 @@
         renderWorkspace();
         setStatus(statusText, "success");
         await loadEdits();
+        await loadAdminInsights();
         return;
       }
 
@@ -1151,6 +1249,7 @@
         renderWorkspace();
         setStatus(statusText, "success");
         await loadEdits();
+        await loadAdminInsights();
         return;
       }
 
@@ -1170,6 +1269,7 @@
       renderWorkspace();
       setStatus(statusText, "success");
       await loadEdits();
+      await loadAdminInsights();
     }
 
     async function submitForApproval(customTitle, customDescription, customPayload) {
@@ -1403,6 +1503,7 @@
       refreshContentBtn.disabled = true;
       try {
         await loadContentState();
+        await loadAdminInsights();
       } catch (error) {
         setStatus(error.message || "Could not refresh content.", "error");
       } finally {
@@ -1447,6 +1548,7 @@
       refreshEditsBtn.disabled = true;
       try {
         await loadEdits();
+        await loadAdminInsights();
       } catch (error) {
         editsStatusEl.textContent = error.message || "Could not load edits.";
       } finally {
@@ -1468,6 +1570,7 @@
         });
         await loadContentState();
         await loadEdits();
+        await loadAdminInsights();
         setStatus(action === "approve" ? "Edit approved and applied." : "Edit rejected.", "success");
       } catch (error) {
         setStatus(error.message || "Could not update edit status.", "error");
@@ -1480,6 +1583,7 @@
       try {
         await loadContentState();
         await loadEdits();
+        await loadAdminInsights();
       } catch (error) {
         setStatus(error.message || "Failed to initialize workspace.", "error");
         editsStatusEl.textContent = "Could not load edits.";
