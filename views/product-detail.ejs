@@ -8,7 +8,24 @@
 </head>
 <body>
   <main class="container">
-    <a class="auth-back" href="/products">&larr; Back to Products</a>
+    <div class="topbar">
+      <a class="auth-back" href="/products">&larr; Back to Products</a>
+      <div class="actions">
+        <% if (!currentUser) { %>
+          <a class="btn-link" href="/signin">Sign in</a>
+          <a class="btn-link" href="/signup">Sign up</a>
+        <% } else if (currentUser.role === "user") { %>
+          <a class="btn-link" href="/dashboard">Dashboard</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else if (currentUser.role === "admin") { %>
+          <a class="btn-link" href="/admin">Admin</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else { %>
+          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } %>
+      </div>
+    </div>
     <section class="card" style="margin-bottom:14px;">
       <div class="topbar">
         <div>
@@ -16,13 +33,11 @@
           <div class="muted small"><%= (product.gallery_type || '').toUpperCase() %> - <%= product.category || "Uncategorized" %></div>
         </div>
         <div class="actions">
-          <% if (currentUser && currentUser.role === "user") { %>
-            <button type="button" id="likeBtn"><%= likedByMe ? "Unlike" : "Like" %> (<span id="likeCount"><%= likesCount || 0 %></span>)</button>
-            <button type="button" id="addCartBtn">Add to Cart</button>
-            <a class="btn-link" href="/user/panel">User Panel</a>
-          <% } else { %>
-            <a class="btn-link" href="/user/log">User Login</a>
-          <% } %>
+          <button type="button" id="favoriteBtn" class="favoriteBtn <%= likedByMe ? 'active' : '' %>" data-favorited="<%= likedByMe ? 'true' : 'false' %>">
+            <span class="heart" aria-hidden="true"><%= likedByMe ? "♥" : "♡" %></span>
+            <span id="favoriteCount"><%= likesCount || 0 %></span>
+          </button>
+          <button type="button" id="addCartBtn">Add to Cart</button>
         </div>
       </div>
       <% if (product.image_url) { %>
@@ -50,20 +65,16 @@
 
     <section class="card">
       <h2 style="margin:0 0 8px;">Comments</h2>
-      <% if (currentUser && currentUser.role === "user") { %>
-        <form id="commentForm">
-          <div class="field-row">
-            <textarea id="commentInput" rows="4" maxlength="1200" placeholder="Share your thoughts..."></textarea>
-          </div>
-          <div class="actions">
-            <button class="primary" id="commentSubmitBtn" type="submit">Post Comment</button>
-          </div>
-          <div id="commentMsg" class="error"></div>
-        </form>
-        <hr class="auth-divider">
-      <% } else { %>
-        <p class="small muted">Login as a user to post comments.</p>
-      <% } %>
+      <form id="commentForm">
+        <div class="field-row">
+          <textarea id="commentInput" rows="4" maxlength="1200" placeholder="Share your thoughts..."></textarea>
+        </div>
+        <div class="actions">
+          <button class="primary" id="commentSubmitBtn" type="submit">Post Comment</button>
+        </div>
+        <div id="commentMsg" class="error"></div>
+      </form>
+      <hr class="auth-divider">
       <div id="commentsWrap" class="grid">
         <% if (!comments.length) { %>
           <div class="muted small">No comments yet.</div>
@@ -82,7 +93,14 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     const productId = "<%= product.id %>";
-    const isUser = <%= currentUser && currentUser.role === "user" ? "true" : "false" %>;
+    const currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const isUser = currentUserRole === "user";
+    const isLoggedIn = Boolean(currentUserRole);
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    const signInUrl = `/signin?returnTo=${encodeURIComponent(returnTo)}`;
+    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
+      APP.attachSignOutHandler("signoutBtn", "/signin");
+    }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load."); };
@@ -115,65 +133,90 @@
       renderComments(result.comments || []);
     }
 
-    if (isUser) {
-      const likeBtn = document.getElementById("likeBtn");
-      const addCartBtn = document.getElementById("addCartBtn");
-      const commentForm = document.getElementById("commentForm");
-      const commentInput = document.getElementById("commentInput");
-      const commentSubmitBtn = document.getElementById("commentSubmitBtn");
-      const commentMsg = document.getElementById("commentMsg");
-
-      likeBtn?.addEventListener("click", async () => {
-        likeBtn.disabled = true;
-        try {
-          const result = await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/like`, { method: "POST" });
-          likeBtn.innerHTML = `${result.liked ? "Unlike" : "Like"} (<span id="likeCount">${Number(result.likesCount || 0)}</span>)`;
-        } catch (error) {
-          alert(error.message || "Could not update like.");
-        } finally {
-          likeBtn.disabled = false;
-        }
-      });
-
-      addCartBtn?.addEventListener("click", async () => {
-        addCartBtn.disabled = true;
-        try {
-          await sendApiRequest("/api/cart/items", {
-            method: "POST",
-            body: JSON.stringify({ productId, quantity: 1 }),
-          });
-          addCartBtn.textContent = "Added";
-        } catch (error) {
-          alert(error.message || "Could not add to cart.");
-        } finally {
-          setTimeout(() => {
-            addCartBtn.textContent = "Add to Cart";
-            addCartBtn.disabled = false;
-          }, 700);
-        }
-      });
-
-      commentForm?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        commentMsg.textContent = "";
-        commentSubmitBtn.disabled = true;
-        try {
-          await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/comments`, {
-            method: "POST",
-            body: JSON.stringify({ content: commentInput.value }),
-          });
-          commentInput.value = "";
-          commentMsg.className = "success";
-          commentMsg.textContent = "Comment posted.";
-          await refreshComments();
-        } catch (error) {
-          commentMsg.className = "error";
-          commentMsg.textContent = error.message || "Could not post comment.";
-        } finally {
-          commentSubmitBtn.disabled = false;
-        }
-      });
+    function requireUserForAction() {
+      if (!isLoggedIn) {
+        window.location.href = signInUrl;
+        return false;
+      }
+      if (!isUser) {
+        alert("This action is available only for user accounts.");
+        return false;
+      }
+      return true;
     }
+
+    const favoriteBtn = document.getElementById("favoriteBtn");
+    const addCartBtn = document.getElementById("addCartBtn");
+    const commentForm = document.getElementById("commentForm");
+    const commentInput = document.getElementById("commentInput");
+    const commentSubmitBtn = document.getElementById("commentSubmitBtn");
+    const commentMsg = document.getElementById("commentMsg");
+
+    function renderFavorite(favorited, count) {
+      favoriteBtn.dataset.favorited = favorited ? "true" : "false";
+      favoriteBtn.classList.toggle("active", !!favorited);
+      const heart = favoriteBtn.querySelector(".heart");
+      const countEl = document.getElementById("favoriteCount");
+      if (heart) heart.textContent = favorited ? "♥" : "♡";
+      if (countEl) countEl.textContent = String(Number(count || 0));
+    }
+
+    favoriteBtn?.addEventListener("click", async () => {
+      if (!requireUserForAction()) return;
+      favoriteBtn.disabled = true;
+      try {
+        const result = await sendApiRequest("/api/user/favorites/toggle", {
+          method: "POST",
+          body: JSON.stringify({ productId }),
+        });
+        renderFavorite(!!result.favorited, Number(result.likesCount || 0));
+      } catch (error) {
+        alert(error.message || "Could not update favorite.");
+      } finally {
+        favoriteBtn.disabled = false;
+      }
+    });
+
+    addCartBtn?.addEventListener("click", async () => {
+      if (!requireUserForAction()) return;
+      addCartBtn.disabled = true;
+      try {
+        await sendApiRequest("/api/user/cart/add", {
+          method: "POST",
+          body: JSON.stringify({ productId, qty: 1 }),
+        });
+        addCartBtn.textContent = "Added";
+      } catch (error) {
+        alert(error.message || "Could not add to cart.");
+      } finally {
+        setTimeout(() => {
+          addCartBtn.textContent = "Add to Cart";
+          addCartBtn.disabled = false;
+        }, 700);
+      }
+    });
+
+    commentForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!requireUserForAction()) return;
+      commentMsg.textContent = "";
+      commentSubmitBtn.disabled = true;
+      try {
+        await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/comments`, {
+          method: "POST",
+          body: JSON.stringify({ content: commentInput.value }),
+        });
+        commentInput.value = "";
+        commentMsg.className = "success";
+        commentMsg.textContent = "Comment posted.";
+        await refreshComments();
+      } catch (error) {
+        commentMsg.className = "error";
+        commentMsg.textContent = error.message || "Could not post comment.";
+      } finally {
+        commentSubmitBtn.disabled = false;
+      }
+    });
   </script>
 </body>
 </html>

@@ -241,6 +241,30 @@ button:disabled {
   box-shadow: none;
 }
 
+.favoriteBtn {
+  min-width: 78px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.favoriteBtn .heart {
+  font-size: 15px;
+  line-height: 1;
+  color: #444;
+}
+
+.favoriteBtn.active {
+  border-color: #b80c2b;
+  background: #fff0f3;
+  color: #8e0f2d;
+}
+
+.favoriteBtn.active .heart {
+  color: #b80c2b;
+}
+
 .btn-link {
   display: inline-flex;
   align-items: center;

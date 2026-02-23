@@ -20,12 +20,12 @@ async function apiRequest(url, options = {}) {
   return body;
 }
 
-async function signOutCurrentUser(redirectTo = "/log") {
+async function signOutCurrentUser(redirectTo = "/signin") {
   await apiRequest("/api/auth/signout", { method: "POST" });
   window.location.href = redirectTo;
 }
 
-function attachSignOutHandler(buttonId, redirectTo = "/log") {
+function attachSignOutHandler(buttonId, redirectTo = "/signin") {
   const button = document.getElementById(buttonId);
   if (!button) return;
   button.addEventListener("click", async () => {

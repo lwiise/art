@@ -29,14 +29,14 @@
         </div>
         <div class="actions">
           <button class="primary" type="submit" id="createBtn">Create account</button>
-          <a href="/log" class="btn-link">Back to login</a>
+          <a href="/signin" class="btn-link">Back to login</a>
         </div>
         <div id="createMsg" class="error" role="alert"></div>
       </form>
 
       <hr class="auth-divider">
       <p class="small auth-line">
-        Need a standard user account? <a href="/user/create">Create user account</a>
+        Need a standard user account? <a href="/signup/user">Create user account</a>
       </p>
     </div>
   </main>
@@ -64,13 +64,13 @@
       };
 
       try {
-        const result = await sendApiRequest("/api/auth/signup", {
+        const result = await sendApiRequest("/api/auth/signup-vendor", {
           method: "POST",
           body: JSON.stringify(payload),
         });
         msg.className = "success";
         msg.textContent = result.message || "Account created.";
-        window.location.href = result.redirect || "/log";
+        window.location.href = result.redirect || "/vendor";
       } catch (error) {
         msg.className = "error";
         msg.textContent = error.message || "Could not create account.";

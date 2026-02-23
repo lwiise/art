@@ -6,7 +6,7 @@ const passwordUtils = require("./password");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
-const { createUser, db } = require("./db");
+const { createUser, db, ensureVendorProfile } = require("./db");
 const {
   attachCurrentUser,
   buildSessionUser,
@@ -2426,6 +2426,126 @@ function validateEditInput(body) {
   return { title, description, payload, errors };
 }
 
+function getRoleHomePath(user) {
+  if (!user || !user.role) return "/";
+  if (user.role === "admin") return "/admin";
+  if (user.role === "vendor") return "/vendor";
+  return "/";
+}
+
+function sanitizeReturnTo(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (!raw.startsWith("/")) return "";
+  if (raw.startsWith("//")) return "";
+  if (raw.includes("://")) return "";
+  return raw;
+}
+
+function resolveAuthRedirect(user, returnToRaw) {
+  const roleHome = getRoleHomePath(user);
+  const returnTo = sanitizeReturnTo(returnToRaw);
+  if (!returnTo) return roleHome;
+  if (user.role === "admin" && returnTo.startsWith("/admin")) return returnTo;
+  if (user.role === "vendor" && (returnTo.startsWith("/vendor") || returnTo.startsWith("/panel/"))) return returnTo;
+  if (user.role === "user") {
+    if (returnTo.startsWith("/admin") || returnTo.startsWith("/vendor") || returnTo.startsWith("/panel/")) {
+      return roleHome;
+    }
+    return returnTo;
+  }
+  return roleHome;
+}
+
+function createAccountAndSession({ req, res, role, actionType }) {
+  const { name, email, password, errors } = validateCreateUserInput(req.body);
+  if (errors.length) {
+    return { statusCode: 400, payload: { error: errors.join(" ") } };
+  }
+
+  let createdId;
+  try {
+    createdId = Number(
+      createUser({
+        name,
+        email,
+        password,
+        role,
+      })
+    );
+  } catch (error) {
+    if (error && error.code === "EMAIL_EXISTS") {
+      return { statusCode: 409, payload: { error: "An account with this email already exists." } };
+    }
+    throw error;
+  }
+
+  if (role === "vendor") {
+    ensureVendorProfile(createdId, { name });
+  }
+
+  const user = db
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
+    .get(createdId);
+
+  const token = signSessionToken(user);
+  setSessionCookie(res, token);
+  logActivity({
+    actor: user,
+    actionType,
+    targetType: "account",
+    targetId: user.id,
+    details: { email: user.email },
+  });
+
+  const returnTo = req.body?.returnTo || req.query?.returnTo || "";
+  return {
+    statusCode: 201,
+    payload: {
+      message: role === "vendor" ? "Vendor account created successfully." : "User account created successfully.",
+      user: buildSessionUser(user),
+      redirect: resolveAuthRedirect(user, returnTo),
+    },
+  };
+}
+
+function signInAndCreateSession({ req, res, roleFilter }) {
+  const { email, password: plainPassword, errors } = validateSignInInput(req.body);
+  if (errors.length) {
+    return { statusCode: 400, payload: { error: errors.join(" ") } };
+  }
+
+  const user = db
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version, password_hash from users where email = ?")
+    .get(email);
+  if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
+    return { statusCode: 401, payload: { error: "Invalid email or password." } };
+  }
+  if (normalizeAccountStatus(user.status) !== "active") {
+    return { statusCode: 403, payload: { error: "This account is disabled." } };
+  }
+  if (roleFilter && user.role !== roleFilter) {
+    return { statusCode: 403, payload: { error: `This account is not a ${roleFilter} account.` } };
+  }
+
+  db.prepare("update users set last_login_at = datetime('now') where id = ?").run(Number(user.id));
+  const refreshedUser = db
+    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
+    .get(Number(user.id));
+
+  const token = signSessionToken(refreshedUser);
+  setSessionCookie(res, token);
+
+  return {
+    statusCode: 200,
+    payload: {
+      message: "Signed in successfully.",
+      user: buildSessionUser(refreshedUser),
+      redirect: resolveAuthRedirect(refreshedUser, req.body?.returnTo || req.query?.returnTo || ""),
+    },
+  };
+}
+
 app.get("/", (req, res) => {
   if (!req.user) {
     return res.redirect("/products");
@@ -2434,49 +2554,57 @@ app.get("/", (req, res) => {
     return res.redirect("/admin");
   }
   if (req.user.role === "vendor") {
-    return res.redirect(`/panel/${req.user.slug}`);
+    return res.redirect("/vendor");
   }
-  return res.redirect("/user/panel");
+  return res.redirect("/products");
 });
 
 app.get("/signin", (req, res) => {
-  return res.redirect("/log");
+  if (req.user) {
+    return res.redirect(getRoleHomePath(req.user));
+  }
+  return res.render("signin", {
+    returnTo: sanitizeReturnTo(req.query?.returnTo),
+  });
 });
 
 app.get("/log", (req, res) => {
-  if (req.user) {
-    if (req.user.role === "admin") return res.redirect("/admin");
-    if (req.user.role === "vendor") return res.redirect(`/panel/${req.user.slug}`);
-    return res.redirect("/user/panel");
-  }
-  return res.render("signin", { mode: "vendor" });
+  const returnTo = sanitizeReturnTo(req.query?.returnTo);
+  return res.redirect(returnTo ? `/signin?returnTo=${encodeURIComponent(returnTo)}` : "/signin");
 });
 
 app.get("/create", (req, res) => {
+  return res.redirect("/signup/vendor");
+});
+
+app.get("/signup", (req, res) => {
   if (req.user) {
-    if (req.user.role === "admin") return res.redirect("/admin");
-    if (req.user.role === "vendor") return res.redirect(`/panel/${req.user.slug}`);
-    return res.redirect("/user/panel");
+    return res.redirect(getRoleHomePath(req.user));
+  }
+  return res.render("signup-choice");
+});
+
+app.get("/signup/vendor", (req, res) => {
+  if (req.user) {
+    return res.redirect(getRoleHomePath(req.user));
   }
   return res.render("create", { mode: "vendor" });
 });
 
-app.get("/user/log", (req, res) => {
+app.get("/signup/user", (req, res) => {
   if (req.user) {
-    if (req.user.role === "user") return res.redirect("/user/panel");
-    if (req.user.role === "admin") return res.redirect("/admin");
-    return res.redirect(`/panel/${req.user.slug}`);
+    return res.redirect(getRoleHomePath(req.user));
   }
-  return res.render("user-signin");
+  return res.render("user-create");
+});
+
+app.get("/user/log", (req, res) => {
+  const returnTo = sanitizeReturnTo(req.query?.returnTo);
+  return res.redirect(returnTo ? `/signin?returnTo=${encodeURIComponent(returnTo)}` : "/signin");
 });
 
 app.get("/user/create", (req, res) => {
-  if (req.user) {
-    if (req.user.role === "user") return res.redirect("/user/panel");
-    if (req.user.role === "admin") return res.redirect("/admin");
-    return res.redirect(`/panel/${req.user.slug}`);
-  }
-  return res.render("user-create");
+  return res.redirect("/signup/user");
 });
 
 app.get("/reset-password", (req, res) => {
@@ -2527,6 +2655,10 @@ app.get("/admin", requireAdmin, (req, res) => {
   });
 });
 
+app.get("/vendor", requireVendor, (req, res) => {
+  return res.redirect(`/panel/${req.user.slug}`);
+});
+
 app.get("/admin/content", requireAdmin, (req, res) => {
   return res.redirect("/admin");
 });
@@ -2539,6 +2671,10 @@ app.get("/admin/dashboard", requireAdmin, (req, res) => {
 });
 
 app.get("/user/panel", requireUser, (req, res) => {
+  return res.redirect("/dashboard");
+});
+
+app.get("/dashboard", requireUser, (req, res) => {
   return res.render("user-panel", { panelUser: req.user });
 });
 
@@ -2713,159 +2849,53 @@ app.get("/admin/edits", requireAdmin, (req, res) => {
 });
 
 app.post("/api/auth/signup", (req, res) => {
-  const { name, email, password, errors } = validateCreateUserInput(req.body);
-  if (errors.length) {
-    return res.status(400).json({ error: errors.join(" ") });
-  }
-
-  let createdId;
-  try {
-    createdId = Number(
-      createUser({
-        name,
-        email,
-        password,
-        role: "vendor",
-      })
-    );
-  } catch (error) {
-    if (error && error.code === "EMAIL_EXISTS") {
-      return res.status(409).json({ error: "An account with this email already exists." });
-    }
-    throw error;
-  }
-
-  const user = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
-    .get(createdId);
-
-  const token = signSessionToken(user);
-  setSessionCookie(res, token);
-  logActivity({
-    actor: user,
+  const result = createAccountAndSession({
+    req,
+    res,
+    role: "vendor",
     actionType: "vendor_signup",
-    targetType: "account",
-    targetId: user.id,
-    details: { email: user.email },
   });
+  return res.status(result.statusCode).json(result.payload);
+});
 
-  return res.status(201).json({
-    message: "Vendor account created successfully.",
-    user: buildSessionUser(user),
-    redirect: `/panel/${user.slug}`,
+app.post("/api/auth/signup-vendor", (req, res) => {
+  const result = createAccountAndSession({
+    req,
+    res,
+    role: "vendor",
+    actionType: "vendor_signup",
   });
+  return res.status(result.statusCode).json(result.payload);
 });
 
 app.post("/api/auth/signin", (req, res) => {
-  const { email, password: plainPassword, errors } = validateSignInInput(req.body);
-  if (errors.length) {
-    return res.status(400).json({ error: errors.join(" ") });
-  }
-
-  const user = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version, password_hash from users where email = ?")
-    .get(email);
-  if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
-    return res.status(401).json({ error: "Invalid email or password." });
-  }
-  if (normalizeAccountStatus(user.status) !== "active") {
-    return res.status(403).json({ error: "This account is disabled." });
-  }
-  if (user.role === "user") {
-    return res.status(403).json({ error: "Use the User login page for this account." });
-  }
-
-  db.prepare("update users set last_login_at = datetime('now') where id = ?").run(Number(user.id));
-  const refreshedUser = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
-    .get(Number(user.id));
-
-  const token = signSessionToken(refreshedUser);
-  setSessionCookie(res, token);
-
-  return res.json({
-    message: "Signed in successfully.",
-    user: buildSessionUser(refreshedUser),
-    redirect: refreshedUser.role === "admin" ? "/admin" : `/panel/${refreshedUser.slug}`,
-  });
+  const result = signInAndCreateSession({ req, res });
+  return res.status(result.statusCode).json(result.payload);
 });
 
 app.post("/api/auth/user/signup", (req, res) => {
-  const { name, email, password, errors } = validateCreateUserInput(req.body);
-  if (errors.length) {
-    return res.status(400).json({ error: errors.join(" ") });
-  }
-
-  let createdId;
-  try {
-    createdId = Number(
-      createUser({
-        name,
-        email,
-        password,
-        role: "user",
-      })
-    );
-  } catch (error) {
-    if (error && error.code === "EMAIL_EXISTS") {
-      return res.status(409).json({ error: "An account with this email already exists." });
-    }
-    throw error;
-  }
-
-  const user = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
-    .get(createdId);
-
-  const token = signSessionToken(user);
-  setSessionCookie(res, token);
-  logActivity({
-    actor: user,
+  const result = createAccountAndSession({
+    req,
+    res,
+    role: "user",
     actionType: "user_signup",
-    targetType: "account",
-    targetId: user.id,
-    details: { email: user.email },
   });
+  return res.status(result.statusCode).json(result.payload);
+});
 
-  return res.status(201).json({
-    message: "User account created successfully.",
-    user: buildSessionUser(user),
-    redirect: "/user/panel",
+app.post("/api/auth/signup-user", (req, res) => {
+  const result = createAccountAndSession({
+    req,
+    res,
+    role: "user",
+    actionType: "user_signup",
   });
+  return res.status(result.statusCode).json(result.payload);
 });
 
 app.post("/api/auth/user/signin", (req, res) => {
-  const { email, password: plainPassword, errors } = validateSignInInput(req.body);
-  if (errors.length) {
-    return res.status(400).json({ error: errors.join(" ") });
-  }
-
-  const user = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version, password_hash from users where email = ?")
-    .get(email);
-  if (!user || !passwordUtils.compareSync(plainPassword, user.password_hash)) {
-    return res.status(401).json({ error: "Invalid email or password." });
-  }
-  if (normalizeAccountStatus(user.status) !== "active") {
-    return res.status(403).json({ error: "This account is disabled." });
-  }
-  if (user.role !== "user") {
-    return res.status(403).json({ error: "This account is not a standard user account." });
-  }
-
-  db.prepare("update users set last_login_at = datetime('now') where id = ?").run(Number(user.id));
-  const refreshedUser = db
-    .prepare("select id, name, email, role, slug, status, coalesce(session_version, 0) as session_version from users where id = ?")
-    .get(Number(user.id));
-
-  const token = signSessionToken(refreshedUser);
-  setSessionCookie(res, token);
-
-  return res.json({
-    message: "Signed in successfully.",
-    user: buildSessionUser(refreshedUser),
-    redirect: "/user/panel",
-  });
+  const result = signInAndCreateSession({ req, res, roleFilter: "user" });
+  return res.status(result.statusCode).json(result.payload);
 });
 
 app.post("/api/auth/reset-password", (req, res) => {
@@ -3473,6 +3503,174 @@ app.get("/api/admin/activity", requireAdmin, (req, res) => {
   });
 });
 
+app.get("/api/user/favorites", requireUser, (req, res) => {
+  const rows = db.prepare(
+    `select product_id as productId, created_at as createdAt
+     from likes
+     where user_id = ?
+     order by created_at desc`
+  ).all(req.user.id);
+  const productMap = new Map(getProductsArray().map((product) => [String(product.id), product]));
+  const favorites = rows.map((row) => ({
+    productId: String(row.productId || ""),
+    createdAt: row.createdAt || "",
+    product: productMap.get(String(row.productId || "")) || null,
+  }));
+  return res.json({ favorites });
+});
+
+app.post("/api/user/favorites/toggle", requireUser, (req, res) => {
+  const productId = String(req.body?.productId || "").trim();
+  if (!productId) {
+    return res.status(400).json({ error: "Product id is required." });
+  }
+  const product = findProductById(productId);
+  if (!product || !isPublicProduct(product)) {
+    return res.status(404).json({ error: "Product not found." });
+  }
+
+  const existing = db
+    .prepare("select 1 from likes where user_id = ? and product_id = ?")
+    .get(req.user.id, productId);
+  let favorited = false;
+  if (existing) {
+    db.prepare("delete from likes where user_id = ? and product_id = ?")
+      .run(req.user.id, productId);
+  } else {
+    db.prepare("insert into likes (user_id, product_id) values (?, ?)")
+      .run(req.user.id, productId);
+    favorited = true;
+  }
+  const likesCount = getProductLikeCounts([productId])[productId] || 0;
+  logActivity({
+    actor: req.user,
+    actionType: favorited ? "favorite_product" : "unfavorite_product",
+    targetType: "product",
+    targetId: productId,
+    details: { likesCount },
+  });
+  return res.json({ favorited, likesCount });
+});
+
+app.get("/api/user/cart", requireUser, (req, res) => {
+  return res.json({ cart: serializeCart(req.user.id) });
+});
+
+app.post("/api/user/cart/add", requireUser, (req, res) => {
+  const productId = String(req.body?.productId || "").trim();
+  const quantityRaw = Number(req.body?.qty ?? req.body?.quantity ?? 1);
+  const quantity = Number.isFinite(quantityRaw) && quantityRaw > 0 ? Math.floor(quantityRaw) : 1;
+  const product = findProductById(productId);
+  if (!product || !isPublicProduct(product)) {
+    return res.status(404).json({ error: "Product not found." });
+  }
+  const existing = db
+    .prepare("select quantity from cart_items where user_id = ? and product_id = ?")
+    .get(req.user.id, productId);
+  const nextQuantity = Number(existing?.quantity || 0) + quantity;
+  db.prepare(
+    `insert into cart_items (user_id, product_id, quantity, created_at, updated_at)
+     values (?, ?, ?, datetime('now'), datetime('now'))
+     on conflict(user_id, product_id) do update set
+       quantity = excluded.quantity,
+       updated_at = datetime('now')`
+  ).run(req.user.id, productId, nextQuantity);
+
+  logActivity({
+    actor: req.user,
+    actionType: existing ? "cart_update" : "cart_add",
+    targetType: "product",
+    targetId: productId,
+    details: { quantity: nextQuantity },
+  });
+
+  return res.status(201).json({
+    message: "Cart updated.",
+    cart: serializeCart(req.user.id),
+  });
+});
+
+app.patch("/api/user/cart/items/:productId", requireUser, (req, res) => {
+  const productId = String(req.params.productId || "").trim();
+  const quantity = Number(req.body?.quantity);
+  if (!Number.isFinite(quantity)) {
+    return res.status(400).json({ error: "Quantity must be a number." });
+  }
+  if (quantity <= 0) {
+    db.prepare("delete from cart_items where user_id = ? and product_id = ?")
+      .run(req.user.id, productId);
+    logActivity({
+      actor: req.user,
+      actionType: "cart_remove",
+      targetType: "product",
+      targetId: productId,
+      details: {},
+    });
+    return res.json({
+      message: "Item removed from cart.",
+      cart: serializeCart(req.user.id),
+    });
+  }
+
+  const product = findProductById(productId);
+  if (!product || !isPublicProduct(product)) {
+    return res.status(404).json({ error: "Product not found." });
+  }
+  const nextQty = Math.floor(quantity);
+  db.prepare(
+    `insert into cart_items (user_id, product_id, quantity, created_at, updated_at)
+     values (?, ?, ?, datetime('now'), datetime('now'))
+     on conflict(user_id, product_id) do update set
+       quantity = excluded.quantity,
+       updated_at = datetime('now')`
+  ).run(req.user.id, productId, nextQty);
+
+  logActivity({
+    actor: req.user,
+    actionType: "cart_update",
+    targetType: "product",
+    targetId: productId,
+    details: { quantity: nextQty },
+  });
+
+  return res.json({
+    message: "Cart updated.",
+    cart: serializeCart(req.user.id),
+  });
+});
+
+app.delete("/api/user/cart/items/:productId", requireUser, (req, res) => {
+  const productId = String(req.params.productId || "").trim();
+  db.prepare("delete from cart_items where user_id = ? and product_id = ?")
+    .run(req.user.id, productId);
+  logActivity({
+    actor: req.user,
+    actionType: "cart_remove",
+    targetType: "product",
+    targetId: productId,
+    details: {},
+  });
+  return res.json({
+    message: "Item removed.",
+    cart: serializeCart(req.user.id),
+  });
+});
+
+app.delete("/api/user/cart", requireUser, (req, res) => {
+  db.prepare("delete from cart_items where user_id = ?").run(req.user.id);
+  logActivity({
+    actor: req.user,
+    actionType: "cart_clear",
+    targetType: "cart",
+    targetId: String(req.user.id),
+    details: {},
+  });
+  return res.json({
+    message: "Cart cleared.",
+    cart: serializeCart(req.user.id),
+  });
+});
+
 app.post("/api/products/:id/like", requireUser, (req, res) => {
   const productId = String(req.params.id || "").trim();
   const product = findProductById(productId);
@@ -3714,6 +3912,7 @@ app.get("/api/user/dashboard", requireUser, (req, res) => {
   }));
 
   return res.json({
+    favorites: likedProducts,
     likedProducts,
     comments,
     cart: serializeCart(req.user.id),

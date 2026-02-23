@@ -20,6 +20,18 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/signup"
+to = "https://art-production-6dda.up.railway.app/signup"
+status = 200
+force = true
+
+[[redirects]]
+from = "/signup/*"
+to = "https://art-production-6dda.up.railway.app/signup/:splat"
+status = 200
+force = true
+
+[[redirects]]
 from = "/auth-assets/*"
 to = "https://art-production-6dda.up.railway.app/auth-assets/:splat"
 status = 200
@@ -46,6 +58,18 @@ force = true
 [[redirects]]
 from = "/user/*"
 to = "https://art-production-6dda.up.railway.app/user/:splat"
+status = 200
+force = true
+
+[[redirects]]
+from = "/vendor"
+to = "https://art-production-6dda.up.railway.app/vendor"
+status = 200
+force = true
+
+[[redirects]]
+from = "/dashboard"
+to = "https://art-production-6dda.up.railway.app/dashboard"
 status = 200
 force = true
 

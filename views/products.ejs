@@ -15,16 +15,16 @@
       </div>
       <div class="actions">
         <% if (!currentUser) { %>
-          <a class="btn-link" href="/user/log">User Login</a>
-          <a class="btn-link" href="/log">Vendor/Admin</a>
+          <a class="btn-link" href="/signin">Sign in</a>
+          <a class="btn-link" href="/signup">Sign up</a>
         <% } else if (currentUser.role === "user") { %>
-          <a class="btn-link" href="/user/panel">User Panel</a>
+          <a class="btn-link" href="/dashboard">Dashboard</a>
           <button type="button" id="signoutBtn">Sign out</button>
         <% } else if (currentUser.role === "admin") { %>
-          <a class="btn-link" href="/admin">Admin Panel</a>
+          <a class="btn-link" href="/admin">Admin</a>
           <button type="button" id="signoutBtn">Sign out</button>
         <% } else { %>
-          <a class="btn-link" href="/panel/<%= currentUser.slug %>">Vendors Panel</a>
+          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
           <button type="button" id="signoutBtn">Sign out</button>
         <% } %>
       </div>
@@ -75,10 +75,11 @@
           <% } %>
           <div class="actions" style="margin-top:10px;">
             <a class="btn-link" href="/products/<%= encodeURIComponent(product.id) %>">Open</a>
-            <button type="button" class="likeBtn" data-product-id="<%= product.id %>" <%= !(currentUser && currentUser.role === 'user') ? 'disabled' : '' %>>
-              <%= product.likedByMe ? "Unlike" : "Like" %> (<span><%= product.likesCount || 0 %></span>)
+            <button type="button" class="favoriteBtn <%= product.likedByMe ? 'active' : '' %>" data-product-id="<%= product.id %>" data-favorited="<%= product.likedByMe ? 'true' : 'false' %>">
+              <span class="heart" aria-hidden="true"><%= product.likedByMe ? "♥" : "♡" %></span>
+              <span class="favoriteCount"><%= product.likesCount || 0 %></span>
             </button>
-            <button type="button" class="cartBtn" data-product-id="<%= product.id %>" <%= !(currentUser && currentUser.role === 'user') ? 'disabled' : '' %>>Add to Cart</button>
+            <button type="button" class="cartBtn" data-product-id="<%= product.id %>">Add to Cart</button>
           </div>
         </article>
       <% }); %>
@@ -105,26 +106,53 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    const isUser = <%= currentUser && currentUser.role === "user" ? "true" : "false" %>;
+    const currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const isUser = currentUserRole === "user";
+    const isLoggedIn = Boolean(currentUserRole);
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    const signInUrl = `/signin?returnTo=${encodeURIComponent(returnTo)}`;
     if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
-      APP.attachSignOutHandler("signoutBtn", isUser ? "/user/log" : "/log");
+      APP.attachSignOutHandler("signoutBtn", "/signin");
     }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load."); };
 
-    document.querySelectorAll(".likeBtn").forEach((button) => {
+    function requireUserForAction() {
+      if (!isLoggedIn) {
+        window.location.href = signInUrl;
+        return false;
+      }
+      if (!isUser) {
+        alert("This action is available only for user accounts.");
+        return false;
+      }
+      return true;
+    }
+
+    function renderFavoriteButton(button, favorited, count) {
+      button.dataset.favorited = favorited ? "true" : "false";
+      button.classList.toggle("active", !!favorited);
+      const heart = button.querySelector(".heart");
+      const favoriteCount = button.querySelector(".favoriteCount");
+      if (heart) heart.textContent = favorited ? "♥" : "♡";
+      if (favoriteCount) favoriteCount.textContent = String(Number(count || 0));
+    }
+
+    document.querySelectorAll(".favoriteBtn").forEach((button) => {
       button.addEventListener("click", async () => {
+        if (!requireUserForAction()) return;
         const productId = button.getAttribute("data-product-id");
         if (!productId) return;
         button.disabled = true;
         try {
-          const result = await sendApiRequest(`/api/products/${encodeURIComponent(productId)}/like`, { method: "POST" });
-          const label = result.liked ? "Unlike" : "Like";
-          const count = Number(result.likesCount || 0);
-          button.innerHTML = `${label} (<span>${count}</span>)`;
+          const result = await sendApiRequest("/api/user/favorites/toggle", {
+            method: "POST",
+            body: JSON.stringify({ productId }),
+          });
+          renderFavoriteButton(button, !!result.favorited, Number(result.likesCount || 0));
         } catch (error) {
-          alert(error.message || "Could not update like.");
+          alert(error.message || "Could not update favorite.");
         } finally {
           button.disabled = false;
         }
@@ -133,13 +161,14 @@
 
     document.querySelectorAll(".cartBtn").forEach((button) => {
       button.addEventListener("click", async () => {
+        if (!requireUserForAction()) return;
         const productId = button.getAttribute("data-product-id");
         if (!productId) return;
         button.disabled = true;
         try {
-          await sendApiRequest("/api/cart/items", {
+          await sendApiRequest("/api/user/cart/add", {
             method: "POST",
-            body: JSON.stringify({ productId, quantity: 1 }),
+            body: JSON.stringify({ productId, qty: 1 }),
           });
           button.textContent = "Added";
         } catch (error) {

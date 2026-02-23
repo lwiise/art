@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vendor Login</title>
+  <title>Sign In</title>
   <link rel="stylesheet" href="/auth-assets/styles.css" />
 </head>
 <body>
@@ -12,9 +12,10 @@
     <div class="card auth-card">
       <div class="auth-mark">FNN ART</div>
       <h1>Sign In</h1>
-      <p class="muted">Login to access your vendor/admin panel.</p>
+      <p class="muted">Sign in with your account to continue.</p>
 
       <form id="signinForm">
+        <input type="hidden" id="returnTo" name="returnTo" value="<%= returnTo || '' %>" />
         <div class="field-row">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" autocomplete="email" required />
@@ -31,10 +32,10 @@
 
       <hr class="auth-divider">
       <p class="small auth-line">
-        New vendor? <a href="/create">Create a vendor account</a>
+        <a href="/signup/vendor">Create a vendor account</a>
       </p>
       <p class="small auth-line">
-        Standard user? <a href="/user/log">User login</a>
+        <a href="/signup/user">Create a user account</a>
       </p>
     </div>
   </main>
@@ -57,6 +58,7 @@
       const payload = {
         email: formData.get("email"),
         password: formData.get("password"),
+        returnTo: formData.get("returnTo"),
       };
 
       try {

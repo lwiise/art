@@ -155,6 +155,15 @@ db.exec(`
     reviewed_by integer references users(id) on delete set null
   );
 
+  create table if not exists vendor_profiles (
+    id integer primary key autoincrement,
+    user_id integer not null unique references users(id) on delete cascade,
+    display_name text,
+    shop_name text,
+    created_at text not null default (datetime('now')),
+    updated_at text not null default (datetime('now'))
+  );
+
   create index if not exists idx_users_slug on users(slug);
   create index if not exists idx_edits_user_id on edits(user_id);
   create index if not exists idx_edits_status on edits(status);
@@ -169,6 +178,7 @@ db.exec(`
   create index if not exists idx_product_submissions_vendor_created on product_submissions(vendor_id, created_at desc);
   create index if not exists idx_product_submissions_status_created on product_submissions(status, created_at desc);
   create index if not exists idx_product_submissions_product_created on product_submissions(product_id, created_at desc);
+  create index if not exists idx_vendor_profiles_user_id on vendor_profiles(user_id);
 
   insert or ignore into site_state (id, sections_json, products_json)
   values (1, '{}', '[]');
@@ -221,6 +231,22 @@ function uniqueSlug(baseSlug) {
   return slug;
 }
 
+function ensureVendorProfile(userId, options = {}) {
+  const numericUserId = Number(userId);
+  if (!Number.isInteger(numericUserId) || numericUserId <= 0) return;
+  const displayName = String(options.displayName || options.name || "").trim() || null;
+  const shopName = String(options.shopName || "").trim() || null;
+
+  db.prepare(
+    `insert into vendor_profiles (user_id, display_name, shop_name, created_at, updated_at)
+     values (?, ?, ?, datetime('now'), datetime('now'))
+     on conflict(user_id) do update set
+       display_name = coalesce(excluded.display_name, vendor_profiles.display_name),
+       shop_name = coalesce(excluded.shop_name, vendor_profiles.shop_name),
+       updated_at = datetime('now')`
+  ).run(numericUserId, displayName, shopName);
+}
+
 function upsertUser({ name, email, password, role }) {
   const normalizedEmail = String(email || "").trim().toLowerCase();
   const existing = db
@@ -232,6 +258,9 @@ function upsertUser({ name, email, password, role }) {
     db.prepare(
       "update users set name = ?, password_hash = ?, role = ?, status = coalesce(status, 'active'), password_changed_at = datetime('now') where id = ?"
     ).run(name, passwordHash, role, existing.id);
+    if (role === "vendor") {
+      ensureVendorProfile(existing.id, { name });
+    }
     return existing.id;
   }
 
@@ -242,6 +271,9 @@ function upsertUser({ name, email, password, role }) {
       "insert into users (name, email, password_hash, role, slug, status, password_changed_at, session_version) values (?, ?, ?, ?, ?, 'active', datetime('now'), 0)"
     )
     .run(name, normalizedEmail, passwordHash, role, slug);
+  if (role === "vendor") {
+    ensureVendorProfile(info.lastInsertRowid, { name });
+  }
   return info.lastInsertRowid;
 }
 
@@ -264,6 +296,9 @@ function createUser({ name, email, password, role, allowExisting = false }) {
       "insert into users (name, email, password_hash, role, slug, status, password_changed_at, session_version) values (?, ?, ?, ?, ?, 'active', datetime('now'), 0)"
     )
     .run(name, normalizedEmail, passwordHash, role, slug);
+  if (role === "vendor") {
+    ensureVendorProfile(info.lastInsertRowid, { name });
+  }
   return info.lastInsertRowid;
 }
 
@@ -308,9 +343,20 @@ function seedDefaultUsers() {
 
 seedDefaultUsers();
 
+db.prepare(
+  `insert into vendor_profiles (user_id, display_name, created_at, updated_at)
+   select u.id, u.name, datetime('now'), datetime('now')
+   from users u
+   where u.role = 'vendor'
+     and not exists (
+       select 1 from vendor_profiles vp where vp.user_id = u.id
+     )`
+).run();
+
 module.exports = {
   createUser,
   db,
+  ensureVendorProfile,
   slugifyName,
   upsertUser,
 };

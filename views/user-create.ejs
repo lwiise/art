@@ -29,7 +29,7 @@
         </div>
         <div class="actions">
           <button class="primary" type="submit" id="userCreateBtn">Create Account</button>
-          <a class="btn-link" href="/user/log">Back to login</a>
+          <a class="btn-link" href="/signin">Back to login</a>
         </div>
         <div id="userCreateMsg" class="error" role="alert"></div>
       </form>
@@ -56,11 +56,11 @@
         password: data.get("password"),
       };
       try {
-        const result = await sendApiRequest("/api/auth/user/signup", {
+        const result = await sendApiRequest("/api/auth/signup-user", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        window.location.href = result.redirect || "/user/panel";
+        window.location.href = result.redirect || "/";
       } catch (error) {
         msg.textContent = error.message || "Could not create account.";
       } finally {

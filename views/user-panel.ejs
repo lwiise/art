@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>User Panel - <%= panelUser.name %></title>
+  <title>Dashboard - <%= panelUser.name %></title>
   <link rel="stylesheet" href="/auth-assets/styles.css" />
 </head>
 <body>
@@ -54,7 +54,7 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     if (window.APP && typeof APP.attachSignOutHandler === "function") {
-      APP.attachSignOutHandler("signoutBtn", "/user/log");
+      APP.attachSignOutHandler("signoutBtn", "/signin");
     }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
@@ -83,7 +83,12 @@
       cartMsg.textContent = `Total items: ${cart.totalItems} (${cart.uniqueItems} products)`;
       cartTableBody.innerHTML = items.map((item) => `
         <tr data-product-id="${escapeHtml(item.productId)}">
-          <td>${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5;" />` : ""}
+              <span>${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}</span>
+            </div>
+          </td>
           <td>${Number(item.quantity || 0)}</td>
           <td>${escapeHtml(item.updatedAt || "")}</td>
           <td><button type="button" data-action="remove-item">Remove</button></td>
@@ -98,6 +103,7 @@
       }
       likedGrid.innerHTML = items.map((item) => `
         <article class="workspace-item">
+          ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid #e6e6e6;margin-bottom:8px;" />` : ""}
           <div class="workspace-item-name">${escapeHtml(item.product?.name || item.productId)}</div>
           <div class="workspace-item-meta">${escapeHtml(item.product?.gallery_type || "")}</div>
           <div class="actions"><a class="btn-link" href="/products/${encodeURIComponent(item.productId)}">Open</a></div>
@@ -112,7 +118,12 @@
       }
       commentsList.innerHTML = items.map((item) => `
         <article class="workspace-field-row">
-          <div class="workspace-field-key">${escapeHtml(item.product?.name || item.productId)}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5;" />` : ""}
+            <div class="workspace-field-key" style="margin:0;">
+              ${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}
+            </div>
+          </div>
           <div>${escapeHtml(item.content)}</div>
           <div class="muted small">${escapeHtml(item.createdAt || "")}</div>
         </article>

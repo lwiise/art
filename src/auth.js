@@ -82,8 +82,10 @@ function wantsHtml(req) {
 
 function loginPathForRequest(req) {
   const originalUrl = String(req.originalUrl || "");
-  if (originalUrl.startsWith("/user")) return "/user/log";
-  return "/log";
+  const safeReturnTo = originalUrl.startsWith("/") && !originalUrl.startsWith("//")
+    ? encodeURIComponent(originalUrl)
+    : "";
+  return safeReturnTo ? `/signin?returnTo=${safeReturnTo}` : "/signin";
 }
 
 function requireAuth(req, res, next) {
