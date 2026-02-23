@@ -14,7 +14,7 @@
         <p class="muted small" style="margin:6px 0 0;">Like products, comment, and manage your cart.</p>
       </div>
       <div class="actions">
-        <a class="btn-link" href="/products">Browse Products</a>
+        <a class="btn-link" href="/">Browse Products</a>
         <button type="button" id="signoutBtn">Sign out</button>
       </div>
     </div>
@@ -54,7 +54,7 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     if (window.APP && typeof APP.attachSignOutHandler === "function") {
-      APP.attachSignOutHandler("signoutBtn", "/signin");
+      APP.attachSignOutHandler("signoutBtn", "/");
     }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest

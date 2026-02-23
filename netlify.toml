@@ -2,6 +2,12 @@
 publish = "."
 
 [[redirects]]
+from = "/"
+to = "https://art-production-6dda.up.railway.app/"
+status = 200
+force = true
+
+[[redirects]]
 from = "/log"
 to = "https://art-production-6dda.up.railway.app/log"
 status = 200

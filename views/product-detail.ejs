@@ -9,20 +9,20 @@
 <body>
   <main class="container">
     <div class="topbar">
-      <a class="auth-back" href="/products">&larr; Back to Products</a>
-      <div class="actions">
+      <a class="auth-back" href="/">&larr; Back to Products</a>
+      <div class="actions" id="authNav">
         <% if (!currentUser) { %>
-          <a class="btn-link" href="/signin">Sign in</a>
+          <a class="btn-link" href="/signin?returnTo=<%= encodeURIComponent('/products/' + product.id) %>">Sign in</a>
           <a class="btn-link" href="/signup">Sign up</a>
         <% } else if (currentUser.role === "user") { %>
           <a class="btn-link" href="/dashboard">Dashboard</a>
-          <button type="button" id="signoutBtn">Sign out</button>
-        <% } else if (currentUser.role === "admin") { %>
-          <a class="btn-link" href="/admin">Admin</a>
-          <button type="button" id="signoutBtn">Sign out</button>
-        <% } else { %>
+          <button type="button" id="signoutBtnFallback">Sign out</button>
+        <% } else if (currentUser.role === "vendor") { %>
           <a class="btn-link" href="/vendor">Vendor Dashboard</a>
-          <button type="button" id="signoutBtn">Sign out</button>
+          <button type="button" id="signoutBtnFallback">Sign out</button>
+        <% } else { %>
+          <a class="btn-link" href="/admin">Admin</a>
+          <button type="button" id="signoutBtnFallback">Sign out</button>
         <% } %>
       </div>
     </div>
@@ -93,17 +93,22 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     const productId = "<%= product.id %>";
-    const currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
-    const isUser = currentUserRole === "user";
-    const isLoggedIn = Boolean(currentUserRole);
+    let currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
     const returnTo = `${window.location.pathname}${window.location.search}`;
     const signInUrl = `/signin?returnTo=${encodeURIComponent(returnTo)}`;
-    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
-      APP.attachSignOutHandler("signoutBtn", "/signin");
+    if (window.APP && typeof APP.mountAuthNav === "function") {
+      APP.mountAuthNav("authNav", { returnTo, signoutRedirect: "/" })
+        .then((user) => {
+          currentUserRole = user && user.role ? user.role : currentUserRole;
+        })
+        .catch(() => {});
     }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load."); };
+    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtnFallback")) {
+      APP.attachSignOutHandler("signoutBtnFallback", "/");
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -134,11 +139,11 @@
     }
 
     function requireUserForAction() {
-      if (!isLoggedIn) {
+      if (!currentUserRole) {
         window.location.href = signInUrl;
         return false;
       }
-      if (!isUser) {
+      if (currentUserRole !== "user") {
         alert("This action is available only for user accounts.");
         return false;
       }

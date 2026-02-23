@@ -2547,21 +2547,12 @@ function signInAndCreateSession({ req, res, roleFilter }) {
 }
 
 app.get("/", (req, res) => {
-  if (!req.user) {
-    return res.redirect("/products");
-  }
-  if (req.user.role === "admin") {
-    return res.redirect("/admin");
-  }
-  if (req.user.role === "vendor") {
-    return res.redirect("/vendor");
-  }
-  return res.redirect("/products");
+  return renderPublicProductsPage(req, res);
 });
 
 app.get("/signin", (req, res) => {
   if (req.user) {
-    return res.redirect(getRoleHomePath(req.user));
+    return res.redirect(resolveAuthRedirect(req.user, req.query?.returnTo || ""));
   }
   return res.render("signin", {
     returnTo: sanitizeReturnTo(req.query?.returnTo),
@@ -2678,7 +2669,7 @@ app.get("/dashboard", requireUser, (req, res) => {
   return res.render("user-panel", { panelUser: req.user });
 });
 
-app.get("/products", (req, res) => {
+function renderPublicProductsPage(req, res) {
   const listing = listProductsWithQuery({
     actor: req.user,
     query: {
@@ -2709,6 +2700,10 @@ app.get("/products", (req, res) => {
     query: req.query || {},
     currentUser: req.user || null,
   });
+}
+
+app.get("/products", (req, res) => {
+  return renderPublicProductsPage(req, res);
 });
 
 app.get("/products/:id", (req, res) => {
