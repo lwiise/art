@@ -2547,7 +2547,7 @@ function signInAndCreateSession({ req, res, roleFilter }) {
 }
 
 app.get("/", (req, res) => {
-  return renderPublicProductsPage(req, res);
+  return res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 app.get("/signin", (req, res) => {
@@ -2703,32 +2703,19 @@ function renderPublicProductsPage(req, res) {
 }
 
 app.get("/products", (req, res) => {
-  return renderPublicProductsPage(req, res);
+  const productId = String(req.query?.product || "").trim();
+  if (!productId) {
+    return res.redirect("/");
+  }
+  return res.redirect(`/?product=${encodeURIComponent(productId)}`);
 });
 
 app.get("/products/:id", (req, res) => {
   const productId = String(req.params.id || "").trim();
-  const product = findProductById(productId);
-  if (!product || !canActorReadProduct(req.user || null, product)) {
-    return res.status(404).render("error", {
-      title: "Product not found",
-      message: "This product does not exist.",
-    });
+  if (!productId) {
+    return res.redirect("/");
   }
-
-  const likesCount = getProductLikeCounts([product.id])[String(product.id)] || 0;
-  const likedByMe = req.user && req.user.role === "user"
-    ? hasUserLikedProduct(req.user.id, product.id)
-    : false;
-  const comments = listProductComments(product.id, 100);
-
-  return res.render("product-detail", {
-    product,
-    comments,
-    likesCount,
-    likedByMe,
-    currentUser: req.user || null,
-  });
+  return res.redirect(`/?product=${encodeURIComponent(productId)}`);
 });
 
 app.get("/admin/users", requireAdmin, (req, res) => {
@@ -2922,8 +2909,14 @@ app.post("/api/auth/signout", (req, res) => {
   return res.json({ message: "Signed out." });
 });
 
-app.get("/api/me", requireAuth, (req, res) => {
-  return res.json({ user: buildSessionUser(req.user) });
+app.get("/api/me", (req, res) => {
+  if (!req.user) {
+    return res.json({ authenticated: false, user: null });
+  }
+  return res.json({
+    authenticated: true,
+    user: buildSessionUser(req.user),
+  });
 });
 
 app.get("/api/admin/dashboard-counts", requireAdmin, (req, res) => {

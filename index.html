@@ -654,6 +654,10 @@
     border:1px solid #e2e2e2;
     background:#fff;
     color:#111;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     padding:8px 14px;
     border-radius:999px;
     font-size:10px;
@@ -1498,6 +1502,46 @@
   .card-media img{ max-width:100%; max-height:100%; object-fit:contain; filter:none; }
   .card-name{ font-size:12px; font-weight:900; letter-spacing:0.10em; color:#b0b0b0; text-transform:uppercase; margin-bottom:6px; }
   .card-sub{ font-size:10px; color:#d0d0d0; text-transform:uppercase; letter-spacing:0.06em; }
+  .card-actions{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:12px;
+  }
+  .card-action-btn{
+    border:1px solid #e2e2e2;
+    background:#fff;
+    color:#111;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:7px 12px;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .card-action-btn:hover{
+    background:#111;
+    border-color:#111;
+    color:#fff;
+  }
+  .card-heart-btn{
+    min-width:44px;
+    padding:7px 10px;
+  }
+  .card-heart-btn.active{
+    color:#b31735;
+    border-color:#d79aa8;
+    background:#fff1f5;
+  }
+  .card-heart-btn.active:hover{
+    color:#fff;
+    border-color:#b31735;
+    background:#b31735;
+  }
 
   .card.book-card{
     padding:0;
@@ -2113,6 +2157,7 @@
     cursor:pointer;
     color:#111;
   }
+  .art-fav.active{ color:#b31735; }
   .art-rating{
     display:flex;
     align-items:center;
@@ -2574,6 +2619,18 @@
   .artist-cta{ font-size:11px; font-weight:900; color:#333; text-transform:uppercase; letter-spacing:0.06em; }
 
   .actions{ display:flex; gap:12px; margin-top:18px; }
+  .product-actions{
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .product-actions .btn-primary{
+    flex:0 0 auto;
+  }
+  #btnFavoriteToggle.active{
+    background:#ffeef2;
+    color:#a91433;
+    border:1px solid #f2c6d3;
+  }
   .btn{
     padding:14px 20px; border-radius:16px;
     border:none; font-size:13px; font-weight:800;
@@ -2581,6 +2638,81 @@
   }
   .btn-primary{ background:#111; color:#fff; flex:1; }
   .btn-ghost{ background:#f0f0f0; color:#666; }
+  .solo-comments{
+    margin-top:18px;
+    border-top:1px solid #ececec;
+    padding-top:14px;
+  }
+  .solo-comments-title{
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5b5b5b;
+    margin-bottom:10px;
+  }
+  .solo-comments-list{
+    display:grid;
+    gap:8px;
+    max-height:180px;
+    overflow:auto;
+    margin-bottom:10px;
+  }
+  .solo-comment-item{
+    border:1px solid #ececec;
+    border-radius:14px;
+    padding:10px 12px;
+    background:#fafafa;
+  }
+  .solo-comment-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:4px;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:#7a7a7a;
+  }
+  .solo-comment-body{
+    font-size:12px;
+    line-height:1.55;
+    color:#222;
+  }
+  .solo-comment-empty{
+    font-size:12px;
+    color:#777;
+    border:1px dashed #dddddd;
+    border-radius:12px;
+    padding:10px 12px;
+    background:#fbfbfb;
+  }
+  .solo-comment-input{
+    width:100%;
+    border:1px solid #e1e1e1;
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:12px;
+    font-family:inherit;
+    resize:vertical;
+    min-height:78px;
+    background:#fff;
+    color:#1f1f1f;
+  }
+  .solo-comment-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+  .solo-comment-msg{
+    font-size:12px;
+    color:#7a7a7a;
+  }
+  .solo-comment-msg.error{ color:#b31735; }
+  .solo-comment-msg.success{ color:#0f7a4a; }
 
   /* SERVICES (same as your file) */
   .services-wrap{ margin-top:10px; }
@@ -2911,6 +3043,11 @@
     .grid{ grid-template-columns:repeat(2, 1fr); gap:14px; }
     .card{ padding:16px 12px; border-radius:24px; }
     .card-media{ height:118px; }
+    .card-actions{ gap:6px; }
+    .card-action-btn{ font-size:9px; padding:6px 9px; }
+    .product-actions{ gap:8px; }
+    .product-actions .btn{ width:100%; }
+    .solo-comment-input{ min-height:68px; }
     .book-filter-bar{ flex-direction:column; align-items:flex-start; }
     .book-filter-btn{ width:100%; justify-content:center; }
     .book-filter-summary{ font-size:10px; }
@@ -3035,7 +3172,6 @@
   </div>
 
   <aside class="shop" id="shop">
-
     <!-- HOME -->
     <section id="sect-home" class="app-section active-section">
       <div class="section-scroll">
@@ -3215,7 +3351,7 @@
         <div class="gallery-head">
           <div class="gallery-top">
             <div class="gallery-title" id="gallerySectionTitleText">Gallery</div>
-            <button class="gallery-link" id="galleryArtistsLink" type="button">Artists</button>
+            <a class="gallery-link" id="galleryArtistsLink" href="/signin">Sign in</a>
           </div>
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
@@ -3318,7 +3454,7 @@
                         <span id="artRatingText">4.8 stars from 50+ ratings</span>
                       </div>
                   </div>
-                    <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
+                    <button class="art-fav" id="artFavBtn" type="button" aria-label="Save">&#9825;</button>
                   </div>
 
                   <div class="art-arrival" id="artArrival">Arrives by Mon, Feb 9 to 66952</div>
@@ -3388,7 +3524,7 @@
                       </div>
                       <div class="art-artist" id="sculptureMeta">Marble - Renaissance - 1504</div>
                   </div>
-                    <button class="art-fav" type="button" aria-label="Save">&#9825;</button>
+                    <button class="art-fav" id="sculptureFavBtn" type="button" aria-label="Save">&#9825;</button>
                   </div>
 
                   <div class="art-arrival" id="sculptureArrival">Arrives by Mon, Feb 9 to 66952</div>
@@ -3533,9 +3669,25 @@
               <div class="artist-cta">View Bio →</div>
             </div>
 
-            <div class="actions">
-              <button class="btn btn-primary" id="btnContactProduct">Contact Us</button>
+            <div class="actions product-actions">
+              <button class="btn btn-primary" id="btnAddToCart">Add to Cart</button>
+              <button class="btn btn-ghost" id="btnFavoriteToggle">&#9825; Favorite</button>
+              <button class="btn btn-ghost" id="btnContactProduct">Contact Us</button>
               <button class="btn btn-ghost" id="btnClose">Close</button>
+            </div>
+
+            <div class="solo-comments" id="soloComments">
+              <div class="solo-comments-title">Comments</div>
+              <div class="solo-comments-list" id="soloCommentsList">
+                <div class="solo-comment-empty">No comments yet.</div>
+              </div>
+              <div class="solo-comment-form" id="soloCommentForm">
+                <textarea class="solo-comment-input" id="soloCommentInput" maxlength="1200" placeholder="Write a comment..."></textarea>
+                <div class="solo-comment-actions">
+                  <button class="btn btn-primary" id="soloCommentSubmit" type="button">Post Comment</button>
+                  <div class="solo-comment-msg" id="soloCommentMsg"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3983,7 +4135,6 @@
     setTextById("processTitleText", merged.process_title);
     setTextById("processSubText", merged.process_sub);
     setTextById("gallerySectionTitleText", merged.gallery_title);
-    setTextById("galleryArtistsLink", merged.gallery_artists_button);
     setTextById("contactSectionTitleText", merged.contact_title);
     setTextById("contactSectionSubText", merged.contact_sub);
     const homeSlides = document.querySelectorAll(".home-illustration-track .home-illustration");
@@ -4207,10 +4358,6 @@
   safeAdd('mNavServices','click',() => switchSection('sect-services'));
   safeAdd('mNavGallery','click',() => switchSection('sect-gallery'));
   safeAdd('mNavContact','click',() => switchSection('sect-contact'));
-  safeAdd('galleryArtistsLink','click',() => {
-    renderArtists();
-    switchSection('sect-artists');
-  });
   safeAdd('artistsBackBtn','click',() => switchSection('sect-gallery'));
   safeAdd('artistDetailBack','click',() => switchSection('sect-artists'));
 
@@ -4843,8 +4990,18 @@
   const artistWorksGrid = document.getElementById("artistWorksGrid");
   const artistWorksCount = document.getElementById("artistWorksCount");
   const artistWorksCountLabel = document.getElementById("artistWorksCountLabel");
+  const authTopBtn = galleryArtistsLink;
+  const addToCartBtn = document.getElementById("btnAddToCart");
+  const favoriteToggleBtn = document.getElementById("btnFavoriteToggle");
+  const soloCommentsList = document.getElementById("soloCommentsList");
+  const soloCommentInput = document.getElementById("soloCommentInput");
+  const soloCommentSubmit = document.getElementById("soloCommentSubmit");
+  const soloCommentMsg = document.getElementById("soloCommentMsg");
   let currentFilter = "all";
   let currentGallery = "furniture";
+  const authState = { user:null, ready:false };
+  const userFavoriteIds = new Set();
+  let activeProductContext = null;
   const bookFilterState = {
     sort: "featured",
     themes: new Set(),
@@ -4899,6 +5056,286 @@
       out.push(value);
     });
     return out;
+  }
+
+  function currentReturnTo(){
+    const raw = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    return raw || "/";
+  }
+
+  async function apiRequest(url, options){
+    const config = options || {};
+    const headers = Object.assign({}, config.headers || {});
+    if(config.body !== undefined && !headers["Content-Type"]){
+      headers["Content-Type"] = "application/json";
+    }
+    const response = await fetch(url, Object.assign({}, config, {
+      headers,
+      credentials: "same-origin"
+    }));
+    const contentType = response.headers.get("content-type") || "";
+    let payload = null;
+    if(contentType.includes("application/json")){
+      payload = await response.json();
+    }else{
+      payload = await response.text();
+    }
+    if(!response.ok){
+      const message = payload && payload.error ? payload.error : `Request failed (${response.status})`;
+      const error = new Error(message);
+      error.status = response.status;
+      throw error;
+    }
+    return payload;
+  }
+
+  function isUserLoggedIn(){
+    return !!(authState.user && authState.user.role === "user");
+  }
+
+  function isAnyUserLoggedIn(){
+    return !!(authState.user && authState.user.id);
+  }
+
+  function updateAuthTopButton(){
+    if(!authTopBtn) return;
+    const user = authState.user;
+    if(!user){
+      authTopBtn.textContent = "Sign in";
+      authTopBtn.href = `/signin?returnTo=${encodeURIComponent(currentReturnTo())}`;
+      return;
+    }
+    if(user.role === "user"){
+      authTopBtn.textContent = "Dashboard";
+      authTopBtn.href = "/dashboard";
+      return;
+    }
+    if(user.role === "vendor"){
+      authTopBtn.textContent = "Vendor Dashboard";
+      authTopBtn.href = "/vendor";
+      return;
+    }
+    authTopBtn.textContent = "Admin";
+    authTopBtn.href = "/admin";
+  }
+
+  async function loadAuthState(){
+    try{
+      const payload = await apiRequest("/api/me");
+      authState.user = payload && payload.user ? payload.user : null;
+      authState.ready = true;
+    }catch(error){
+      authState.user = null;
+      authState.ready = true;
+    }
+    updateAuthTopButton();
+  }
+
+  async function loadFavoriteState(){
+    userFavoriteIds.clear();
+    if(!isUserLoggedIn()) return;
+    try{
+      const payload = await apiRequest("/api/user/favorites");
+      const favorites = Array.isArray(payload && payload.favorites) ? payload.favorites : [];
+      favorites.forEach(item => {
+        const productId = String(item && item.productId || "").trim();
+        if(productId) userFavoriteIds.add(productId);
+      });
+    }catch(error){
+      console.warn("Could not load favorites:", error.message || error);
+    }
+  }
+
+  function redirectToSignIn(){
+    window.location.href = `/signin?returnTo=${encodeURIComponent(currentReturnTo())}`;
+  }
+
+  function ensureUserActionAllowed(){
+    if(!isAnyUserLoggedIn()){
+      redirectToSignIn();
+      return false;
+    }
+    if(!isUserLoggedIn()){
+      alert("This action is available only for user accounts.");
+      return false;
+    }
+    return true;
+  }
+
+  function setProductUrlState(productId){
+    const url = new URL(window.location.href);
+    const value = String(productId || "").trim();
+    if(value){
+      url.searchParams.set("product", value);
+    }else{
+      url.searchParams.delete("product");
+    }
+    const next = `${url.pathname}${url.search ? `?${url.searchParams.toString()}` : ""}${url.hash}`;
+    window.history.replaceState({}, "", next);
+    updateAuthTopButton();
+  }
+
+  function setFavoriteVisual(button, active, withLabel){
+    if(!button) return;
+    button.classList.toggle("active", !!active);
+    if(button.classList.contains("art-fav")){
+      button.innerHTML = active ? "&#9829;" : "&#9825;";
+      return;
+    }
+    if(withLabel){
+      button.innerHTML = `${active ? "&#9829;" : "&#9825;"} Favorite`;
+      return;
+    }
+    button.innerHTML = active ? "&#9829;" : "&#9825;";
+  }
+
+  function syncFavoriteUi(){
+    document.querySelectorAll("[data-favorite-product]").forEach((btn) => {
+      const productId = String(btn.getAttribute("data-favorite-product") || "");
+      setFavoriteVisual(btn, userFavoriteIds.has(productId), false);
+    });
+    const activeId = activeProductContext && activeProductContext.id ? String(activeProductContext.id) : "";
+    const active = activeId ? userFavoriteIds.has(activeId) : false;
+    setFavoriteVisual(favoriteToggleBtn, active, true);
+    setFavoriteVisual(document.getElementById("artFavBtn"), active, false);
+    setFavoriteVisual(document.getElementById("sculptureFavBtn"), active, false);
+  }
+
+  async function toggleFavorite(productId, button){
+    const id = String(productId || "").trim();
+    if(!id) return;
+    if(!ensureUserActionAllowed()) return;
+    if(button) button.disabled = true;
+    try{
+      const payload = await apiRequest("/api/user/favorites/toggle", {
+        method: "POST",
+        body: JSON.stringify({ productId: id })
+      });
+      if(payload && payload.favorited){
+        userFavoriteIds.add(id);
+      }else{
+        userFavoriteIds.delete(id);
+      }
+      syncFavoriteUi();
+    }catch(error){
+      alert(error.message || "Could not update favorite.");
+    }finally{
+      if(button) button.disabled = false;
+    }
+  }
+
+  async function addToCart(productId, button){
+    const id = String(productId || "").trim();
+    if(!id) return;
+    if(!ensureUserActionAllowed()) return;
+    const targetButton = button || addToCartBtn;
+    const originalText = targetButton ? targetButton.textContent : "";
+    if(targetButton) targetButton.disabled = true;
+    try{
+      await apiRequest("/api/user/cart/add", {
+        method: "POST",
+        body: JSON.stringify({ productId: id, qty: 1 })
+      });
+      if(targetButton) targetButton.textContent = "Added";
+      window.setTimeout(() => {
+        if(targetButton){
+          targetButton.textContent = originalText || "Add to Cart";
+          targetButton.disabled = false;
+        }
+      }, 700);
+    }catch(error){
+      if(targetButton) targetButton.disabled = false;
+      alert(error.message || "Could not add this product to cart.");
+    }
+  }
+
+  function setCommentMessage(message, tone){
+    if(!soloCommentMsg) return;
+    soloCommentMsg.textContent = message || "";
+    soloCommentMsg.classList.remove("error", "success");
+    if(tone === "error" || tone === "success"){
+      soloCommentMsg.classList.add(tone);
+    }
+  }
+
+  function renderComments(comments){
+    if(!soloCommentsList) return;
+    const rows = Array.isArray(comments) ? comments : [];
+    if(!rows.length){
+      soloCommentsList.innerHTML = '<div class="solo-comment-empty">No comments yet.</div>';
+      return;
+    }
+    soloCommentsList.innerHTML = rows.map((item) => {
+      const name = escapeHtml(item && item.userName ? item.userName : "User");
+      const date = escapeHtml(item && item.createdAt ? item.createdAt : "");
+      const body = escapeHtml(item && item.content ? item.content : "");
+      return `
+        <article class="solo-comment-item">
+          <div class="solo-comment-head"><span>${name}</span><span>${date}</span></div>
+          <div class="solo-comment-body">${body}</div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  async function loadCommentsForActiveProduct(){
+    const productId = activeProductContext && activeProductContext.id ? String(activeProductContext.id) : "";
+    if(!productId){
+      renderComments([]);
+      return;
+    }
+    try{
+      const payload = await apiRequest(`/api/products/${encodeURIComponent(productId)}/comments`);
+      renderComments(payload && payload.comments ? payload.comments : []);
+    }catch(error){
+      renderComments([]);
+    }
+  }
+
+  function updateCommentComposerState(){
+    if(!soloCommentInput || !soloCommentSubmit) return;
+    const enabled = isUserLoggedIn();
+    soloCommentInput.disabled = !enabled;
+    soloCommentSubmit.disabled = !enabled;
+    if(enabled){
+      soloCommentInput.placeholder = "Write a comment...";
+      setCommentMessage("", "");
+      return;
+    }
+    soloCommentInput.placeholder = "Sign in to write a comment.";
+    setCommentMessage("Sign in to post comments.", "");
+  }
+
+  async function postCommentForActiveProduct(){
+    const productId = activeProductContext && activeProductContext.id ? String(activeProductContext.id) : "";
+    if(!productId) return;
+    if(!ensureUserActionAllowed()) return;
+    const content = String(soloCommentInput ? soloCommentInput.value : "").trim();
+    if(!content){
+      setCommentMessage("Comment cannot be empty.", "error");
+      return;
+    }
+    setCommentMessage("", "");
+    if(soloCommentSubmit) soloCommentSubmit.disabled = true;
+    try{
+      await apiRequest(`/api/products/${encodeURIComponent(productId)}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ content })
+      });
+      if(soloCommentInput) soloCommentInput.value = "";
+      setCommentMessage("Comment posted.", "success");
+      await loadCommentsForActiveProduct();
+    }catch(error){
+      if(Number(error.status) === 401){
+        redirectToSignIn();
+        return;
+      }
+      setCommentMessage(error.message || "Could not post comment.", "error");
+    }finally{
+      if(soloCommentSubmit){
+        soloCommentSubmit.disabled = !isUserLoggedIn();
+      }
+    }
   }
 
   function mapProductRow(row){
@@ -5079,14 +5516,38 @@
       el.className = extraClass ? `card ${extraClass}` : "card";
       const title = p.name || "Item";
       const sub = (p.sub || defaultSub).trim();
+      const productId = String(p.id || "").trim();
+      const favorited = productId ? userFavoriteIds.has(productId) : false;
       el.innerHTML = `
-        <div class="card-media"><img src="${p.img}" alt="${title}"/></div>
-        <div class="card-name">${title}</div>
-        ${sub ? `<div class="card-sub">${sub}</div>` : ""}
+        <div class="card-media"><img src="${escapeHtml(p.img)}" alt="${escapeHtml(title)}"/></div>
+        <div class="card-name">${escapeHtml(title)}</div>
+        ${sub ? `<div class="card-sub">${escapeHtml(sub)}</div>` : ""}
+        <div class="card-actions">
+          <button class="card-action-btn card-heart-btn ${favorited ? "active" : ""}" type="button" data-favorite-product="${escapeHtml(productId)}" aria-label="Toggle favorite">${favorited ? "&#9829;" : "&#9825;"}</button>
+          <button class="card-action-btn card-cart-btn" type="button" data-cart-product="${escapeHtml(productId)}">Add to cart</button>
+        </div>
       `;
       if(clickable){
         if(onClick) el.addEventListener("click", () => onClick(p));
         else el.addEventListener("click", () => openSolo(p));
+      }
+      const favoriteBtn = el.querySelector("[data-favorite-product]");
+      if(favoriteBtn){
+        favoriteBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const id = favoriteBtn.getAttribute("data-favorite-product");
+          toggleFavorite(id, favoriteBtn);
+        });
+      }
+      const cartBtn = el.querySelector("[data-cart-product]");
+      if(cartBtn){
+        cartBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const id = cartBtn.getAttribute("data-cart-product");
+          addToCart(id, cartBtn);
+        });
       }
       grid.appendChild(el);
     });
@@ -5164,6 +5625,31 @@
     const list = applySculptureFilters(SCULPTURES);
     renderCards(list, { clickable:true, subLabel:"Sculpture", className:"sculpture-card", onClick:openSculpture });
     updateSculptureFilterSummary();
+  }
+
+  function findCollectionProductById(productId){
+    const target = String(productId || "").trim();
+    if(!target) return null;
+    let item = PRODUCTS.find(p => String(p.id) === target);
+    if(item) return { gallery:"furniture", item, opener:openSolo };
+    item = BOOKS.find(p => String(p.id) === target);
+    if(item) return { gallery:"books", item, opener:openBook };
+    item = ARTWORKS.find(p => String(p.id) === target);
+    if(item) return { gallery:"art", item, opener:openArt };
+    item = SCULPTURES.find(p => String(p.id) === target);
+    if(item) return { gallery:"art", item, opener:openSculpture };
+    return null;
+  }
+
+  function openProductFromUrlIfPresent(){
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("product");
+    if(!productId) return;
+    const found = findCollectionProductById(productId);
+    if(!found) return;
+    switchSection("sect-gallery");
+    setGallery(found.gallery);
+    found.opener(found.item);
   }
 
   function renderArtists(){
@@ -5732,6 +6218,40 @@
     setSoloCustomizerOpen(false);
   }
 
+  function setActiveProductContext(product, galleryType){
+    if(!product || !product.id){
+      clearActiveProductContext();
+      return;
+    }
+    activeProductContext = {
+      id: String(product.id),
+      name: product.name || "Product",
+      gallery: galleryType || currentGallery || "furniture"
+    };
+    if(addToCartBtn){
+      addToCartBtn.disabled = false;
+      addToCartBtn.textContent = "Add to Cart";
+    }
+    setProductUrlState(activeProductContext.id);
+    syncFavoriteUi();
+    updateCommentComposerState();
+    setCommentMessage("", "");
+    loadCommentsForActiveProduct();
+  }
+
+  function clearActiveProductContext(){
+    activeProductContext = null;
+    if(addToCartBtn){
+      addToCartBtn.disabled = false;
+      addToCartBtn.textContent = "Add to Cart";
+    }
+    setProductUrlState("");
+    syncFavoriteUi();
+    updateCommentComposerState();
+    setCommentMessage("", "");
+    renderComments([]);
+  }
+
   function openBook(b){
     activeBook = b;
     activateSoloLayout();
@@ -5768,6 +6288,7 @@
     if(fs) fs.value = "Inquiry: " + (b.name || "Book");
 
     renderActiveMedia({ ...b, images:(b.images && b.images.length ? b.images : [b.img]) }, 'images');
+    setActiveProductContext(b, "books");
   }
 
   function closeBook(){
@@ -5864,6 +6385,7 @@
 
     updateArtUI();
     renderActiveMedia({ ...a, images:(a.images && a.images.length ? a.images : [a.img]) }, 'images');
+    setActiveProductContext(a, "art");
   }
 
   function closeArt(){
@@ -5953,6 +6475,7 @@
 
     updateSculptureUI();
     renderActiveMedia({ ...s, images:(s.images && s.images.length ? s.images : [s.img]) }, 'images');
+    setActiveProductContext(s, "art");
   }
 
   function closeSculpture(){
@@ -6000,6 +6523,7 @@
     if(sideNav) sideNav.classList.add('focused');
 
     renderActiveMedia(p, 'images');
+    setActiveProductContext(p, "furniture");
 
     // ✅ zoom + then show 3D popup after moveend
     gotoStore(p.store, p);
@@ -6029,6 +6553,7 @@
     activeSculpture = null;
     activeBook = null;
     activeSoloType = "furniture";
+    clearActiveProductContext();
   }
 
   safeAdd("btnBack","click",closeSolo);
@@ -6040,6 +6565,37 @@
     prefillInquiryFields();
     switchSection('sect-contact');
   });
+  safeAdd("btnAddToCart","click", () => {
+    const productId = activeProductContext && activeProductContext.id ? activeProductContext.id : "";
+    if(!productId) return;
+    addToCart(productId, addToCartBtn);
+  });
+  safeAdd("btnFavoriteToggle","click", () => {
+    const productId = activeProductContext && activeProductContext.id ? activeProductContext.id : "";
+    if(!productId) return;
+    toggleFavorite(productId, favoriteToggleBtn);
+  });
+  safeAdd("artFavBtn","click", () => {
+    const productId = activeProductContext && activeProductContext.id ? activeProductContext.id : "";
+    if(!productId) return;
+    toggleFavorite(productId, document.getElementById("artFavBtn"));
+  });
+  safeAdd("sculptureFavBtn","click", () => {
+    const productId = activeProductContext && activeProductContext.id ? activeProductContext.id : "";
+    if(!productId) return;
+    toggleFavorite(productId, document.getElementById("sculptureFavBtn"));
+  });
+  safeAdd("soloCommentSubmit","click", () => {
+    postCommentForActiveProduct();
+  });
+  if(soloCommentInput){
+    soloCommentInput.addEventListener("keydown", (event) => {
+      if((event.ctrlKey || event.metaKey) && event.key === "Enter"){
+        event.preventDefault();
+        postCommentForActiveProduct();
+      }
+    });
+  }
 
   function openBookFilterModal(){
     if(!bookFilterModal) return;
@@ -6448,12 +7004,17 @@
   }
 
   (async function init(){
+    await loadAuthState();
+    await loadFavoriteState();
+
     // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
     renderArtists();
     await loadSiteContentFromSupabase();
     await loadCatalogFromSupabase();
     rerenderVisibleCollections();
+    syncFavoriteUi();
+    updateCommentComposerState();
 
     // Default active nav = Home
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -6461,6 +7022,7 @@
     if(navHome) navHome.classList.add('active');
     const mNavHome = document.getElementById('mNavHome');
     if(mNavHome) mNavHome.classList.add('active');
+    openProductFromUrlIfPresent();
 
     setupProcessAnimation();
   })();
