@@ -13,25 +13,25 @@
         <h1 style="margin:0;">Products</h1>
         <p class="muted small" style="margin:6px 0 0;">Explore artworks, designs, books, and photography.</p>
       </div>
-      <div class="actions" id="authNav">
+      <div class="actions">
         <% if (!currentUser) { %>
-          <a class="btn-link" href="/signin?returnTo=%2F">Sign in</a>
+          <a class="btn-link" href="/signin?returnTo=<%= encodeURIComponent('/products') %>">Sign in</a>
           <a class="btn-link" href="/signup">Sign up</a>
         <% } else if (currentUser.role === "user") { %>
           <a class="btn-link" href="/dashboard">Dashboard</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
-        <% } else if (currentUser.role === "vendor") { %>
-          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
-        <% } else { %>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else if (currentUser.role === "admin") { %>
           <a class="btn-link" href="/admin">Admin</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else { %>
+          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
+          <button type="button" id="signoutBtn">Sign out</button>
         <% } %>
       </div>
     </div>
 
     <section class="card" style="margin-bottom:14px;">
-      <form method="get" action="/" class="workspace-form-grid three">
+      <form method="get" action="/products" class="workspace-form-grid three">
         <div class="field-row">
           <label for="search">Search</label>
           <input id="search" name="search" value="<%= query.search || '' %>" placeholder="Name, artist, category..." />
@@ -57,7 +57,7 @@
         </div>
         <div class="actions">
           <button class="primary" type="submit">Apply</button>
-          <a class="btn-link" href="/">Reset</a>
+          <a class="btn-link" href="/products">Reset</a>
         </div>
       </form>
     </section>
@@ -76,7 +76,7 @@
           <div class="actions" style="margin-top:10px;">
             <a class="btn-link" href="/products/<%= encodeURIComponent(product.id) %>">Open</a>
             <button type="button" class="favoriteBtn <%= product.likedByMe ? 'active' : '' %>" data-product-id="<%= product.id %>" data-favorited="<%= product.likedByMe ? 'true' : 'false' %>">
-              <span class="heart" aria-hidden="true"><%= product.likedByMe ? "♥" : "♡" %></span>
+              <span class="heart" aria-hidden="true"><% if (product.likedByMe) { %>&hearts;<% } else { %>&#9825;<% } %></span>
               <span class="favoriteCount"><%= product.likesCount || 0 %></span>
             </button>
             <button type="button" class="cartBtn" data-product-id="<%= product.id %>">Add to Cart</button>
@@ -94,10 +94,10 @@
           <% const queryBase = new URLSearchParams(query || {}); %>
           <% queryBase.set('pageSize', String(paging.pageSize)); %>
           <% if (paging.hasPrev) { queryBase.set('page', String(paging.page - 1)); %>
-            <a class="btn-link" href="/?<%= queryBase.toString() %>">Prev</a>
+            <a class="btn-link" href="/products?<%= queryBase.toString() %>">Prev</a>
           <% } %>
           <% if (paging.hasNext) { queryBase.set('page', String(paging.page + 1)); %>
-            <a class="btn-link" href="/?<%= queryBase.toString() %>">Next</a>
+            <a class="btn-link" href="/products?<%= queryBase.toString() %>">Next</a>
           <% } %>
         </div>
       </div>
@@ -106,29 +106,24 @@
 
   <script src="/auth-assets/app.js"></script>
   <script>
-    let currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const isUser = currentUserRole === "user";
+    const isLoggedIn = Boolean(currentUserRole);
     const returnTo = `${window.location.pathname}${window.location.search}`;
     const signInUrl = `/signin?returnTo=${encodeURIComponent(returnTo)}`;
+    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
+      APP.attachSignOutHandler("signoutBtn", "/");
+    }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load."); };
-    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtnFallback")) {
-      APP.attachSignOutHandler("signoutBtnFallback", "/");
-    }
-    if (window.APP && typeof APP.mountAuthNav === "function") {
-      APP.mountAuthNav("authNav", { returnTo, signoutRedirect: "/" })
-        .then((user) => {
-          currentUserRole = user && user.role ? user.role : currentUserRole;
-        })
-        .catch(() => {});
-    }
 
     function requireUserForAction() {
-      if (!currentUserRole) {
+      if (!isLoggedIn) {
         window.location.href = signInUrl;
         return false;
       }
-      if (currentUserRole !== "user") {
+      if (!isUser) {
         alert("This action is available only for user accounts.");
         return false;
       }
@@ -140,7 +135,7 @@
       button.classList.toggle("active", !!favorited);
       const heart = button.querySelector(".heart");
       const favoriteCount = button.querySelector(".favoriteCount");
-      if (heart) heart.textContent = favorited ? "♥" : "♡";
+      if (heart) heart.textContent = favorited ? "\u2665" : "\u2661";
       if (favoriteCount) favoriteCount.textContent = String(Number(count || 0));
     }
 

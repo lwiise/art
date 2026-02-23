@@ -9,20 +9,20 @@
 <body>
   <main class="container">
     <div class="topbar">
-      <a class="auth-back" href="/">&larr; Back to Products</a>
-      <div class="actions" id="authNav">
+      <a class="auth-back" href="/products">&larr; Back to Products</a>
+      <div class="actions">
         <% if (!currentUser) { %>
           <a class="btn-link" href="/signin?returnTo=<%= encodeURIComponent('/products/' + product.id) %>">Sign in</a>
           <a class="btn-link" href="/signup">Sign up</a>
         <% } else if (currentUser.role === "user") { %>
           <a class="btn-link" href="/dashboard">Dashboard</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
-        <% } else if (currentUser.role === "vendor") { %>
-          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
-        <% } else { %>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else if (currentUser.role === "admin") { %>
           <a class="btn-link" href="/admin">Admin</a>
-          <button type="button" id="signoutBtnFallback">Sign out</button>
+          <button type="button" id="signoutBtn">Sign out</button>
+        <% } else { %>
+          <a class="btn-link" href="/vendor">Vendor Dashboard</a>
+          <button type="button" id="signoutBtn">Sign out</button>
         <% } %>
       </div>
     </div>
@@ -34,7 +34,7 @@
         </div>
         <div class="actions">
           <button type="button" id="favoriteBtn" class="favoriteBtn <%= likedByMe ? 'active' : '' %>" data-favorited="<%= likedByMe ? 'true' : 'false' %>">
-            <span class="heart" aria-hidden="true"><%= likedByMe ? "♥" : "♡" %></span>
+            <span class="heart" aria-hidden="true"><% if (likedByMe) { %>&hearts;<% } else { %>&#9825;<% } %></span>
             <span id="favoriteCount"><%= likesCount || 0 %></span>
           </button>
           <button type="button" id="addCartBtn">Add to Cart</button>
@@ -93,22 +93,17 @@
   <script src="/auth-assets/app.js"></script>
   <script>
     const productId = "<%= product.id %>";
-    let currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const currentUserRole = <%- JSON.stringify(currentUser ? currentUser.role : "") %>;
+    const isUser = currentUserRole === "user";
+    const isLoggedIn = Boolean(currentUserRole);
     const returnTo = `${window.location.pathname}${window.location.search}`;
     const signInUrl = `/signin?returnTo=${encodeURIComponent(returnTo)}`;
-    if (window.APP && typeof APP.mountAuthNav === "function") {
-      APP.mountAuthNav("authNav", { returnTo, signoutRedirect: "/" })
-        .then((user) => {
-          currentUserRole = user && user.role ? user.role : currentUserRole;
-        })
-        .catch(() => {});
+    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtn")) {
+      APP.attachSignOutHandler("signoutBtn", "/");
     }
     const sendApiRequest = (window.APP && typeof APP.apiRequest === "function")
       ? APP.apiRequest
       : async () => { throw new Error("Client assets failed to load."); };
-    if (window.APP && typeof APP.attachSignOutHandler === "function" && document.getElementById("signoutBtnFallback")) {
-      APP.attachSignOutHandler("signoutBtnFallback", "/");
-    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -139,11 +134,11 @@
     }
 
     function requireUserForAction() {
-      if (!currentUserRole) {
+      if (!isLoggedIn) {
         window.location.href = signInUrl;
         return false;
       }
-      if (currentUserRole !== "user") {
+      if (!isUser) {
         alert("This action is available only for user accounts.");
         return false;
       }
@@ -162,7 +157,7 @@
       favoriteBtn.classList.toggle("active", !!favorited);
       const heart = favoriteBtn.querySelector(".heart");
       const countEl = document.getElementById("favoriteCount");
-      if (heart) heart.textContent = favorited ? "♥" : "♡";
+      if (heart) heart.textContent = favorited ? "\u2665" : "\u2661";
       if (countEl) countEl.textContent = String(Number(count || 0));
     }
 
