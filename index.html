@@ -237,6 +237,14 @@
     padding:0;
     overflow:hidden;    /* no scroll in Home */
     height:100%;
+    position:relative;
+  }
+  #sect-home .section-auth-top{
+    position:absolute;
+    top:22px;
+    right:28px;
+    margin:0;
+    z-index:5;
   }
 
   .home-screen{
@@ -671,6 +679,11 @@
     background:#111;
     color:#fff;
     border-color:#111;
+  }
+  .section-auth-top{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:18px;
   }
   .gallery-tabs{
     display:flex;
@@ -1541,6 +1554,16 @@
     color:#fff;
     border-color:#b31735;
     background:#b31735;
+  }
+  .card-cart-btn.added{
+    color:#0d6d3f;
+    border-color:#8fc9ad;
+    background:#ecf9f1;
+  }
+  .card-cart-btn.added:hover{
+    color:#fff;
+    border-color:#0d6d3f;
+    background:#0d6d3f;
   }
 
   .card.book-card{
@@ -3001,6 +3024,11 @@
       height:auto;
       overflow:visible;
     }
+    #sect-home .section-auth-top{
+      position:static;
+      margin:0 0 8px;
+      padding-right:2px;
+    }
     .home-top{ --home-logo-width:min(520px, 92%); }
     .home-top small{ font-size:18px; padding-left:5%; }
     .home-tagline{ font-size:15px; letter-spacing:0.4em; }
@@ -3175,6 +3203,9 @@
     <!-- HOME -->
     <section id="sect-home" class="app-section active-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <div class="home-screen">
           <div class="home-top">
             <small id="homeWelcomeText">Welcome to</small>
@@ -3244,6 +3275,9 @@
     <!-- ABOUT -->
     <section id="sect-about" class="app-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <div class="about-wrap">
           <h1 class="sec-title" id="aboutSectionTitleText">About FNN</h1>
 
@@ -3296,6 +3330,9 @@
     <!-- SERVICES -->
     <section id="sect-services" class="app-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <h1 class="sec-title" id="servicesSectionTitleText">Services</h1>
         <p class="sec-sub" id="servicesSectionSubText">A complete pipeline—from creative direction to installation—built for quality, clarity, and impact.</p>
 
@@ -3351,7 +3388,7 @@
         <div class="gallery-head">
           <div class="gallery-top">
             <div class="gallery-title" id="gallerySectionTitleText">Gallery</div>
-            <a class="gallery-link" id="galleryArtistsLink" href="/signin">Sign in</a>
+            <a class="gallery-link" id="galleryArtistsLink" data-auth-nav-link href="/signin">Sign in</a>
           </div>
           <nav class="gallery-tabs" id="galleryTabs" aria-label="Gallery categories">
             <button class="chip gallery-chip" data-gallery="art">Art</button>
@@ -3832,6 +3869,9 @@
     <!-- ARTISTS -->
     <section id="sect-artists" class="app-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <div class="artists-head">
           <button class="btn-back" id="artistsBackBtn">&larr; Back to Gallery</button>
           <div class="artists-hero">
@@ -3863,6 +3903,9 @@
     <!-- ARTIST DETAIL -->
     <section id="sect-artist-detail" class="app-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <div class="artist-detail-head">
           <button class="btn-back" id="artistDetailBack">&larr; Back to Artists</button>
         </div>
@@ -3895,6 +3938,9 @@
     <!-- CONTACT -->
     <section id="sect-contact" class="app-section">
       <div class="section-scroll">
+        <div class="section-auth-top">
+          <a class="gallery-link" data-auth-nav-link href="/signin">Sign in</a>
+        </div>
         <h1 class="sec-title" id="contactSectionTitleText">Get in Touch</h1>
         <p class="sec-sub" id="contactSectionSubText">Interested in a piece? Let us know.</p>
 
@@ -4974,7 +5020,7 @@
   const sculptureSortSelect = document.getElementById("sculptureSortSelect");
   const sculptureFilterClear = document.getElementById("sculptureFilterClear");
   const sculptureFilterApply = document.getElementById("sculptureFilterApply");
-  const galleryArtistsLink = document.getElementById("galleryArtistsLink");
+  const authTopBtns = Array.from(document.querySelectorAll("[data-auth-nav-link]"));
   const artistsBackBtn = document.getElementById("artistsBackBtn");
   const artistsGrid = document.getElementById("artistsGrid");
   const artistsCount = document.getElementById("artistsCount");
@@ -4990,7 +5036,6 @@
   const artistWorksGrid = document.getElementById("artistWorksGrid");
   const artistWorksCount = document.getElementById("artistWorksCount");
   const artistWorksCountLabel = document.getElementById("artistWorksCountLabel");
-  const authTopBtn = galleryArtistsLink;
   const addToCartBtn = document.getElementById("btnAddToCart");
   const favoriteToggleBtn = document.getElementById("btnFavoriteToggle");
   const soloCommentsList = document.getElementById("soloCommentsList");
@@ -5001,6 +5046,7 @@
   let currentGallery = "furniture";
   const authState = { user:null, ready:false };
   const userFavoriteIds = new Set();
+  const userCartIds = new Set();
   let activeProductContext = null;
   const bookFilterState = {
     sort: "featured",
@@ -5098,25 +5144,31 @@
   }
 
   function updateAuthTopButton(){
-    if(!authTopBtn) return;
+    if(!authTopBtns.length) return;
     const user = authState.user;
+    let label = "Sign in";
+    let href = `/signin?returnTo=${encodeURIComponent(currentReturnTo())}`;
     if(!user){
-      authTopBtn.textContent = "Sign in";
-      authTopBtn.href = `/signin?returnTo=${encodeURIComponent(currentReturnTo())}`;
+      authTopBtns.forEach((btn) => {
+        btn.textContent = label;
+        btn.href = href;
+      });
       return;
     }
     if(user.role === "user"){
-      authTopBtn.textContent = "Dashboard";
-      authTopBtn.href = "/dashboard";
-      return;
+      label = "Dashboard";
+      href = "/dashboard";
+    }else if(user.role === "vendor"){
+      label = "Vendor Dashboard";
+      href = "/vendor";
+    }else{
+      label = "Admin";
+      href = "/admin";
     }
-    if(user.role === "vendor"){
-      authTopBtn.textContent = "Vendor Dashboard";
-      authTopBtn.href = "/vendor";
-      return;
-    }
-    authTopBtn.textContent = "Admin";
-    authTopBtn.href = "/admin";
+    authTopBtns.forEach((btn) => {
+      btn.textContent = label;
+      btn.href = href;
+    });
   }
 
   async function loadAuthState(){
@@ -5143,6 +5195,21 @@
       });
     }catch(error){
       console.warn("Could not load favorites:", error.message || error);
+    }
+  }
+
+  async function loadCartState(){
+    userCartIds.clear();
+    if(!isUserLoggedIn()) return;
+    try{
+      const payload = await apiRequest("/api/user/cart");
+      const items = Array.isArray(payload && payload.cart && payload.cart.items) ? payload.cart.items : [];
+      items.forEach((item) => {
+        const id = String(item && item.productId || "").trim();
+        if(id) userCartIds.add(id);
+      });
+    }catch(error){
+      console.warn("Could not load cart:", error.message || error);
     }
   }
 
@@ -5189,6 +5256,35 @@
     button.innerHTML = active ? "&#9829;" : "&#9825;";
   }
 
+  function getCartButtonDefaultLabel(button){
+    if(!button) return "Add to cart";
+    const current = String(button.textContent || "").trim();
+    if(!button.dataset.defaultLabel){
+      if(button.id === "btnAddToCart"){
+        button.dataset.defaultLabel = "Add to Cart";
+      }else{
+        button.dataset.defaultLabel = (current && current.toLowerCase() !== "added") ? current : "Add to cart";
+      }
+    }
+    return button.dataset.defaultLabel || "Add to cart";
+  }
+
+  function setCartVisual(button, active){
+    if(!button) return;
+    const defaultLabel = getCartButtonDefaultLabel(button);
+    button.classList.toggle("added", !!active);
+    button.textContent = active ? "Added" : defaultLabel;
+  }
+
+  function syncCartUi(){
+    document.querySelectorAll("[data-cart-product]").forEach((btn) => {
+      const productId = String(btn.getAttribute("data-cart-product") || "").trim();
+      setCartVisual(btn, !!(productId && userCartIds.has(productId)));
+    });
+    const activeId = activeProductContext && activeProductContext.id ? String(activeProductContext.id) : "";
+    setCartVisual(addToCartBtn, !!(activeId && userCartIds.has(activeId)));
+  }
+
   function syncFavoriteUi(){
     document.querySelectorAll("[data-favorite-product]").forEach((btn) => {
       const productId = String(btn.getAttribute("data-favorite-product") || "");
@@ -5229,23 +5325,18 @@
     if(!id) return;
     if(!ensureUserActionAllowed()) return;
     const targetButton = button || addToCartBtn;
-    const originalText = targetButton ? targetButton.textContent : "";
     if(targetButton) targetButton.disabled = true;
     try{
       await apiRequest("/api/user/cart/add", {
         method: "POST",
         body: JSON.stringify({ productId: id, qty: 1 })
       });
-      if(targetButton) targetButton.textContent = "Added";
-      window.setTimeout(() => {
-        if(targetButton){
-          targetButton.textContent = originalText || "Add to Cart";
-          targetButton.disabled = false;
-        }
-      }, 700);
+      userCartIds.add(id);
+      syncCartUi();
     }catch(error){
-      if(targetButton) targetButton.disabled = false;
       alert(error.message || "Could not add this product to cart.");
+    }finally{
+      if(targetButton) targetButton.disabled = false;
     }
   }
 
@@ -5486,6 +5577,7 @@
       if(titleEl) titleEl.textContent = "Photography collection coming soon";
     }
     renderArtists();
+    syncCartUi();
   }
 
   async function loadCatalogFromSupabase(){
@@ -5518,13 +5610,14 @@
       const sub = (p.sub || defaultSub).trim();
       const productId = String(p.id || "").trim();
       const favorited = productId ? userFavoriteIds.has(productId) : false;
+      const inCart = productId ? userCartIds.has(productId) : false;
       el.innerHTML = `
         <div class="card-media"><img src="${escapeHtml(p.img)}" alt="${escapeHtml(title)}"/></div>
         <div class="card-name">${escapeHtml(title)}</div>
         ${sub ? `<div class="card-sub">${escapeHtml(sub)}</div>` : ""}
         <div class="card-actions">
           <button class="card-action-btn card-heart-btn ${favorited ? "active" : ""}" type="button" data-favorite-product="${escapeHtml(productId)}" aria-label="Toggle favorite">${favorited ? "&#9829;" : "&#9825;"}</button>
-          <button class="card-action-btn card-cart-btn" type="button" data-cart-product="${escapeHtml(productId)}">Add to cart</button>
+          <button class="card-action-btn card-cart-btn ${inCart ? "added" : ""}" type="button" data-cart-product="${escapeHtml(productId)}" data-default-label="Add to cart">${inCart ? "Added" : "Add to cart"}</button>
         </div>
       `;
       if(clickable){
@@ -6228,12 +6321,10 @@
       name: product.name || "Product",
       gallery: galleryType || currentGallery || "furniture"
     };
-    if(addToCartBtn){
-      addToCartBtn.disabled = false;
-      addToCartBtn.textContent = "Add to Cart";
-    }
+    if(addToCartBtn) addToCartBtn.disabled = false;
     setProductUrlState(activeProductContext.id);
     syncFavoriteUi();
+    syncCartUi();
     updateCommentComposerState();
     setCommentMessage("", "");
     loadCommentsForActiveProduct();
@@ -6243,10 +6334,11 @@
     activeProductContext = null;
     if(addToCartBtn){
       addToCartBtn.disabled = false;
-      addToCartBtn.textContent = "Add to Cart";
+      setCartVisual(addToCartBtn, false);
     }
     setProductUrlState("");
     syncFavoriteUi();
+    syncCartUi();
     updateCommentComposerState();
     setCommentMessage("", "");
     renderComments([]);
@@ -7006,6 +7098,7 @@
   (async function init(){
     await loadAuthState();
     await loadFavoriteState();
+    await loadCartState();
 
     // ✅ Default gallery = Designs (furniture data)
     setGallery("furniture");
@@ -7014,6 +7107,7 @@
     await loadCatalogFromSupabase();
     rerenderVisibleCollections();
     syncFavoriteUi();
+    syncCartUi();
     updateCommentComposerState();
 
     // Default active nav = Home
