@@ -85,7 +85,7 @@
         <tr data-product-id="${escapeHtml(item.productId)}">
           <td>
             <div style="display:flex;align-items:center;gap:10px;">
-              ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5;" />` : ""}
+              ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:68px;height:68px;object-fit:contain;background:#f7f7f7;padding:4px;border-radius:10px;border:1px solid #e5e5e5;" />` : ""}
               <span>${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}</span>
             </div>
           </td>
@@ -103,7 +103,7 @@
       }
       likedGrid.innerHTML = items.map((item) => `
         <article class="workspace-item">
-          ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:100%;height:140px;object-fit:cover;border-radius:10px;border:1px solid #e6e6e6;margin-bottom:8px;" />` : ""}
+          ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:100%;height:220px;object-fit:contain;background:#f7f7f7;padding:8px;border-radius:10px;border:1px solid #e6e6e6;margin-bottom:8px;" />` : ""}
           <div class="workspace-item-name">${escapeHtml(item.product?.name || item.productId)}</div>
           <div class="workspace-item-meta">${escapeHtml(item.product?.gallery_type || "")}</div>
           <div class="actions"><a class="btn-link" href="/products/${encodeURIComponent(item.productId)}">Open</a></div>
@@ -119,7 +119,7 @@
       commentsList.innerHTML = items.map((item) => `
         <article class="workspace-field-row">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid #e5e5e5;" />` : ""}
+            ${item.product && item.product.image_url ? `<img src="${escapeHtml(item.product.image_url)}" alt="${escapeHtml(item.product.name || item.productId)}" style="width:56px;height:56px;object-fit:contain;background:#f7f7f7;padding:4px;border-radius:10px;border:1px solid #e5e5e5;" />` : ""}
             <div class="workspace-field-key" style="margin:0;">
               ${item.product ? `<a href="/products/${encodeURIComponent(item.product.id)}">${escapeHtml(item.product.name)}</a>` : escapeHtml(item.productId)}
             </div>
