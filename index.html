@@ -1528,22 +1528,68 @@
     background:#fff;
     color:#111;
     border-radius:999px;
-    font-size:10px;
+    font-size:9px;
     font-weight:900;
-    letter-spacing:0.1em;
+    letter-spacing:0.06em;
     text-transform:uppercase;
-    padding:7px 12px;
+    padding:6px 10px;
     cursor:pointer;
     transition:all .2s ease;
+    position:relative;
   }
   .card-action-btn:hover{
     background:#111;
     border-color:#111;
     color:#fff;
   }
+  .card-action-btn[data-tooltip]::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 8px);
+    transform:translateX(-50%) translateY(4px);
+    opacity:0;
+    pointer-events:none;
+    background:#111;
+    color:#fff;
+    border-radius:8px;
+    padding:6px 8px;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    white-space:nowrap;
+    transition:opacity .16s ease, transform .16s ease;
+    z-index:20;
+  }
+  .card-action-btn[data-tooltip]:hover::after{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
   .card-heart-btn{
-    min-width:44px;
-    padding:7px 10px;
+    width:34px;
+    height:34px;
+    min-width:34px;
+    padding:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    letter-spacing:0;
+    text-transform:none;
+  }
+  .card-cart-btn{
+    width:34px;
+    height:34px;
+    min-width:34px;
+    padding:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    line-height:1;
+    letter-spacing:0;
+    text-transform:none;
   }
   .card-heart-btn.active{
     color:#b31735;
@@ -5245,6 +5291,11 @@
   function setFavoriteVisual(button, active, withLabel){
     if(!button) return;
     button.classList.toggle("active", !!active);
+    if(button.classList.contains("card-heart-btn")){
+      const label = active ? "In favorites" : "Add to my favorite";
+      button.setAttribute("data-tooltip", label);
+      button.setAttribute("aria-label", label);
+    }
     if(button.classList.contains("art-fav")){
       button.innerHTML = active ? "&#9829;" : "&#9825;";
       return;
@@ -5271,6 +5322,14 @@
 
   function setCartVisual(button, active){
     if(!button) return;
+    if(button.classList.contains("card-cart-btn")){
+      button.classList.toggle("added", !!active);
+      button.textContent = "+";
+      const label = active ? "Added" : "Add to cart";
+      button.setAttribute("data-tooltip", label);
+      button.setAttribute("aria-label", label);
+      return;
+    }
     const defaultLabel = getCartButtonDefaultLabel(button);
     button.classList.toggle("added", !!active);
     button.textContent = active ? "Added" : defaultLabel;
@@ -5616,8 +5675,8 @@
         <div class="card-name">${escapeHtml(title)}</div>
         ${sub ? `<div class="card-sub">${escapeHtml(sub)}</div>` : ""}
         <div class="card-actions">
-          <button class="card-action-btn card-heart-btn ${favorited ? "active" : ""}" type="button" data-favorite-product="${escapeHtml(productId)}" aria-label="Toggle favorite">${favorited ? "&#9829;" : "&#9825;"}</button>
-          <button class="card-action-btn card-cart-btn ${inCart ? "added" : ""}" type="button" data-cart-product="${escapeHtml(productId)}" data-default-label="Add to cart">${inCart ? "Added" : "Add to cart"}</button>
+          <button class="card-action-btn card-heart-btn ${favorited ? "active" : ""}" type="button" data-favorite-product="${escapeHtml(productId)}" data-tooltip="${favorited ? "In favorites" : "Add to my favorite"}" aria-label="${favorited ? "In favorites" : "Add to my favorite"}">${favorited ? "&#9829;" : "&#9825;"}</button>
+          <button class="card-action-btn card-cart-btn ${inCart ? "added" : ""}" type="button" data-cart-product="${escapeHtml(productId)}" data-tooltip="${inCart ? "Added" : "Add to cart"}" aria-label="${inCart ? "Added" : "Add to cart"}">+</button>
         </div>
       `;
       if(clickable){
