@@ -51,3 +51,9 @@ Reset or promote a user manually:
 - `npm run user:reset -- --email lrazalanas@gmail.com --password "YourPassword123!" --name "Anas" --role admin`
 
 Set `SESSION_SECRET` in production.
+
+## Railway
+- This repo already includes `railway.json` with `sleepApplication: true`, which is the Railway setting behind the free-plan "Serverless" requirement.
+- The service health check now uses `GET /health`.
+- For persistent SQLite data on Railway, attach a volume to the service. If `RAILWAY_VOLUME_MOUNT_PATH` is present, the app stores `app.db` there automatically.
+- If you want a custom location instead, set `APP_DB_PATH` to an absolute file path.

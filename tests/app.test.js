@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -168,6 +169,39 @@ test.after(async () => {
   db.close();
   if (fs.existsSync(dbPath)) {
     fs.unlinkSync(dbPath);
+  }
+});
+
+test("health endpoint returns ok", async () => {
+  const client = createClient();
+  const res = await client.get("/health");
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body, { status: "ok" });
+});
+
+test("db uses Railway volume mount path when no explicit db path is set", () => {
+  const volumeDir = fs.mkdtempSync(path.join(os.tmpdir(), "fnn-art-volume-"));
+  try {
+    const stdout = execFileSync(
+      process.execPath,
+      [
+        "-e",
+        "const { db, dbPath } = require('./src/db'); process.stdout.write(dbPath); db.close();",
+      ],
+      {
+        cwd: path.join(__dirname, ".."),
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          APP_DB_PATH: "",
+          RAILWAY_VOLUME_MOUNT_PATH: volumeDir,
+          SESSION_SECRET: "test-session-secret",
+        },
+      }
+    );
+    assert.equal(stdout, path.join(volumeDir, "app.db"));
+  } finally {
+    fs.rmSync(volumeDir, { recursive: true, force: true });
   }
 });
 

@@ -3,14 +3,19 @@ const path = require("path");
 const passwordUtils = require("./password");
 const Database = require("better-sqlite3");
 
-const dataDir = path.join(process.cwd(), "data");
+const explicitDbPath = String(process.env.APP_DB_PATH || "").trim();
+const railwayVolumeMountPath = String(process.env.RAILWAY_VOLUME_MOUNT_PATH || "").trim();
+const dbPath = explicitDbPath
+  ? path.resolve(explicitDbPath)
+  : path.join(
+      railwayVolumeMountPath ? path.resolve(railwayVolumeMountPath) : path.join(process.cwd(), "data"),
+      "app.db"
+    );
+const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-const dbPath = process.env.APP_DB_PATH
-  ? path.resolve(process.env.APP_DB_PATH)
-  : path.join(dataDir, "app.db");
 const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
 
@@ -356,6 +361,7 @@ db.prepare(
 module.exports = {
   createUser,
   db,
+  dbPath,
   ensureVendorProfile,
   slugifyName,
   upsertUser,

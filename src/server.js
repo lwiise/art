@@ -40,6 +40,10 @@ const publicDir = path.join(__dirname, "..", "public");
 app.use("/auth-assets", express.static(publicDir));
 app.use(express.static(publicDir));
 
+app.get("/health", (_req, res) => {
+  return res.status(200).json({ status: "ok" });
+});
+
 function makeDefaultServiceItems() {
   return [
     { icon: "Curation", title: "Art Curation", description: "Tailored artwork selection for residences, offices, and hospitality spaces." },
